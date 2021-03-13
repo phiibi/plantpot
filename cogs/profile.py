@@ -77,7 +77,7 @@ class Profile(commands.Cog):
         else:
             embed.add_field(name='\U00002B50 Favourite Item', value=p['image']['desc'], inline=False)
             embed.set_image(url=p['image']['url'])
-
+        embed.set_footer(text='Powered by chlorophyll <:leaf:817542552692457473>')
         return await ctx.send(embed=embed)
 
     @commands.command(name='marry', help='lets you marry another user')
@@ -317,6 +317,22 @@ class Profile(commands.Cog):
             if user['userid'] == uid:
                 return user['points']
         return 0
+
+    async def addpoint(self, uid, p):
+        with open(f'cogs/profiles.json', 'r') as file:
+            d = json.loads(file.read())
+        temp = d
+        updated = await Profile.addprofile(self, uid)
+        if updated is None:
+            for i, user in enumerate(d['users']):
+                if user['userid'] == uid:
+                    temp['users'][i].update({"points": user['points'] + p})
+                    break
+        else:
+            temp = updated
+        with open(f'cogs/profiles.json', 'w') as file:
+            json.dump(temp, file)
+
 
 # -------------- Error handling -------------- #
 

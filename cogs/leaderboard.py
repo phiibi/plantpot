@@ -19,8 +19,8 @@ class Leaderboard(commands.Cog):
 
     @leaderboard.command(name='help', help='full help for leaderboard commands')
     async def help(self, ctx, command):
-        commandhelp = {"leaderboard": "``.leaderboard`` or ``.top10`` will give you the list of the top 10 users this event!",
-                       "myleaderboard": "``.myleaderboard [user]`` will give you your current points and position this event, mentioning [user] will show your their position"}
+        commandhelp = {"leaderboard": "`.leaderboard` or `.top10` will give you the list of the top 10 users this event!",
+                       "myleaderboard": "`.myleaderboard [user]` will give you your current points and position this event, mentioning [user] will show your their position"}
         helpstr = commandhelp.get(command)
         if helpstr is None:
             await ctx.send('please enter a valid command, type ```.leaderboard help``` for a command list')
@@ -126,11 +126,11 @@ class Leaderboard(commands.Cog):
                 return True
         return False
 
-    @leaderboard.command(name='clear', help='clears the leaderboard')
+    @leaderboard.command(name='clear', help='clears the leaderboard', hidden=True)
     @commands.is_owner()
     async def clearlb(self, ctx):
         cleared = {"users": []}
-        with open(f'cogs/leaderboards/lb{sid}.json', 'w') as file:
+        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
             json.dump(cleared, file)
 
     # ------------- Error handling ------------- #
@@ -149,13 +149,13 @@ class AnimeLeaderboard(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(help='anime leaderboard related commands, ".anime help" for more help')
+    @commands.group(help='anime leaderboard related commands')
     async def anime(self, ctx):
         if ctx.invoked_subcommand is None:
             await AnimeLeaderboard.getlb(self, ctx)
             return
 
-    @commands.command(name='animetop10', help='displays the current leaderboard', hidden=True)
+    @commands.command(name='animetop10', help='displays the current anime leaderboard', aliases=['animeleaderboard'])
     async def getlb(self, ctx):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
@@ -176,13 +176,13 @@ class AnimeLeaderboard(commands.Cog):
         embed.description = lbtxt
         await ctx.send(embed=embed)
 
-    @commands.command(name='myanimeleaderboard', help='shows yours, or a given user\'s position on leaderboard', hidden=True)
+    @commands.command(name='myanimeleaderboard', help='shows yours, or a given user\'s position on the anime leaderboard')
     async def position(self, ctx, *, username: discord.Member=None):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
         if username is None:
-            if await Leaderboard.checkuser(ctx.message.author.id, d):
+            if await Leaderboard.checkuser(self, ctx.message.author.id, d):
                 lb = d['users']
                 lb.sort(key=operator.itemgetter('points'), reverse=True)
                 for i in range(len(lb)):
@@ -194,7 +194,7 @@ class AnimeLeaderboard(commands.Cog):
                         return await ctx.send(embed=embed)
             await ctx.send('you haven\'t collected anything this event!')
         else:
-            if await Leaderboard.checkuser(username.id, d):
+            if await Leaderboard.checkuser(self, username.id, d):
                 lb = d['users']
                 lb.sort(key=operator.itemgetter('points'), reverse=True)
                 for i in range(len(lb)):
@@ -246,6 +246,13 @@ class AnimeLeaderboard(commands.Cog):
             if user['userid'] == uid and user['image_name'].count(name) >= 1:
                 return True
         return False
+
+    @anime.command(name='clear', help='clears the leaderboard', hidden=True)
+    @commands.is_owner()
+    async def clearlb(self, ctx):
+        cleared = {"users": []}
+        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
+            json.dump(cleared, file)
 
 
 

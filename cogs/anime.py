@@ -1,70 +1,73 @@
 #anime.py
 
-import json
 import asyncio
 import random
 import requests
 from math import ceil, floor
-from re import fullmatch
+from re import fullmatch, split
 
-async def pickcharacter(t, b, r):
-    url = await getanime(t, b, r)
+async def pickcharacter(r):
+    url = await getanime(r)
     return url
 
-async def getanime(topbound, bottombound, rarity):
-    with open('cogs/anime/anime_cache.json', 'r') as file:
-        d = json.loads(file.read())
-    shows = d['sfw']
-    c = {"characters": []}
+async def getanime(rarity):
 
-    if rarity == 1:
-        r = random.randrange(0, 19)
-        d = requests.get('https://api.jikan.moe/v3/search/anime?q=&order_by=members&sort=desc&page=1')
-        d = d.json()
-        s = d['results'][r]
+    c = {'characters': []}
+    rarities = {1: {"upper": 4,
+                    "lower": 0},
+                2: {"upper": 19,
+                    "lower": 5},
+                3: {"upper": 49,
+                    "lower": 20},
+                4: {"upper": 99,
+                    "lower": 50},
+                5: {"upper": 249,
+                    "lower": 100},
+                6: {"upper": 4950,
+                    "lower": 4200},
+                7: {"upper": 4199,
+                    "lower": 3700},
+                8: {"upper": 3699,
+                    "lower": 3300},
+                9: {"upper": 3299,
+                    "lower": 250}}
+    l = rarities[rarity]['lower']
+    u = rarities[rarity]['upper']
+
+    while not c['characters']:
+        s = await findshow(l, u)
         c = await getshowcharacters(s['mal_id'])
-    if rarity == 2:
-        r = random.randrange(20, 99)
-        p = ceil((r+1)/50)
-        d = requests.get(f'https://api.jikan.moe/v3/search/anime?q=&order_by=members&sort=desc&page={p}')
-        d = d.json()
-        s = d['results'][r-(floor(r/50)*50)]
-        c = await getshowcharacters(s['mal_id'])
-    if rarity == 3:
-        r = random.randrange(100, 249)
-        p = ceil((r+1)/50)
-        d = requests.get(f'https://api.jikan.moe/v3/search/anime?q=&order_by=members&sort=desc&page={p}')
-        d = d.json()
-        print(d)
-        s = d['results'][r-(floor(r/50)*50)]
-        c = await getshowcharacters(s['mal_id'])
-    else:
-        while not c['characters']:
-            id = random.choice(shows)
-            s = await getshow(id)
-            if bottombound < s['members'] <= topbound:
-                c = await getshowcharacters(id)
-                if not c['characters']:
-                    shows.remove(id)
-                    await asyncio.sleep(7)
-            elif s['members'] < 10000:
-                shows.remove(id)
-                await asyncio.sleep(7)
-            elif s['members'] <= bottombound or s['members'] > topbound:
-                pass
-    d.update({"sfw": shows})
-    with open('cogs/anime/anime_cache.json', 'w') as file:
-        json.dump(d, file)
 
     ch = await getcharacter(c)
 
     if ch:
         r = {"title": s['title'],
              "character_url": ch['image_url'],
-             "character_name": ch['name']}
+             "character_name": sanitisename(ch['name'])}
         return r
     else:
-        return await getanime(topbound, bottombound, rarity)
+        return await getanime(rarity)
+
+
+async def findshow(lower, upper):
+    rating = 'Rx'
+    try:
+        while rating == 'Rx':
+            r = random.randrange(lower, upper)
+            p = ceil((r+1)/50)
+            d = requests.get(f'https://api.jikan.moe/v3/search/anime?q=&order_by=members&sort=desc&page={p}')
+            d = d.json()
+            s = d['results'][r-(floor(r/50)*50)]
+            rating = s['rated']
+    except requests.exceptions.Timeout:
+        if not retry(findshow(lower, upper)):
+            print('timed out')
+    except response.exceptions.HTTPError as e:
+        raise SystemExit(e)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+    return s
+
 
 async def getshowcharacters(id):
     try:
@@ -80,6 +83,7 @@ async def getshowcharacters(id):
         raise SystemExit(e)
     r = response.json()
     return r
+
 
 async def getshow(id):
     try:
@@ -97,6 +101,7 @@ async def getshow(id):
     r = response.json()
     return r
 
+
 async def getcharacter(data):
     characters = data['characters']
     for i in range(5):
@@ -104,6 +109,14 @@ async def getcharacter(data):
         if not fullmatch('.*(questionmark).*', r['image_url']):
             return r
     return False
+
+def sanitisename(name):
+    sp = split(",", name)
+    if len(sp) == 2:
+        new = f'{sp[1]} {sp[0]}'
+        return new
+    return name
+
 
 async def retry(func, *args, retry_count=5, delay=5, **kwargs):
     for _ in range(retry_count):
@@ -115,3 +128,6 @@ async def retry(func, *args, retry_count=5, delay=5, **kwargs):
             pass
         await asyncio.sleep(delay)
     return response
+
+response = requests.get(f'https://api.jikan.moe/v3/search/anime?q=&order_by=members&sort=desc&page={1}')
+print(response.json())

@@ -6,7 +6,7 @@ from re import fullmatch
 import time
 import json
 import asyncio
-from cogs import leaderboard, anime
+from cogs import leaderboard, anime, profile
 
 from discord.ext import commands
 
@@ -27,9 +27,9 @@ class Imageposting(commands.Cog):
 
     @image.command(name='help', help='full help for image commands')
     async def help(self, ctx, command):
-        commandhelp = {"post": "```.image post [description]``` will post an image, if you give the description of one, it will post that image",
-                       "add": "```.image add [image-url] [description]``` will add a given image url in the format ``https://i.imgur.com/{url-code}.[jpg/png/gif]`` with a given description",
-                       "all": "```.image all``` will post all images"}
+        commandhelp = {"post": "`.image post [description]` will post an image, if you give the description of one, it will post that image",
+                       "add": "`.image add [image-url] [description]` will add a given image url in the format `https://i.imgur.com/{url-code}.[jpg/png/gif]` with a given description",
+                       "all": "`.image all` will post all images"}
         helpstr = commandhelp.get(command)
         if helpstr is None:
             await ctx.send('please enter a valid command, type ```.image help``` for a command list')
@@ -81,7 +81,8 @@ class Imageposting(commands.Cog):
             json.dump(temp, file)
             await ctx.send('image added')
 
-    @image.command(name='remove', help='removes images')
+    @image.command(name='remove', help='removes images', hidden=True)
+    @commands.is_owner()
     async def remove(self, ctx, link):
         with open(f'cogs/{self.store}.json', 'r') as file:
             d = json.loads(file.read())
@@ -106,7 +107,7 @@ class Imageposting(commands.Cog):
     @image.command(name='event', help='starts an image collecting event')
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def event(self, ctx):
-        cd = 90
+        cd = 60
         start = time.time()
         while True:
             await asyncio.sleep(2)
@@ -118,6 +119,7 @@ class Imageposting(commands.Cog):
                         return r, u
                 r, usr = await self.bot.wait_for('reaction_add', check=check)
                 await leaderboard.Leaderboard.addpoint(self, usr.id, ctx.guild.id, d)
+                await profile.Profile.addpoint(self, usr.id, 1)
                 await ctx.send(self.emoji +" " + usr.mention + '**, you just picked up ' + d + "!** " + self.emoji)
                 await ctx.send('**you\'ve earned one point!**')
                 await asyncio.sleep(cd)
@@ -128,40 +130,42 @@ class Imageposting(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.is_owner()
     async def anime_event(self, ctx):
-        cd = 90
+        cd = 60
 
         start = time.time()
         while True:
             await asyncio.sleep(5)
             if self.checktime(start):
                 r = random.random()
-                if r >= 0.975:
-                    top = 10000000
-                    bottom = 1500000
-                    p = 10
+                if r >= 0.995:
+                    p = 100
                     x = 1
-                elif r >= 0.925:
-                    top = 1500000
-                    bottom = 850000
-                    p = 7
+                elif r >= 0.985:
+                    p = 50
                     x = 2
-                elif r >= 0.8:
-                    top = 850000
-                    bottom = 500000
-                    p = 5
-                    x = 3
-                elif r <= 0.1:
-                    top = 25000
-                    bottom = 10000
+                elif r >= 0.965:
                     p = 10
+                    x = 3
+                elif r >= 0.925:
+                    p = 7
                     x = 4
-                else:
-                    top = 500000
-                    bottom = 25000
-                    p = 1
+                elif r >= 0.8:
+                    p = 5
                     x = 5
-                ac = await anime.pickcharacter(top, bottom, x)
-                rarities = {1: "epic", 2: "rare", 3: "uncommon", 4: "epic", 5: "common"}
+                elif r <= 0.025:
+                    p = 10
+                    x = 6
+                elif r <= 0.075:
+                    p = 7
+                    x = 7
+                elif r <= 0.15:
+                    p = 5
+                    x = 8
+                else:
+                    p = 1
+                    x = 9
+                ac = await anime.pickcharacter(x)
+                rarities = {1: "legendary popular", 2: "mythic popular", 3: "epic popular", 4: "rare popular", 5: "uncommon popular", 6: "epic obscure", 7: "rare obscure", 8: "uncommon obscure", 9: "common"}
                 embed = discord.Embed()
                 name = ac['character_name']
                 url = ac['character_url']
@@ -170,12 +174,13 @@ class Imageposting(commands.Cog):
                 pst = await ctx.send(embed=embed)
                 await pst.add_reaction('<:frogsmile:817589614905917440>')
                 def check(r, u):
-                    if str(r.emoji) == '<:frogsmile:817589614905917440>' and r.message.id == pst.id and u != self.bot.user:
+                    if str(r.emoji) == '<:frogsmile:817589614905917440>' and r.message.id == pst.id and u != self.bot.user and leaderboard.AnimeLeaderboard.checkimage(u.id, ctx.guild.id, name):
                         return r, u
                 r, usr = await self.bot.wait_for('reaction_add', check=check)
                 await leaderboard.AnimeLeaderboard.addpoint(self, usr.id, ctx.guild.id, url, name, p)
+                await profile.Profile.addpoint(self, usr.id, p)
                 r = rarities[x]
-                if x == 2 or x == 5:
+                if x == 1 or x == 2 or x == 4 or x == 7 or x ==9:
                     await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up a {r} character!** {self.emoji}')
                 else:
                     await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up an {r} character!** {self.emoji}')
