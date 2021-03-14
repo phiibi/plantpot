@@ -82,6 +82,7 @@ class Leaderboard(commands.Cog):
         embed.description = lbtxt
         await ctx.send(embed=embed)
 
+
     async def addpoint(self, uid, sid, image):
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
@@ -239,7 +240,7 @@ class AnimeLeaderboard(commands.Cog):
                                   "image_url": [imageurl]})
             return data
 
-    async def checkimage(self, uid, sid, name):
+    def checkimage(self, uid, sid, name):
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for user in d['users']:

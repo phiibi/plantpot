@@ -113,7 +113,7 @@ class Inventory(commands.Cog):
                                     break
                             embed = f_embed
                             embed.description = inventory
-                            embed.set_footer(text='page {0}/{1}'.format(ceil(temp/10), ceil(len(user['images'])/10)))
+                            embed.set_footer(text='page {0}/{1}'.format(ceil(temp/10), ceil(len(user['image_name'])/10)))
                             await m.edit(embed=embed)
                             await m.add_reaction('\U00002B05')
                             await m.add_reaction('\U000027A1')
@@ -175,7 +175,7 @@ class Inventory(commands.Cog):
             await ctx.send('you don\'t have anything to give out! please try collecting some items first')
 
     @commands.command(name='animegive', help='gives an item from your inventory to another user')
-    async def give(self, ctx, user: discord.Member, *, image):
+    async def animegive(self, ctx, user: discord.Member, *, image):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
@@ -204,6 +204,15 @@ class Inventory(commands.Cog):
                     return await ctx.send(f'you don\'t have any {image}s to give out!')
         else:
             await ctx.send('you don\'t have anything to give out! please try collecting some items first')
+
+    @commands.command(name='trade', hidden=True)
+    async def trade(self, ctx, user:discord.Member, *, desired):
+        sid = ctx.guild.id
+        with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
+            d = json.loads(file.read())
+        await Inventory.animeinventory(self, ctx)
+        await ctx.send('fuck you')
+
 
     def transferimage(self, uid0, uid1, image, sid):
         leaderboard.Leaderboard.addpoint(self, uid1, sid, image)

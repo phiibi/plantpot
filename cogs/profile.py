@@ -60,7 +60,7 @@ class Profile(commands.Cog):
         else:
             embed.add_field(name='\U0001F4AC Bio', value=p['bio'], inline=False)
         embed.add_field(name='\U0001F4AD Pronouns', value=Profile.processpronouns(self, p['pronouns']), inline=False)
-        embed.add_field(name='\U0001F3C6 Total Points', value=Profile.getpoints(self, u.id))
+        embed.add_field(name='\U0001F3C6 Total Points', value=p['points'])
         embed.add_field(name='\U0001F4A0 Rep', value=p['rep'])
         if p['sexuality'] is None:
             pass
@@ -309,27 +309,17 @@ class Profile(commands.Cog):
         else:
             return pronouns
 
-    def getpoints(self, uid):
-        with open('cogs/leaderboard.json', 'r') as file:
-            d = json.loads(file.read())
+    def addpoint(self, uid, p):
 
-        for user in d['users']:
-            if user['userid'] == uid:
-                return user['points']
-        return 0
-
-    async def addpoint(self, uid, p):
+        Profile.addprofile(self, uid)
         with open(f'cogs/profiles.json', 'r') as file:
             d = json.loads(file.read())
         temp = d
-        updated = await Profile.addprofile(self, uid)
-        if updated is None:
-            for i, user in enumerate(d['users']):
-                if user['userid'] == uid:
-                    temp['users'][i].update({"points": user['points'] + p})
-                    break
-        else:
-            temp = updated
+        for i, user in enumerate(d['users']):
+            if user['userid'] == uid:
+                temp['users'][i].update({"points": user['points'] + p})
+                break
+
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(temp, file)
 

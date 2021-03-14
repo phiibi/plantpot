@@ -62,7 +62,7 @@ async def findshow(lower, upper):
     except requests.exceptions.Timeout:
         if not retry(findshow(lower, upper)):
             print('timed out')
-    except response.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError as e:
         raise SystemExit(e)
     except requests.exceptions.RequestException as e:
         raise SystemExit(e)
@@ -128,6 +128,3 @@ async def retry(func, *args, retry_count=5, delay=5, **kwargs):
             pass
         await asyncio.sleep(delay)
     return response
-
-response = requests.get(f'https://api.jikan.moe/v3/search/anime?q=&order_by=members&sort=desc&page={1}')
-print(response.json())

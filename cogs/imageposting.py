@@ -107,6 +107,7 @@ class Imageposting(commands.Cog):
     @image.command(name='event', help='starts an image collecting event')
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def event(self, ctx):
+        await ctx.message.delete()
         cd = 60
         start = time.time()
         while True:
@@ -130,6 +131,7 @@ class Imageposting(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.is_owner()
     async def anime_event(self, ctx):
+        await ctx.message.delete()
         cd = 60
 
         start = time.time()
@@ -172,9 +174,9 @@ class Imageposting(commands.Cog):
                 embed.add_field(name=name, value=ac['title'])
                 embed.set_image(url=url)
                 pst = await ctx.send(embed=embed)
-                await pst.add_reaction('<:frogsmile:817589614905917440>')
+                await pst.add_reaction('\U00002B05')
                 def check(r, u):
-                    if str(r.emoji) == '<:frogsmile:817589614905917440>' and r.message.id == pst.id and u != self.bot.user and leaderboard.AnimeLeaderboard.checkimage(u.id, ctx.guild.id, name):
+                    if str(r.emoji) == '\U00002B05' and r.message.id == pst.id and u != self.bot.user and leaderboard.AnimeLeaderboard.checkimage(self, u.id, ctx.guild.id, name):
                         return r, u
                 r, usr = await self.bot.wait_for('reaction_add', check=check)
                 await leaderboard.AnimeLeaderboard.addpoint(self, usr.id, ctx.guild.id, url, name, p)
