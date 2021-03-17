@@ -196,7 +196,10 @@ def sanitisename(name):
     sp = split(",", name)
     if len(sp) == 2:
         new = f'{sp[1]} {sp[0]}'
-        return new
+        if new[0] == " ":
+            return new[1:]
+        else:
+            return new
     return name
 
 

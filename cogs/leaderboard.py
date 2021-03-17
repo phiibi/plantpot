@@ -255,5 +255,8 @@ class AnimeLeaderboard(commands.Cog):
         with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
             json.dump(cleared, file)
 
+def setup(bot):
+    bot.add_cog(Leaderboard(bot))
+    bot.add_cog(AnimeLeaderboard(bot))
 
 

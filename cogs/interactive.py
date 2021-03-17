@@ -40,9 +40,13 @@ class Interactive(commands.Cog):
         embed.set_image(url='https://i.imgur.com/ZiwFFNJ.png')
         await ctx.send(embed=embed)
 
+
     @commands.command(name='kill', help='wrong lever!', hidden=True)
     @commands.is_owner()
     async def kill(self, ctx):
         await ctx.send('shutting down plant')
         await ctx.bot.logout()
+
+def setup(bot):
+    bot.add_cog(Interactive(bot))
 

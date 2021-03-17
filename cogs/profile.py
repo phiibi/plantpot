@@ -289,7 +289,8 @@ class Profile(commands.Cog):
                   "points": 0,
                   "rep": 0,
                   "married": {"users": [], "dates": []},
-                  "image": None}
+                  "image": None,
+                  "badges": []}
             temp["users"].append(pc)
             with open('cogs/profiles.json', 'w') as file:
                 json.dump(temp, file)
@@ -343,22 +344,22 @@ class Profile(commands.Cog):
     @setpronouns.error
     async def setpronounserror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send('please format as ```.profile setpronouns [pronouns]```')
+            await ctx.send('please format as `.profile setpronouns [pronouns]`')
 
     @setbio.error
     async def setbioerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send('please format as ```.profile setbio [description]```')
+            await ctx.send('please format as `.profile setbio [description]`')
 
     @setimage.error
     async def setimageerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send('please format as ```.profile setimage [description]```')
+            await ctx.send('please format as `.profile setimage [description]`')
 
     @setsexuality.error
     async def setsexualityerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send('please format as ```.profile setsexuality [sexuality]```')
+            await ctx.send('please format as `.profile setsexuality [sexuality]`')
 
     @rep.error
     async def reperror(self, ctx, error):
@@ -373,5 +374,8 @@ class Profile(commands.Cog):
             else:
                 await ctx.send(f'you are currently on cooldown, please try again in {h:g} hours and  {m:g} minutes')
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send('please format as ```.rep [mention]```')
+            await ctx.send('please format as `.rep [mention]`')
             ctx.command.reset_cooldown(ctx)
+
+def setup(bot):
+    bot.add_cog(Profile(bot))

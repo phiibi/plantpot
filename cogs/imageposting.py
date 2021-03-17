@@ -6,7 +6,7 @@ from re import fullmatch
 import time
 import json
 import asyncio
-from cogs import leaderboard, anime, profile
+from cogs import leaderboard, serversettings, profile
 
 from discord.ext import commands
 
@@ -17,7 +17,6 @@ class Imageposting(commands.Cog):
         self.spam = False
         self.store = 'randomImages'
         self.emoji = '\U0001F338'
-        self.eventcd = 5
 
     @commands.group(help='image related commands, ".image help" for more help')
     async def image(self, ctx):
@@ -108,7 +107,7 @@ class Imageposting(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def event(self, ctx):
         await ctx.message.delete()
-        cd = 60
+        cd = await serversettings.ServerSettings.getcd(self, ctx)
         start = time.time()
         while True:
             await asyncio.sleep(2)
@@ -133,42 +132,10 @@ class Imageposting(commands.Cog):
     async def stop(self, ctx):
         Imageposting.event.stop()
 
-    @image.command(name='eventset', help='set up for event')
-    async def setevent(self, ctx, command, mod):
-        if not command is None:
-            if mod is None:
-                await self.help(ctx, "event")
-                return
-            else:
-                self.proccommand(command, mod)
-                return
-
     def checktime(self, oldtime):
         newtime = time.time()
         if random.random() < pow(0.99, newtime - oldtime):
             return True
-
-    def proccommand(self, command, mod):
-        if command == 'cooldown':
-            self.eventcd = int(mod)
-            return
-        if command == 'emoji':
-            self.emoji = mod
-            return
-
-    def getcd(self, ctx):
-        with open(f'cogs/{servers}.json', 'r') as file:
-            d = json.loads(file.read())
-        for s in d['servers']:
-            if s['serverid'] == ctx.guild.id:
-                return s['cd']
-
-    def getemoji(self, ctx):
-        with open(f'cogs/{servers}.json', 'r') as file:
-            d = json.loads(file.read())
-        for s in d['servers']:
-            if s['serverid'] == ctx.guild.id:
-                return s['emoji']
 
 
     # ------------- Error handling ------------- #
@@ -208,3 +175,7 @@ class Imageposting(commands.Cog):
             await self.help(ctx, "event")
         if isinstance(error, commands.MaxConcurrencyReached):
             await ctx.send('You\'ve reached the maximum number of times you can start an event! Please end one before trying again')
+
+
+def setup(bot):
+    bot.add_cog(Imageposting(bot))

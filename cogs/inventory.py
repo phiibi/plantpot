@@ -356,7 +356,8 @@ class Inventory(commands.Cog):
         if isinstance(error, commands.errors.MissingRequiredArgument):
             await ctx.send("please format as `.give [user] [item]`")
 
-
+def setup(bot):
+    bot.add_cog(Inventory(bot))
 
 
 

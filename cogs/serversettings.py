@@ -10,11 +10,35 @@ class ServerSettings(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='manualsetup', hidden=True)
+    @commands.group(name='server')
+    async def server(self, ctx):
+        if ctx.invoked_subcommand is None:
+            pass
+
+    @server.command(name='manualsetup', hidden=True)
     @commands.is_owner()
     async def manualsetup(self, ctx):
         print(ctx.guild.id)
         ServerSettings.setupserver(self, ctx.guild.id)
+
+    @server.command(name='setcd', hidden=True)
+    async def setcd(self, ctx, t: int):
+        with open('cogs/servers.json', 'r') as file:
+            d = json.loads(file.read())
+        newcd = {"cd": t}
+        for i, s in enumerate(d['servers']):
+            if s['serverid'] == ctx.guild.id:
+                d['servers'][i].update(newcd)
+                break
+        with open('cogs/servers.json', 'w') as file:
+            json.dump(d, file)
+
+    async def getcd(self, ctx):
+        with open('cogs/servers.json', 'r') as file:
+            d = json.loads(file.read())
+        for s in d['servers']:
+            if s['serverid'] == ctx.guild.id:
+                return s['cd']
 
     def setupserver(self, serverid):
         with open('cogs/servers.json', 'r') as file:
@@ -51,4 +75,7 @@ class ServerSettings(commands.Cog):
             if server['serverid'] == serverid:
                 return True
         return False
+
+def setup(bot):
+    bot.add_cog(ServerSettings(bot))
 
