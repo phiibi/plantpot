@@ -4,7 +4,7 @@ import os
 import discord
 import random
 from re import fullmatch
-from cogs import interactive, imageposting, leaderboard, inventory, profile, serversettings
+from cogs import interactive, imageposting, leaderboard, inventory, profile, serversettings, admin
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -112,4 +112,5 @@ bot.add_cog(leaderboard.AnimeLeaderboard(bot))
 bot.add_cog(inventory.Inventory(bot))
 bot.add_cog(profile.Profile(bot))
 bot.add_cog(serversettings.ServerSettings(bot))
+bot.add_cog(admin.Admin(bot))
 bot.run(TOKEN)

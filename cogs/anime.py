@@ -3,9 +3,91 @@
 import asyncio
 import random
 import requests
+import discord
+import time
+
 from math import ceil, floor
 from re import fullmatch, split
+from discord.ext import commands
 
+class Anime(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+"""@anime.command(name='event', help='starts an event using anime characters')
+@commands.max_concurrency(1, commands.BucketType.guild)
+@commands.is_owner()
+async def anime_event(self, ctx):
+    await ctx.message.delete()
+    cd = 60
+
+    start = time.time()
+    while True:
+        await asyncio.sleep(5)
+        if self.checktime(start):
+            r = random.random()
+            if r >= 0.995:
+                p = 100
+                x = 1
+            elif r >= 0.985:
+                p = 50
+                x = 2
+            elif r >= 0.965:
+                p = 10
+                x = 3
+            elif r >= 0.925:
+                p = 7
+                x = 4
+            elif r >= 0.8:
+                p = 5
+                x = 5
+            elif r <= 0.025:
+                p = 10
+                x = 6
+            elif r <= 0.075:
+                p = 7
+                x = 7
+            elif r <= 0.15:
+                p = 5
+                x = 8
+            else:
+                p = 1
+                x = 9
+            ac = await anime.pickcharacter(x)
+            rarities = {1: "legendary popular", 2: "mythic popular", 3: "epic popular", 4: "rare popular", 5: "uncommon popular", 6: "epic obscure", 7: "rare obscure", 8: "uncommon obscure", 9: "common"}
+            embed = discord.Embed()
+            name = ac['character_name']
+            if name[0] == " ":
+                name = name[1:]
+            url = ac['character_url']
+            embed.add_field(name=name, value=ac['title'])
+            embed.set_image(url=url)
+            pst = await ctx.send(embed=embed)
+            await pst.add_reaction('\U00002B05')
+            while True:
+                def check(r, u):
+                    if str(r.emoji) == '\U00002B05' and r.message.id == pst.id and u != self.bot.user:
+                        return r, u
+                r, usr = await self.bot.wait_for('reaction_add', check=check)
+                if leaderboard.AnimeLeaderboard.checkimage(self, usr.id, ctx.guild.id, name):
+                    await ctx.send(f'{usr.mention}! You already have this character!')
+                    await r.remove(usr)
+                else:
+                    break
+            await leaderboard.AnimeLeaderboard.addpoint(self, usr.id, ctx.guild.id, url, name, p)
+            await profile.Profile.addpoint(self, usr.id, p)
+            r = rarities[x]
+            if x == 1 or x == 2 or x == 4 or x == 7 or x ==9:
+                await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up a {r} character!** {self.emoji}')
+            else:
+                await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up an {r} character!** {self.emoji}')
+            if p == 1:
+                await ctx.send('**you\'ve earned 1 point!**')
+            else:
+                await ctx.send(f'**you\'ve earned {p} points!**')
+            await asyncio.sleep(cd)
+            start = time.time()
+            print('restarting countdown')"""
 async def pickcharacter(r):
     url = await getanime(r)
     return url

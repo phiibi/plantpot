@@ -105,9 +105,8 @@ class Profile(commands.Cog):
             def check(m):
                 return m.channel == ctx.channel and m.author == user
 
-            m = await self.bot.wait_for('message', check=check, timeout=60)
-
             try:
+                m = await self.bot.wait_for('message', check=check, timeout=60)
                 if m.content.lower() in ['y', 'yes']:
                     p0['married']['users'].append(user.id)
                     p0['married']['dates'].append(date.today().strftime('%Y-%m-%d'))
@@ -127,7 +126,7 @@ class Profile(commands.Cog):
                     return await ctx.send('congratulations! you\'re now married!')
                 if m.content.lower() in ['n', 'no']:
                     return await ctx.send('oh no! rejection! better luck next time!')
-            except asyncio.TimeoutError as e:
+            except asyncio.TimeoutError:
                     return await ctx.send(f'uh oh, it seems like {user.mention} is busy, try again later!')
 
     @commands.command(name='divorce', help='lets you divorce another user')
@@ -150,9 +149,8 @@ class Profile(commands.Cog):
             def check(m):
                 return m.channel == ctx.channel and m.author == user
 
-            m = await self.bot.wait_for('message', check=check, timeout=60)
-
             try:
+                m = await self.bot.wait_for('message', check=check, timeout=60)
                 if m.content.lower() in ['y', 'yes']:
                     p0n = p0['married']['users'].index(user.id)
                     p0['married']['users'].pop(p0n)
@@ -174,7 +172,7 @@ class Profile(commands.Cog):
                     return await ctx.send('you are now divorced :(')
                 if m.content.lower() in ['n', 'no']:
                     return await ctx.send(f'it seems like {user.mention} wants to keep working on things')
-            except asyncio.TimeoutError as e:
+            except asyncio.TimeoutError:
                 return await ctx.send(f'uh oh, it seems like {user.mention} is busy, try again later!')
 
     @commands.command(name='rep', help='give another user rep')
@@ -309,8 +307,7 @@ class Profile(commands.Cog):
         else:
             return pronouns
 
-    def addpoint(self, uid, p):
-
+    async def addpoint(self, uid, p):
         Profile.addprofile(self, uid)
         with open(f'cogs/profiles.json', 'r') as file:
             d = json.loads(file.read())

@@ -1,0 +1,10 @@
+
+.idea/misc.xml
+.idea/modules.xml
+.idea/plantpot.iml
+.idea/vcs.xml
+.idea/workspace.xml
+*.py___jb_tmp___
+*.pyc
+*.json
+.env

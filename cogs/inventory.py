@@ -19,12 +19,12 @@ class Inventory(commands.Cog):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
-        if leaderboard.Leaderboard.checkuser(self, ctx.message.author.id, d):
+        if await leaderboard.Leaderboard.checkuser(self, ctx.message.author.id, d):
             for user in d['users']:
                 if ctx.message.author.id == user['userid']:
                     inventory = ''
                     if len(user['images']) < 10:
-                        for item in range(0,len(user['images'])):
+                        for item in range(0, len(user['images'])):
                             inventory += '{0}. **'.format(item+1) + user['images'][item] + '**\n'
                         embed = discord.Embed()
                         embed.title = 'your inventory'
@@ -39,6 +39,8 @@ class Inventory(commands.Cog):
                         f_embed.set_thumbnail(url=ctx.message.author.avatar_url_as())
                         m = await ctx.send(embed=f_embed)
                         while True:
+                            if temp == len(user['images']):
+                                temp -= (temp % 10)
                             inventory = ''
                             for item in range(temp, len(user['images'])):
                                 inventory += f'{item+1}. **' + user['images'][item] + '**\n'
@@ -64,8 +66,10 @@ class Inventory(commands.Cog):
                                             else:
                                                 if temp < 20:
                                                     temp = 0
-                                                else:
+                                                if temp % 10 == 0:
                                                     temp -= 20
+                                                else:
+                                                    temp -= 10 + (temp % 10)
                                                 break
                                     await m.reactions[0].remove(ctx.message.author)
                                     break
@@ -104,6 +108,8 @@ class Inventory(commands.Cog):
                         f_embed.set_thumbnail(url=ctx.message.author.avatar_url_as())
                         m = await ctx.send(embed=f_embed)
                         while True:
+                            if temp == len(user['images']):
+                                temp -= (temp % 10)
                             inventory = ''
                             for item in range(temp, len(user['image_name'])):
                                 inventory += f'{item+1}. **' + user['image_name'][item] + '**\n'
@@ -130,7 +136,10 @@ class Inventory(commands.Cog):
                                                 if temp < 20:
                                                     temp = 0
                                                 else:
-                                                    temp -= 20
+                                                    if temp % 10 == 0:
+                                                        temp -= 20
+                                                    else:
+                                                        temp -= 10 + (temp % 10)
                                                 break
                                     await m.reactions[0].remove(ctx.message.author)
                                     break
@@ -151,6 +160,8 @@ class Inventory(commands.Cog):
         um = ctx.message.author.mention
         if user == self.bot.user:
             return await ctx.send('thank you but i could never accept this gift')
+        if user == ctx.message.author:
+            return await ctx.send ('you can\'t give yourself something!')
         for u in d['users']:
             if ctx.message.author.id == u['userid']:
                 if u['images'].count(image) >= 1:
@@ -159,11 +170,10 @@ class Inventory(commands.Cog):
                     def check(m):
                         return m.channel == ctx.channel and m.author == user
 
-                    m = await self.bot.wait_for('message', check=check, timeout=60)
-
                     try:
+                        m = await self.bot.wait_for('message', check=check, timeout=60)
                         if m.content.lower() in ['y', 'yes']:
-                            self.transferimage(ctx.message.author.id, user.id, image, sid)
+                            await self.transferimage(ctx.message.author.id, user.id, image, sid)
                             return await ctx.send(f'congratulations {user.mention}, you\'re a proud new owner of {image}')
                         if m.content.lower() in ['n', 'no']:
                             return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
@@ -182,6 +192,8 @@ class Inventory(commands.Cog):
         um = ctx.message.author.mention
         if user == self.bot.user:
             return await ctx.send('thank you but i could never accept this gift')
+        if user == ctx.message.author:
+            return await ctx.send ('you can\'t give yourself something!')
         for u in d['users']:
             if ctx.message.author.id == u['userid']:
                 if u['image_name'].count(image) >= 1:
@@ -190,15 +202,14 @@ class Inventory(commands.Cog):
                     def check(m):
                         return m.channel == ctx.channel and m.author == user
 
-                    m = await self.bot.wait_for('message', check=check, timeout=60)
-
                     try:
+                        m = await self.bot.wait_for('message', check=check, timeout=60)
                         if m.content.lower() in ['y', 'yes']:
-                            self.atransferimage(ctx.message.author.id, user.id, image, sid)
+                            await self.atransferimage(ctx.message.author.id, user.id, image, sid)
                             return await ctx.send(f'congratulations {user.mention}, you\'re a proud new owner of {image}')
                         if m.content.lower() in ['n', 'no']:
                             return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
-                    except asyncio.TimeoutError:
+                    except asyncio.TimeoutError as e:
                         return await ctx.send(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
                     return await ctx.send(f'you don\'t have any {image}s to give out!')
@@ -206,16 +217,92 @@ class Inventory(commands.Cog):
             await ctx.send('you don\'t have anything to give out! please try collecting some items first')
 
     @commands.command(name='trade', hidden=True)
-    async def trade(self, ctx, user:discord.Member, *, desired):
+    async def trade(self, ctx, user: discord.Member):
         sid = ctx.guild.id
+        usr = ctx.message.author
+        offertxt = ""
+
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
-        await Inventory.animeinventory(self, ctx)
-        await ctx.send('fuck you')
+        if user == self.bot.user:
+            return await ctx.send('thank you but i have no worldly desires, other than sunlight of course')
+        elif user == usr:
+            return await ctx.send('you can\'t trade with yourself!')
+        await ctx.send(f'{user.mention}! {usr.mention} would like to trade with you, are you available? [(y)es/(n)o]')
 
+        def check(m):
+            return m.channel == ctx.channel and m.author == usr
+        try:
+            m = await self.bot.wait_for('message', check=check, timeout=60)
+            if m.content.lower() in ['y', 'yes']:
+                await ctx.send(f'{usr.mention}, it\'s your turn to make an offer')
+                offer = await Inventory.tradeloop(self, ctx, usr)
+            if m.content.lower() in ['n', 'no']:
+                return await ctx.send(f'uh oh, {usr.mention} doesn\'t want to trade after all')
+        except asyncio.TimeoutError as e:
+            return await ctx.send(f'uh oh, {usr.mention} didn\'t respond in time, please try again when they\'re not busy')
 
-    def transferimage(self, uid0, uid1, image, sid):
-        leaderboard.Leaderboard.addpoint(self, uid1, sid, image)
+        def check(m):
+            return m.channel == ctx.channel and m.author == user
+        try:
+            m = await self.bot.wait_for('message', check=check, timeout=60)
+            if m.content.lower() in ['y', 'yes']:
+                await ctx.send(f'{user.mention}, it\'s your turn to make an offer')
+                offer1 = await Inventory.tradeloop(self, ctx, user)
+            if m.content.lower() in ['n', 'no']:
+                return await ctx.send(f'uh oh, {user.mention} doesn\'t want to trade after all')
+        except asyncio.TimeoutError as e:
+            return await ctx.send(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
+        embed = discord.Embed()
+        embed.title = f'{usr.display_name}\'s offer'
+        for item in offer:
+            offertxt += item + '\n'
+        embed.description = offertxt
+
+    async def tradeloop(self, ctx, user):
+        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
+            d = json.loads(file.read())
+        for user in d['users']:
+            if user['userid'] == user.id:
+                remaininginv = user['image_name']
+        if not remaininginv:
+            return remaininginv
+        temp = []
+        while True:
+            await Inventory.animeinventory(self, ctx)
+            def check(m):
+                return m.channel == ctx.channel and m.author == user
+            while True:
+                await ctx.send('what you like to offer? if you would not like to offer anything, please say `no offer`')
+                try:
+                    m = await self.bot.wait_for('message', check=check, timeout=90)
+                    if leaderboard.AnimeLeaderboard.checkimage(self, user.id, ctx.guild.id, m):
+                        temp.append(m)
+                        remaininginv.remove(m)
+                        if not remaininginv:
+                            await ctx.send('you have nothing left to trade!')
+                            return temp
+                        break
+                    if m.content.lower() == 'no offer':
+                        break
+                    else:
+                        await ctx.send('i couldn\'t find that, please check you have the character or that you spelt their name correctly')
+                        pass
+                except asyncio.TimeoutError:
+                    return await ctx.send('uh oh, we ran out of time, please try again!')
+            await ctx.send('would you like to offer anything else? [(y)es/(n)o]')
+            try:
+                m = await self.bot.wait_for('message', check=check, timeout=90)
+                if m.content.lower() in ['y', 'yes']:
+                    return temp
+                if m.content.lower() in ['n', 'no']:
+                    pass
+            except asyncio.TimeoutError:
+                await ctx.send('uh oh, we ran out of time, please try again!')
+                return None
+
+    async def transferimage(self, uid0, uid1, image, sid):
+        await leaderboard.Leaderboard.addpoint(self, uid1, sid, image)
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for i, user in enumerate(d['users']):
@@ -229,27 +316,47 @@ class Inventory(commands.Cog):
         with open('cogs/leaderboard.json', 'w') as file:
             json.dump(d, file)
 
-    def atransferimage(self, uid0, uid1, image, sid):
-        leaderboard.AnimeLeaderboard.addpoint(self, uid1, image, 0)
+    async def atransferimage(self, uid0, uid1, imagename, sid):
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for i, user in enumerate(d['users']):
             if user['userid'] == uid0:
-                n = user['image_name'].index(image)
+                n = user['image_name'].index(imagename)
                 image_n = user['image_name']
                 image_u = user['image_url']
-                image_n.remove('image_name')
+                await leaderboard.AnimeLeaderboard.addpoint(self, uid1, sid, image_u[n], image_n[n], 0)
+                image_n.remove(imagename)
                 image_u.pop(n)
                 d['users'][i].update({"userid": uid0,
                                       "points": user['points'],
                                       "image_name": image_n})
                 break
-        with open('cogs/leaderboard.json', 'w') as file:
+        with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
+            json.dump(d, file)
+
+    @commands.command(name='parsa', hidden=True, help="debug")
+    @commands.is_owner()
+    async def parsa(self, ctx):
+        sid = ctx.guild.id
+        with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
+            d = json.loads(file.read())
+        for n, u in enumerate(d['users']):
+            temp = []
+            for i in u['image_name']:
+                if i[0] == " ":
+                    temp.append(i[1:])
+                else:
+                    temp.append(i)
+            d['users'][n].update({"image_name": temp})
+        with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
 
     @give.error
     async def giveerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send("please format as ```.give [user] [item]```")
+            await ctx.send("please format as `.give [user] [item]`")
+
+
+
 
 
