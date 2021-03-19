@@ -74,6 +74,11 @@ class Admin(commands.Cog):
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(d, file)
 
+    @commands.command(name='test')
+    async def test(self, ctx):
+        embed=discord.Embed()
+        embed.set_image(url='https://static01.nyt.com/images/2020/05/08/us/00VIRUS-TULIPS-still2/merlin_172188732_87c0da9b-c8c5-46d5-93e3-5f07d4800556-mobileMasterAt3x.jpg')
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Admin(bot))
