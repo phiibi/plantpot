@@ -46,7 +46,15 @@ class Interactive(commands.Cog):
     async def kill(self, ctx):
         await ctx.send('shutting down plant')
         await ctx.bot.logout()
-
+    @commands.command(name='loader', hidden=True)
+    @commands.is_owner()
+    async def loader(self, ctx, *, module):
+        try:
+            await self.bot.load_extension(f'cogs.{module}')
+        except Exception as e:
+            await ctx.send('{}: {}'.format(type(e).__name__, e))
+        else:
+            await ctx.send(f'{module} loaded')
 def setup(bot):
     bot.add_cog(Interactive(bot))
 

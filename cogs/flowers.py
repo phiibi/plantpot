@@ -16,6 +16,7 @@ class Flower(commands.Cog):
         self.emoji = '\U0001F338'
 
     @commands.command(name='flowerevent', hidden=True)
+    @commands.max_concurrency(1, commands.BucketType.guild)
     async def flowerevent(self, ctx):
         await ctx.message.delete()
         cd = 60

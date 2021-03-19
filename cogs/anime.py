@@ -8,7 +8,7 @@ import time
 
 from math import ceil, floor
 from re import fullmatch, split
-from cogs import profile, leaderboard, imageposting
+from cogs import profile, leaderboard, imageposting, checkers
 from discord.ext import commands
 
 class Anime(commands.Cog):
@@ -23,7 +23,7 @@ class Anime(commands.Cog):
 
     @ani.command(name='event', help='starts an event using anime characters')
     @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.is_owner()
+    @checkers.is_guild_owner()
     async def anime_event(self, ctx):
         await ctx.message.delete()
         cd = 60

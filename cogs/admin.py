@@ -12,16 +12,17 @@ class Admin(commands.Cog):
 
     @commands.command(name='load', hidden=True)
     @commands.is_owner()
-    async def load(self, ctx, *, module: str):
+    async def load(self, *, module: str):
         """Loads a module."""
         try:
             self.bot.load_extension(f'cogs.{module}')
         except Exception as e:
+            await ctx.send('\N{PISTOL}')
             await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
-    @commands.command(hidden=True)
+    @commands.command(name='unload', hidden=True)
     @commands.is_owner()
     async def unload(self, *, module: str):
         """Unloads a module."""

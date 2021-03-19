@@ -302,7 +302,7 @@ class Inventory(commands.Cog):
                 return None
 
     async def transferimage(self, uid0, uid1, image, sid):
-        await leaderboard.Leaderboard.addpoint(self, uid1, sid, image)
+        await leaderboard.Leaderboard.addpoint(self, uid1, sid, image, 0)
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for i, user in enumerate(d['users']):
@@ -310,10 +310,10 @@ class Inventory(commands.Cog):
                 images = user['images']
                 images.remove(image)
                 d['users'][i].update({"userid": uid0,
-                                      "points": user['points'] - 1,
+                                      "points": user['points'],
                                       "images": images})
                 break
-        with open('cogs/leaderboard.json', 'w') as file:
+        with open(f'cogs/leaderboards/lb{sid}.json', 'w') as file:
             json.dump(d, file)
 
     async def atransferimage(self, uid0, uid1, imagename, sid):
