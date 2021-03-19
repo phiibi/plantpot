@@ -22,11 +22,12 @@ class SpamChecker:
         self.users.update({userid: time.time()})
 
     async def checkuser(self, ctx, userid):
-        if self.users.get(userid) - time.time() < 150:
-            return True
-        if self.users.get(userid) - time.time() > 150 or self.users.get(userid) is None:
-            self.users.update({userid: time.time()})
+        u = self.users.get(userid)
+        if u is None or time.time() - u > 150:
+            await self.adduser(ctx, userid)
             return False
+        else:
+            return True
 
     async def unloadusers(self, ctx):
         for u in self.users:

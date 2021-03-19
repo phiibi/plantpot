@@ -12,7 +12,7 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='.')
+bot = commands.Bot(command_prefix='!!')
 
 
 
@@ -114,4 +114,5 @@ bot.load_extension('cogs.serversettings')
 bot.load_extension('cogs.admin')
 bot.load_extension('cogs.anime')
 bot.load_extension('cogs.badges')
+bot.load_extension('cogs.flowers')
 bot.run(TOKEN)

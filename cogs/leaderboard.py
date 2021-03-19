@@ -119,7 +119,7 @@ class Leaderboard(commands.Cog):
                 return True
         return False
 
-    async def checkimage(self, uid, sid, image):
+    def checkimage(self, uid, sid, image):
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for user in d['users']:

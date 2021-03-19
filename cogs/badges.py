@@ -130,7 +130,7 @@ class Badge(commands.Cog):
             u = {"userid": ctx.message.author.id,
                   "badges": []}
             d['users'].append(u)
-            with open('cogs/profiles.json', 'w') as file:
+            with open('cogs/badges.json', 'w') as file:
                 json.dump(d, file)
 
     async def checkbadge(self, ctx, badge, d):

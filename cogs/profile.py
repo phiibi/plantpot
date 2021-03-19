@@ -265,11 +265,20 @@ class Profile(commands.Cog):
                 p = json.loads(file.read())
             with open(f'cogs/{self.store}.json', 'r') as file:
                 d = json.loads(file.read())
+            with open(f'cogs/flowers.json', 'r') as file:
+                f = json.loads(file.read())
 
+            temp = None
             for im in d['images']:
                 if im['desc'] == image:
                     temp = {"image": {"url": im['url'], "desc": image}}
                     break
+            if temp is None:
+                for cat in f:
+                    for flower in f[cat]:
+                        t = list(flower.items())
+                        if t[0][0] == image:
+                            temp = {"image": {"url": t[0][1], "desc": t[0][0]}}
             for i, user in enumerate(p['users']):
                 if user['userid'] == u.id:
                     p['users'][i].update(temp)

@@ -138,7 +138,7 @@ class Imageposting(commands.Cog):
 
     def checktime(self, oldtime):
         newtime = time.time()
-        if random.random() < pow(0.99, newtime - oldtime):
+        if random.random() > pow(0.99, newtime - oldtime):
             return True
 
 
