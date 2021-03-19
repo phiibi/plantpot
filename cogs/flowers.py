@@ -71,6 +71,7 @@ class Flower(commands.Cog):
                         await r.remove(usr)
                     else:
                         break
+                coll = False
                 if leaderboard.Leaderboard.checkimage(self, usr.id, ctx.guild.id, image[0]):
                     coll = True
                     if x == 0:

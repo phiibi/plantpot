@@ -21,6 +21,7 @@ class ServerSettings(commands.Cog):
     async def manualsetup(self, ctx):
         print(ctx.guild.id)
         ServerSettings.setupserver(self, ctx.guild.id)
+        await ctx.send('server set up')
 
     @server.command(name='setcd', hidden=True)
     @checkers.is_guild_owner()

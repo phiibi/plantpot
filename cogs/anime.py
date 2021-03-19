@@ -14,6 +14,7 @@ from discord.ext import commands
 class Anime(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.emoji = '\U0001F338'
 
     @commands.group(name='ani')
     async def ani(self, ctx):

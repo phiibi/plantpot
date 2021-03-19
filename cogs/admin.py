@@ -10,24 +10,23 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(hidden=True)
+    @commands.command(name='load', hidden=True)
     @commands.is_owner()
-    async def load(self, *, module: str):
+    async def load(self, ctx, *, module: str):
         """Loads a module."""
         try:
-            self.bot.load_extension(module)
+            self.bot.load_extension(f'cogs.{module}')
         except Exception as e:
-            await self.bot.say('\N{PISTOL}')
-            await self.bot.say('{}: {}'.format(type(e).__name__, e))
+            await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
-            await self.bot.say('\N{OK HAND SIGN}')
+            await ctx.send('\N{OK HAND SIGN}')
 
     @commands.command(hidden=True)
     @commands.is_owner()
     async def unload(self, *, module: str):
         """Unloads a module."""
         try:
-            self.bot.unload_extension(module)
+            self.bot.unload_extension(f'cogs.{module}')
         except Exception as e:
             await self.bot.say('\N{PISTOL}')
             await self.bot.say('{}: {}'.format(type(e).__name__, e))
@@ -77,6 +76,7 @@ class Admin(commands.Cog):
     @commands.command(name='test')
     async def test(self, ctx):
         embed=discord.Embed()
+        embed.colour = 0xffb8c9
         embed.set_image(url='https://static01.nyt.com/images/2020/05/08/us/00VIRUS-TULIPS-still2/merlin_172188732_87c0da9b-c8c5-46d5-93e3-5f07d4800556-mobileMasterAt3x.jpg')
         await ctx.send(embed=embed)
 
