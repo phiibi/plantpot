@@ -3,10 +3,12 @@
 import discord
 from discord.ext import commands
 
-def is_plant_admin():
+def is_guild_owner():
     def predicate(ctx):
-        r = ctx.message.author.roles
-        817801520074063974
+        return ctx.message.author == ctx.guild.owner or ctx.message.author.id == 115560604047114248 or ctx.message.author.id == 579785620612972581
+    return commands.check(predicate)
 
-        return ctx.message.author.roles == 85309593344815104
+def is_plant_owner():
+    def predicate(ctx):
+        return ctx.message.author.id == 115560604047114248 or ctx.message.author.id == 579785620612972581
     return commands.check(predicate)

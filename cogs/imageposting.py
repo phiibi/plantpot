@@ -6,7 +6,7 @@ from re import fullmatch
 import time
 import json
 import asyncio
-from cogs import leaderboard, serversettings, profile
+from cogs import leaderboard, serversettings, profile, checkers
 
 from discord.ext import commands
 
@@ -57,11 +57,12 @@ class Imageposting(commands.Cog):
         embed.set_image(url=image['url'])
         return [await ctx.send(embed=embed), image['desc']]
 
-    @image.command(name='setstore', help='sets default store')
+    @image.command(name='setstore', help='sets default store', hidden=True)
     async def setstore(self, ctx, store):
         self.store = store
 
     @image.command(name='add', help='adds a new image to postable images, ".image add [imgur link] [description]"')
+    @checkers.is_plant_owner()
     async def add(self, ctx, link, *, desc):
         if fullmatch('^https://i\.imgur\.com/.*(\.jpg|\.jpeg|\.png|\.gif)$', link) is None:
             return await ctx.send('please link images in the form ```https://i.imgur.com/{url-code}.[jpg/png/gif]```')
@@ -104,6 +105,7 @@ class Imageposting(commands.Cog):
 
     #starts posting images as over a function of time
     @image.command(name='event', help='starts an image collecting event')
+    @checkers.is_guild_owner()
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def event(self, ctx):
         await ctx.message.delete()

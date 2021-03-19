@@ -334,22 +334,12 @@ class Inventory(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='parsa', hidden=True, help="debug")
-    @commands.is_owner()
-    async def parsa(self, ctx):
-        sid = ctx.guild.id
-        with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
-            d = json.loads(file.read())
-        for n, u in enumerate(d['users']):
-            temp = []
-            for i in u['image_name']:
-                if i[0] == " ":
-                    temp.append(i[1:])
-                else:
-                    temp.append(i)
-            d['users'][n].update({"image_name": temp})
-        with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
-            json.dump(d, file)
+    @commands.command(name='testbadge')
+    async def badgetest(self, ctx):
+        embed = discord.Embed()
+        embed.title = f'{ctx.author.display_name}\'s badge inventory'
+        embed.description = '**1.** blah   \U0001F338 \n **2.** test   \U00002B05'
+        m = await ctx.send(embed=embed)
 
     @give.error
     async def giveerror(self, ctx, error):

@@ -6,7 +6,7 @@ import asyncio
 
 from discord.ext import commands
 from datetime import date
-from cogs import leaderboard
+from cogs import leaderboard, badges
 
 
 class Profile(commands.Cog):
@@ -60,6 +60,11 @@ class Profile(commands.Cog):
         else:
             embed.add_field(name='\U0001F4AC Bio', value=p['bio'], inline=False)
         embed.add_field(name='\U0001F4AD Pronouns', value=Profile.processpronouns(self, p['pronouns']), inline=False)
+        if p['badges']:
+            temp = ""
+            for i in p['badges']:
+                temp += i + '\U000000A0'
+            embed.add_field(name='\U0001F451 Badges', value=temp, inline=False)
         embed.add_field(name='\U0001F3C6 Total Points', value=p['points'])
         embed.add_field(name='\U0001F4A0 Rep', value=p['rep'])
         if p['sexuality'] is None:
@@ -77,7 +82,7 @@ class Profile(commands.Cog):
         else:
             embed.add_field(name='\U00002B50 Favourite Item', value=p['image']['desc'], inline=False)
             embed.set_image(url=p['image']['url'])
-        embed.set_footer(text='Powered by chlorophyll <:leaf:817542552692457473>')
+        embed.set_footer(text='Powered by chlorophyll')
         return await ctx.send(embed=embed)
 
     @commands.command(name='marry', help='lets you marry another user')
@@ -274,6 +279,22 @@ class Profile(commands.Cog):
             await ctx.send('image set')
         else:
             await ctx.send('you don\'t have that item yet!')
+
+    @profile.command(name='setbadge', help='sets your profile badge')
+    async def setbadge(self, ctx, *, badge):
+        with open('cogs/badges.json', 'r') as file:
+            d = json.loads(file.read())
+        if await badges.Badge.checkbadge(self, ctx, badge, d):
+            with open('cogs/profiles.json', 'r') as file:
+                p = json.loads(file.read())
+            for user in p['users']:
+                if user['userid'] == ctx.message.author.id:
+                    b = await badges.Badge.getbadge(self, badge)
+                    user['badges'].append(b)
+                    with open('cogs/profiles.json', 'w') as file:
+                        json.dump(p, file)
+                    return await ctx.send('badge set!')
+        return await ctx.send('you don\'t have that badge yet!')
 
     def addprofile(self, uid):
         with open('cogs/profiles.json', 'r') as file:

@@ -3,7 +3,7 @@
 import os
 import discord
 import random
-from re import fullmatch
+from re import fullmatch, search
 from cogs import interactive, imageposting, leaderboard, inventory, profile, serversettings, admin
 
 from dotenv import load_dotenv
@@ -12,7 +12,7 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='!!')
+bot = commands.Bot(command_prefix='.')
 
 
 
@@ -90,7 +90,7 @@ async def on_message(message):
             await message.channel.send('**pog**')
         elif 'poggers' in mcl():
             await message.channel.send('poggers')
-        elif fullmatch('\s*(pog)(\s+|$)', mcl()):
+        elif search('\s*(pog)(\s+|$)', mcl()):
             await message.channel.send('pog')
 
     if mcl == 'good bot':
@@ -112,4 +112,6 @@ bot.load_extension('cogs.inventory')
 bot.load_extension('cogs.profile')
 bot.load_extension('cogs.serversettings')
 bot.load_extension('cogs.admin')
+bot.load_extension('cogs.anime')
+bot.load_extension('cogs.badges')
 bot.run(TOKEN)
