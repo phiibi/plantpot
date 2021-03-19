@@ -7,17 +7,19 @@ import random
 import time
 import discord
 
-from cogs import serversettings, imageposting
+from cogs import serversettings, imageposting, leaderboard, profile, checkers
 from discord.ext import commands
 
-class Admin(commands.Cog):
+class Flower(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.emoji = '\U0001F338'
 
     async def flowerevent(self, ctx):
         await ctx.message.delete()
         cd = await serversettings.getcd(self, ctx)
         start = time.time()
+        c = checkers.SpamChecker()
         while True:
             await asyncio.sleep(5)
             if imageposting.Imageposting.checktime(self, start):
@@ -26,32 +28,79 @@ class Admin(commands.Cog):
                     p = 500
                     x = 0
                 elif r <= 0.0025:
-                    p = 250
+                    p = 300
                     x = 1
                 elif r <= 0.01:
-                    p = 150
+                    p = 200
                     x = 2
                 elif r <= 0.015:
                     p = 100
                     x = 3
-                elif r <= 0.02:
-                    p = 75
-                    x = 4
-                elif r <= 0.03:
+                elif r <= 0.025:
                     p = 50
-                    x = 5
-                elif r <= 0.05:
+                    x = 4
+                elif r <= 0.04:
                     p = 25
-                    x = 6
+                    x = 5
                 elif r <= 0.1:
                     p = 10
-                    x = 7
+                    x = 6
                 elif r <= 0.2:
                     p = 5
-                    x = 8
+                    x = 7
                 else:
                     p = 1
-                    x = 9
+                    x = 8
+                temp = await Flower.getflower(self, ctx, x)
+                image = list(temp.items())[0]
+                rarities = {0: "ultra special amazing", 1: "legendary", 2: "mythic", 3: "epic", 4: "plant's favourite", 5: "ultra rare", 6: "rare", 7: "uncommon", 8: "common"}
+                embed = discord.Embed()
+                embed.set_image(url=image[1])
+                post = await ctx.send(embed=embed)
+                await post.add_reaction(self.emoji)
+                async def check(r, u):
+                    if str(r.emoji) == self.emoji and r.message.id == p.id and u != self.bot.user and not c.checkuser(u.id):
+                        return r, u
+                    if c.checkuser(self, ctx, u.id):
+                        await ctx.send('hold up! you\'ve collected something too recently, please wait for a moment')
+                r, usr = await self.bot.wait_for('reaction_add', check=await check)
+                if leaderboard.Leaderboards.checkimage(self, usr.id, ctx.guild.id, image[0]):
+                    coll = True
+                    if x == 0:
+                        p = 200
+                    elif x == 1:
+                        p = 100
+                    elif x == 2:
+                        p = 60
+                    elif x == 3:
+                        p = 30
+                    elif x == 4:
+                        x = 20
+                    elif x == 5:
+                        p = 10
+                    elif x == 6:
+                        p = 5
+                    elif x == 7:
+                        p = 2
+                    else:
+                        p = 1
+                await leaderboard.Leaderboard.addpoint(self, usr.id, ctx.guild.id, image[0], p)
+                await profile.Profile.addpoint(self, usr.id, p)
+                r = rarities[x]
+                if x == 1 or x == 2 or x == 4 or x == 6 or x == 8:
+                    await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up a {r} flower!** {self.emoji}')
+                else:
+                    await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up an {r} flower!** {self.emoji}')
+                if p == 1:
+                    await ctx.send('**you\'ve earned 1 point!**')
+                else:
+                    if coll:
+                        await ctx.send(f'**as you\'ve collected this before, you\'ve earned {p} points**')
+                    else:
+                        await ctx.send(f'**you\'ve earned {p} points!**')
+                await asyncio.sleep(cd)
+                c.unloadusers(self, ctx)
+                start = time.time()
 
         async def getflower(self, ctx, rarity):
             with open(f'cogs/flowers.json', 'r') as file:
@@ -59,6 +108,29 @@ class Admin(commands.Cog):
             if rarity == 0:
                 return {"plant": "https://i.imgur.com/I9SPukW.jpg"}
             elif rarity == 1:
+                temp = d['Legendary']
+                return random.choice(temp)
+            elif rarity == 2:
+                temp = d['Mythic']
+                return random.choice(temp)
+            elif rarity == 3:
+                temp = d['Epic']
+                return random.choice(temp)
+            elif rarity == 4:
+                temp = d["Plant's Favourites"]
+                return random.choice(temp)
+            elif rarity == 5:
+                temp = d['Ultra Rare']
+                return random.choice(temp)
+            elif rarity == 6:
+                temp = d['Rare']
+                return random.choice(temp)
+            elif rarity == 7:
+                temp = d['Uncommon']
+                return random.choice(temp)
+            elif rarity == 8:
+                temp = d['Common']
+                return random.choice(temp)
 
         start = time.time()
         while True:

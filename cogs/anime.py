@@ -83,7 +83,7 @@ class Anime(commands.Cog):
                 await leaderboard.AnimeLeaderboard.addpoint(self, usr.id, ctx.guild.id, url, name, p)
                 await profile.Profile.addpoint(self, usr.id, p)
                 r = rarities[x]
-                if x == 1 or x == 2 or x == 4 or x == 7 or x ==9:
+                if x == 1 or x == 2 or x == 4 or x == 7 or x == 9:
                     await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up a {r} character!** {self.emoji}')
                 else:
                     await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up an {r} character!** {self.emoji}')

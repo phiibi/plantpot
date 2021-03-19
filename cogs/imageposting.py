@@ -6,7 +6,7 @@ from re import fullmatch
 import time
 import json
 import asyncio
-from cogs import leaderboard, serversettings, profile, checkers
+from cogs import leaderboard, serversettings, profile, checkers, flowers
 
 from discord.ext import commands
 
@@ -107,7 +107,9 @@ class Imageposting(commands.Cog):
     @image.command(name='event', help='starts an image collecting event')
     @checkers.is_guild_owner()
     @commands.max_concurrency(1, commands.BucketType.guild)
-    async def event(self, ctx):
+    async def event(self, ctx, season: str = None):
+        if season == "spring":
+            return await flowers.Flower.flowerevent(self, ctx)
         await ctx.message.delete()
         cd = await serversettings.ServerSettings.getcd(self, ctx)
         start = time.time()
@@ -120,7 +122,7 @@ class Imageposting(commands.Cog):
                     if str(r.emoji) == self.emoji and r.message.id == p.id and u != self.bot.user:
                         return r, u
                 r, usr = await self.bot.wait_for('reaction_add', check=check)
-                await leaderboard.Leaderboard.addpoint(self, usr.id, ctx.guild.id, d)
+                await leaderboard.Leaderboard.addpoint(self, usr.id, ctx.guild.id, d, 1)
                 await profile.Profile.addpoint(self, usr.id, 1)
                 await ctx.send(self.emoji +" " + usr.mention + '**, you just picked up ' + d + "!** " + self.emoji)
                 await ctx.send('**you\'ve earned one point!**')

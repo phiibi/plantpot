@@ -4,6 +4,7 @@ import json
 import discord
 
 from discord.ext import commands
+from cogs import checkers
 
 
 class ServerSettings(commands.Cog):
@@ -22,6 +23,7 @@ class ServerSettings(commands.Cog):
         ServerSettings.setupserver(self, ctx.guild.id)
 
     @server.command(name='setcd', hidden=True)
+    @checkers.is_guild_owner()
     async def setcd(self, ctx, t: int):
         with open('cogs/servers.json', 'r') as file:
             d = json.loads(file.read())
@@ -59,7 +61,7 @@ class ServerSettings(commands.Cog):
                                     "wcid": None, #welcome-channel-id
                                     "wm": None, #welcome-message
                                     "lbf": f"lb{serverid}",
-                                    "cd": 90,
+                                    "cd": 60,
                                     "anime": None,
                                     "emoji": '\U0001F338'
                                     })

@@ -83,18 +83,18 @@ class Leaderboard(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    async def addpoint(self, uid, sid, image):
+    async def addpoint(self, uid, sid, image, points):
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         temp = d
-        updated = await Leaderboard.adduser(self, uid, image, d)
+        updated = await Leaderboard.adduser(self, uid, image, d, points)
         if updated is None:
             for i, user in enumerate(d['users']):
                 if user['userid'] == uid:
                     images = user['images']
                     images.append(image)
                     temp['users'][i].update({"userid": uid,
-                                             "points": user['points'] + 1,
+                                             "points": user['points'] + points,
                                              "images": images})
                     break
         else:
@@ -103,13 +103,13 @@ class Leaderboard(commands.Cog):
             json.dump(temp, file)
 
 
-    async def adduser(self, uid, image, data):
+    async def adduser(self, uid, image, data, points):
         c = await Leaderboard.checkuser(self, uid, data)
         if c:
             return None
         else:
             data['users'].append({"userid": uid,
-                                  "points": 1,
+                                  "points": points,
                                   "images": [image]})
             return data
 
