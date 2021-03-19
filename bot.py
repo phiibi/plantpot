@@ -12,7 +12,7 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='!!')
+bot = commands.Bot(command_prefix='.')
 
 
 
@@ -28,7 +28,7 @@ async def on_guild_join(guild):
         if channel.permissions_for(guild.me).send_messages:
             await channel.send('hi there, i\'m plant, a bot made by @Leaf#0077, it\'s nice to meet you!')
         break
-    await serversettings.ServerSettings.setupserver()
+    await serversettings.ServerSettings.setupserver(guild.id)
 
 @bot.event
 async def on_message(message):

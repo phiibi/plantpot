@@ -16,11 +16,17 @@ class ServerSettings(commands.Cog):
         if ctx.invoked_subcommand is None:
             pass
 
+    def is_adri():
+        def predicate(ctx):
+            return ctx.message.author.id == 375274992331390976
+        return commands.check(predicate) 
+    
     @server.command(name='manualsetup', hidden=True)
-    @commands.is_owner()
+    @checkers.is_guild_owner()
     async def manualsetup(self, ctx):
         print(ctx.guild.id)
         ServerSettings.setupserver(self, ctx.guild.id)
+        await ctx.send('server set up!')
 
     @server.command(name='setcd', hidden=True)
     @checkers.is_guild_owner()
@@ -45,7 +51,7 @@ class ServerSettings(commands.Cog):
     def setupserver(self, serverid):
         with open('cogs/servers.json', 'r') as file:
             d = json.loads(file.read())
-        ServerSettings.addserver(self, serverid, d);
+        d = ServerSettings.addserver(self, serverid, d);
         if d is None:
             pass
         else:
@@ -77,6 +83,19 @@ class ServerSettings(commands.Cog):
             if server['serverid'] == serverid:
                 return True
         return False
+
+    @commands.command(name='loading', hidden=True)
+    @commands.is_owner()
+    async def loading(self, ctx, *, module: str):
+        """Loads a module."""
+        try:
+            await self.bot.load_extension(f'cogs.{module}')
+        except Exception as e:
+            await ctx.send('{}: {}'.format(type(e).__name__, e))
+        else:
+            await ctx.send('\N{OK HAND SIGN}')
+
+    
 
 def setup(bot):
     bot.add_cog(ServerSettings(bot))

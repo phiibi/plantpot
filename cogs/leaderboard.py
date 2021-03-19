@@ -36,7 +36,7 @@ class Leaderboard(commands.Cog):
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         if username is None:
-            if await Leaderboard.checkuser(ctx.message.author.id, d):
+            if await Leaderboard.checkuser(self, ctx.message.author.id, d):
                 lb = d['users']
                 lb.sort(key=operator.itemgetter('points'), reverse=True)
                 for i in range(len(lb)):
@@ -48,7 +48,7 @@ class Leaderboard(commands.Cog):
                         return await ctx.send(embed=embed)
             await ctx.send('you haven\'t collected anything this event!')
         else:
-            if await Leaderboard.checkuser(username.id, d):
+            if await Leaderboard.checkuser(self, username.id, d):
                 lb = d['users']
                 lb.sort(key=operator.itemgetter('points'), reverse=True)
                 for i in range(len(lb)):

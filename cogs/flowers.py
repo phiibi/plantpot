@@ -16,6 +16,7 @@ class Flower(commands.Cog):
         self.emoji = '\U0001F338'
 
     @commands.command(name='flowerevent', hidden=True)
+    @commands.max_concurrency(1, commands.BucketType.guild)
     async def flowerevent(self, ctx):
         await ctx.message.delete()
         cd = 60
@@ -71,6 +72,7 @@ class Flower(commands.Cog):
                         await r.remove(usr)
                     else:
                         break
+                coll = False
                 if leaderboard.Leaderboard.checkimage(self, usr.id, ctx.guild.id, image[0]):
                     coll = True
                     if x == 0:
