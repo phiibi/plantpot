@@ -11,15 +11,10 @@ class ServerSettings(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(name='server')
+    @commands.group(name='server', hidden=True)
     async def server(self, ctx):
         if ctx.invoked_subcommand is None:
             pass
-
-    def is_adri():
-        def predicate(ctx):
-            return ctx.message.author.id == 375274992331390976
-        return commands.check(predicate) 
     
     @server.command(name='manualsetup', hidden=True)
     @checkers.is_guild_owner()
@@ -83,17 +78,6 @@ class ServerSettings(commands.Cog):
             if server['serverid'] == serverid:
                 return True
         return False
-
-    @commands.command(name='loading', hidden=True)
-    @commands.is_owner()
-    async def loading(self, ctx, *, module: str):
-        """Loads a module."""
-        try:
-            await self.bot.load_extension(f'cogs.{module}')
-        except Exception as e:
-            await ctx.send('{}: {}'.format(type(e).__name__, e))
-        else:
-            await ctx.send('\N{OK HAND SIGN}')
 
     
 

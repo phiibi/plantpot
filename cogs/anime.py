@@ -16,12 +16,12 @@ class Anime(commands.Cog):
         self.bot = bot
         self.emoji = '\U0001F338'
 
-    @commands.group(name='ani')
-    async def ani(self, ctx):
+    @commands.group(help='anime related commands')
+    async def anime(self, ctx):
         if ctx.invoked_subcommand is None:
                 return
 
-    @ani.command(name='event', help='starts an event using anime characters')
+    @anime.command(name='event', help='starts an event using anime characters')
     @commands.max_concurrency(1, commands.BucketType.guild)
     @checkers.is_guild_owner()
     async def anime_event(self, ctx):
@@ -95,6 +95,29 @@ class Anime(commands.Cog):
                 await asyncio.sleep(cd)
                 start = time.time()
                 print('restarting countdown')
+
+    @anime.command(name='rarity', help='displays different rarities, their chances, and points given')
+    async def rarity(self, ctx):
+        tempstr = ''
+        temp = ["Legendary popular **(100)** *(Top 5 anime on MAL)*: 0.5%",
+                "Mythic popular **(50)** *(Top 5-19 anime on MAL)*: 1.5%",
+                "Epic popular **(10)** *(Top 20-49 anime on MAL)*: 3.5%",
+                "Rare popular **(7)** *(Top 50-99 anime on MAL)*: 4.5%",
+                "Uncommon popular **(5)** *(Top 100- 249 anime on MAL)*: 12.5%",
+                "Common **(1)** *(Between the top 250th show and 25,000 watches on MAL)*: 62.5%",
+                "Uncommon obscure **(5)** *(Between 20,000 and 25,000 watches on MAL)*: 7.5%",
+                "Rare obscure **(7)** *(Between 15,000 and 20,000 watches on MAL)*: 5%",
+                "Epic obscure **(10)** *(Between 10,000 and 15,000 watches on MAL)*: 2.5%"]
+        for r in temp:
+            tempstr += r +'\n'
+        embed = discord.Embed()
+        embed.title = "Anime rarities"
+        embed.description = tempstr
+        await ctx.send(embed=embed)
+
+def setup(bot):
+    bot.add_cog(Anime(bot))
+
 
 async def pickcharacter(r):
     url = await getanime(r)
@@ -222,5 +245,3 @@ async def retry(func, *args, retry_count=5, delay=5, **kwargs):
         await asyncio.sleep(delay)
     return response
 
-def setup(bot):
-    bot.add_cog(Anime(bot))

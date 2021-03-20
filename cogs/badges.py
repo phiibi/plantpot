@@ -12,7 +12,7 @@ class Badge(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(name='badge')
+    @commands.group(name='badges', help='work in progress')
     async def badge(self, ctx):
         if ctx.invoked_subcommand is None:
             pass

@@ -334,13 +334,6 @@ class Inventory(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='testbadge')
-    async def badgetest(self, ctx):
-        embed = discord.Embed()
-        embed.title = f'{ctx.author.display_name}\'s badge inventory'
-        embed.description = '**1.** blah   \U0001F338 \n **2.** test   \U00002B05'
-        m = await ctx.send(embed=embed)
-
     @give.error
     async def giveerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):

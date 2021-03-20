@@ -151,7 +151,7 @@ class AnimeLeaderboard(commands.Cog):
         self.bot = bot
 
     @commands.group(help='anime leaderboard related commands')
-    async def anime(self, ctx):
+    async def ani(self, ctx):
         if ctx.invoked_subcommand is None:
             await AnimeLeaderboard.getlb(self, ctx)
             return
@@ -248,7 +248,7 @@ class AnimeLeaderboard(commands.Cog):
                 return True
         return False
 
-    @anime.command(name='clear', help='clears the leaderboard', hidden=True)
+    @ani.command(name='clear', help='clears the leaderboard', hidden=True)
     @commands.is_owner()
     async def clearlb(self, ctx):
         cleared = {"users": []}

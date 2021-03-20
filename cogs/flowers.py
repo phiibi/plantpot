@@ -32,7 +32,7 @@ class Flower(commands.Cog):
                 elif r <= 0.0025:
                     p = 300
                     x = 1
-                elif r <= 0.01:
+                elif r <= 0.075:
                     p = 200
                     x = 2
                 elif r <= 0.015:
@@ -41,7 +41,7 @@ class Flower(commands.Cog):
                 elif r <= 0.025:
                     p = 50
                     x = 4
-                elif r <= 0.04:
+                elif r <= 0.05:
                     p = 25
                     x = 5
                 elif r <= 0.1:
@@ -96,8 +96,10 @@ class Flower(commands.Cog):
                 await leaderboard.Leaderboard.addpoint(self, usr.id, ctx.guild.id, image[0], p)
                 await profile.Profile.addpoint(self, usr.id, p)
                 r = rarities[x]
-                if x == 1 or x == 2 or x == 4 or x == 6 or x == 8:
+                if x == 1 or x == 2 or x == 6 or x == 8:
                     await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up a {r} flower!** {self.emoji}')
+                elif x == 4:
+                    await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up one of {r} flowers!** {self.emoji}')
                 else:
                     await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up an {r} flower!** {self.emoji}')
                 if p == 1:
