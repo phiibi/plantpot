@@ -5,7 +5,7 @@ import json
 import time
 
 from discord.ext import commands
-from cogs import leaderboard
+from cogs import leaderboard, checkers
 from math import ceil
 
 class Badge(commands.Cog):
@@ -87,7 +87,7 @@ class Badge(commands.Cog):
                                 break
 
     @badge.command(name='make', hidden=True)
-    @commands.is_owner()
+    @checkers.is_plant_owner()
     async def make(self, ctx, *, name):
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
@@ -105,7 +105,7 @@ class Badge(commands.Cog):
                 json.dump(d, file)
 
     @badge.command(name='give', hidden=True)
-    @commands.is_owner()
+    @checkers.is_plant_owner()
     async def give(self, ctx, user: discord.Member, *, name):
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
