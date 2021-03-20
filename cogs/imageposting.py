@@ -103,6 +103,24 @@ class Imageposting(commands.Cog):
             embed.set_image(url=image['url'])
             await ctx.send(embed=embed)
 
+    @image.command(name='rarity', help='displays different rarities, their chances, and points given')
+    async def rarity(self, ctx):
+        tempstr = ''
+        temp = ["Legendary **(300/100)**: 0.25%",
+                "Mythic **(200/60)**: 0.75%",
+                "Epic **(100/30)**: 1.5%",
+                "Plant's favourite **(50/20)**: 2.5%",
+                "Ultra rare **(25/10)**: 5%",
+                "Rare **(10/5)**: 10%",
+                "Uncommon **(5/2)**: 20%",
+                "Common **(1/1)**: 60%"]
+        for r in temp:
+            tempstr += r +'\n'
+        embed = discord.Embed()
+        embed.title = "Flower rarities"
+        embed.description = tempstr
+        await ctx.send(embed=embed)
+
     #starts posting images as over a function of time
     @image.command(name='event', help='starts an image collecting event')
     @checkers.is_guild_owner()

@@ -90,6 +90,8 @@ async def on_message(message):
             await message.channel.send('**pog**')
         elif 'poggers' in mcl():
             await message.channel.send('poggers')
+        elif 'pogging' in mcl():
+            await message.channel.send('pog')
         elif search('\s*(pog)(\s+|$)', mcl()):
             await message.channel.send('pog')
 

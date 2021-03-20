@@ -12,7 +12,7 @@ class Admin(commands.Cog):
 
     @commands.command(name='load', hidden=True)
     @commands.is_owner()
-    async def load(self, *, module: str):
+    async def load(self, ctx, *, module: str):
         """Loads a module."""
         try:
             self.bot.load_extension(f'cogs.{module}')
@@ -63,6 +63,24 @@ class Admin(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
 
+    @commands.command(name="refresh", hidden=True)
+    @commands.is_owner()
+    async def refresh(self, ctx):
+        tempstr =''
+        for f in os.listdir('./cogs/'):
+            if f.endswith('.py') and not f.startswith('__'):
+                try:
+                    self.bot.unload_extension(f'cogs.{f[:-3]}')
+                    self.bot.load_extension(f'cogs.{f[:-3]}')
+                except Exception as e:
+                    tempstr += '{}: {}\n'.format(type(e).__name__, e)
+                else:
+                    tempstr += f'{f} reloaded\n'
+        embed = discord.Embed()
+        embed.title = 'refresh results'
+        embed.description = tempstr
+        await ctx.send(embed=embed)
+
     @commands.command(name='badgeparsa', hidden=True)
     @commands.is_owner()
     async def badgeparse(self, ctx):
@@ -74,7 +92,7 @@ class Admin(commands.Cog):
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='test')
+    @commands.command(name='test', hidden=True)
     async def test(self, ctx):
         embed=discord.Embed()
         embed.colour = 0xffb8c9
