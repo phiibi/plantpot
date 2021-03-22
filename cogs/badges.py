@@ -132,7 +132,7 @@ class Badge(commands.Cog):
         u = await Badge.checkuser(self, ctx, uid, d)
         if not u:
             u = {"userid": ctx.message.author.id,
-                  "badges": []}
+                 "badges": []}
             d['users'].append(u)
         return d
     
