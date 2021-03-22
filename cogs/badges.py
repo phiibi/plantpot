@@ -12,7 +12,7 @@ class Badge(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(name='badges', help='work in progress')
+    @commands.group(name='badge', help='work in progress')
     async def badge(self, ctx):
         if ctx.invoked_subcommand is None:
             pass
@@ -109,33 +109,44 @@ class Badge(commands.Cog):
     async def give(self, ctx, user: discord.Member, *, name):
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
-        await Badge.adduser(self, ctx, d)
+        d = await Badge.adduser(self, ctx, user.id,  d)
+        print(d)
         temp = d['badges'].get(name)
         if not temp:
             return await ctx.send('I couldn\'t find that badge...')
         else:
             for i, n in enumerate(d['users']):
-                if n['userid'] == ctx.message.author.id:
-                    if await Badge.checkbadge(self, ctx, name, d):
+                if n['userid'] == user.id:
+                    print('found hh')
+                    if await Badge.checkbadge(self, ctx, user.id, name, d):
+                        print('hhhhh')
                         return await ctx.send('this user already has that badge!')
                     else:
+                        print('adding badge')
                         n['badges'].append({name: temp})
                         await ctx.send('{0} just got {1} {2}!'.format(user.mention, name, temp))
         with open('cogs/badges.json', 'w') as file:
             json.dump(d, file)
 
-    async def adduser(self, ctx, d):
-        u = await leaderboard.Leaderboard.checkuser(self, ctx.message.author.id, d)
+    async def adduser(self, ctx, uid, d):
+        u = await Badge.checkuser(self, ctx, uid, d)
         if not u:
             u = {"userid": ctx.message.author.id,
                   "badges": []}
             d['users'].append(u)
-            with open('cogs/badges.json', 'w') as file:
-                json.dump(d, file)
+        return d
+    
+    async def checkuser(self, ctx, uid, d):
+        for i in range(len(d['users'])):
+            print(d['users'][i]['userid'])
+            print(uid)
+            if d['users'][i]['userid'] == uid:
+                return True
+        return False
 
-    async def checkbadge(self, ctx, badge, d):
+    async def checkbadge(self, ctx, uid, badge, d):
         for u in d['users']:
-            if u['userid'] == ctx.message.author.id:
+            if u['userid'] == uid:
                 for i in u['badges']:
                     for n in i:
                         if n == badge:
