@@ -94,6 +94,7 @@ class Imageposting(commands.Cog):
 
     #posts all images
     @image.command(name='all', help='posts all images')
+    @checkers.is_plant_owner()
     async def all(self, ctx):
         with open(f'cogs/{self.store}.json', 'r') as file:
             d = json.loads(file.read())
@@ -123,8 +124,8 @@ class Imageposting(commands.Cog):
 
     #starts posting images as over a function of time
     @image.command(name='event', help='starts an image collecting event')
-    @checkers.is_guild_owner()
     @commands.max_concurrency(1, commands.BucketType.guild)
+    @checkers.is_guild_owner()
     async def event(self, ctx, season: str = None):
         if season == "spring":
             return await flowers.Flower.flowerevent(self, ctx)

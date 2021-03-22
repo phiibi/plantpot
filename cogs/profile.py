@@ -189,6 +189,8 @@ class Profile(commands.Cog):
         if user == ctx.message.author:
             await ctx.send('you cannot rep yourself!')
             return ctx.command.reset_cooldown(ctx)
+        if user is None:
+            return await ctx.send('hhh')
         p = Profile.addprofile(self, user.id)
 
         with open('cogs/profiles.json', 'r') as file:

@@ -5,6 +5,8 @@ import os
 import json
 
 from discord.ext import commands
+from cogs import profile, leaderboard
+from math import floor
 
 class Admin(commands.Cog):
     def __init__(self, bot):
@@ -91,12 +93,48 @@ class Admin(commands.Cog):
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='test', hidden=True)
-    async def test(self, ctx):
-        embed=discord.Embed()
-        embed.colour = 0xffb8c9
-        embed.set_image(url='https://static01.nyt.com/images/2020/05/08/us/00VIRUS-TULIPS-still2/merlin_172188732_87c0da9b-c8c5-46d5-93e3-5f07d4800556-mobileMasterAt3x.jpg')
-        await ctx.send(embed=embed)
+    @commands.command(name='rebalance', hidden=True)
+    @commands.is_owner()
+    async def rebalance(self, ctx):
+        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
+            d = json.loads(file.read())
+        with open(f'cogs/flowers.json', 'r') as file:
+            f = json.loads(file.read())
+
+        m = []
+        t = f['Mythic']
+        for flower in t:
+            fl = list(flower.keys())[0]
+            m.append(fl)
+
+        for user in d['users']:
+            temp = []
+            score = 0
+            print(user['images'])
+            for image in user['images']:
+                if m.count(image) == 1:
+                    if temp.count(image) >= 1:
+                        score += 60
+                    else:
+                        score += 200
+                    temp.append(image)
+            for i in temp:
+                user['images'].remove(i)
+            print(user['images'])
+            print(user['points'])
+            print(score)
+            user['points'] -= score
+            await profile.Profile.addpoint(self, user['userid'], score*-1)
+            user['points'] = floor(user['points']*1.03)
+            if user['userid'] == 639162100719026195 or user['userid'] == 447691269225840641:
+                await leaderboard.Leaderboard.addpoint(self, user['userid'], ctx.guild.id, "Queen of the Night", 200)
+                await profile.Profile.addpoint(self, user['userid'], 200)
+
+        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
+            json.dump(d, file)
+        await ctx.send("Rebalancing complete")
+
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))

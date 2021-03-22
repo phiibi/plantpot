@@ -334,6 +334,14 @@ class Inventory(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
 
+    async def getpoints(self, image, hadbefore):
+        with open(f'cogs/flowers.json', 'r') as file:
+            f = json.loads(file.read())
+        for cat in f:
+            for flower in f[cat]:
+                t = list(flower.items())
+                if t[0][0] == image:
+                    temp = {"image": {"url": t[0][1], "desc": t[0][0]}}
     @give.error
     async def giveerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):

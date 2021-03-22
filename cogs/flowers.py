@@ -32,7 +32,7 @@ class Flower(commands.Cog):
                 elif r <= 0.0025:
                     p = 300
                     x = 1
-                elif r <= 0.075:
+                elif r <= 0.0075:
                     p = 200
                     x = 2
                 elif r <= 0.015:
