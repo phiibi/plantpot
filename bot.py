@@ -28,7 +28,9 @@ async def on_guild_join(guild):
         if channel.permissions_for(guild.me).send_messages:
             await channel.send('hi there, i\'m plant, a bot made by @Leaf#0077, it\'s nice to meet you!')
         break
-    await serversettings.ServerSettings.setupserver(guild.id)
+    s = serversettings.ServerSetter(guild)
+    await s.setupserver()
+    print('debug')
 
 @bot.event
 async def on_message(message):

@@ -128,7 +128,7 @@ class Badge(commands.Cog):
         u = await leaderboard.Leaderboard.checkuser(self, ctx.message.author.id, d)
         if not u:
             u = {"userid": ctx.message.author.id,
-                  "badges": []}
+                 "badges": []}
             d['users'].append(u)
             with open('cogs/badges.json', 'w') as file:
                 json.dump(d, file)

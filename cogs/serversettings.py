@@ -79,7 +79,46 @@ class ServerSettings(commands.Cog):
                 return True
         return False
 
-    
+
+class ServerSetter:
+    def __init__(self, guild):
+        self.sid = guild.id
+
+    async def setupserver(self):
+        with open('cogs/servers.json', 'r') as file:
+            d = json.loads(file.read())
+        d = self.addserver(d)
+        if d is None:
+            pass
+        else:
+            with open('cogs/servers.json', 'w') as file:
+                json.dump(d, file)
+
+    def addserver(self, data):
+        if self.checkserver(data):
+            data = None
+        else:
+            data['servers'].append({"serverid": self.sid,
+                                    "store": "randomImages",
+                                    "wcid": None, #welcome-channel-id
+                                    "wm": None, #welcome-message
+                                    "lbf": f"lb{self.sid}",
+                                    "cd": 60,
+                                    "anime": None,
+                                    "emoji": '\U0001F338'
+                                    })
+            setupjson = {"users": []}
+            with open (f'cogs/leaderboards/lb{self.sid}.json', 'a+') as f:
+                json.dump(setupjson, f)
+            with open (f'cogs/leaderboards/a{self.sid}.json', 'a+') as f:
+                json.dump(setupjson, f)
+        return data
+
+    def checkserver(self, data):
+        for server in data['servers']:
+            if server['serverid'] == self.sid:
+                return True
+        return False
 
 def setup(bot):
     bot.add_cog(ServerSettings(bot))
