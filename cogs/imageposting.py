@@ -94,6 +94,7 @@ class Imageposting(commands.Cog):
 
     #posts all images
     @image.command(name='all', help='posts all images')
+    @checkers.is_guild_owner()
     async def all(self, ctx):
         with open(f'cogs/{self.store}.json', 'r') as file:
             d = json.loads(file.read())
