@@ -17,10 +17,9 @@ class Admin(commands.Cog):
         try:
             self.bot.load_extension(f'cogs.{module}')
         except Exception as e:
-            await ctx.send('\N{PISTOL}')
             await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
-            await ctx.send('\N{OK HAND SIGN}')
+            await ctx.send(f'{module} reloaded')
 
     @commands.command(name='unload', hidden=True)
     @commands.is_owner()
