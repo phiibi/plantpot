@@ -128,6 +128,8 @@ class Imageposting(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def event(self, ctx, season: str = None):
         if season == "spring":
+            return await flowers.Flower.flowereventmean(self, ctx)
+        if season == "spring nice":
             return await flowers.Flower.flowerevent(self, ctx)
         await ctx.message.delete()
         cd = await serversettings.ServerSettings.getcd(self, ctx)
