@@ -108,7 +108,7 @@ class Inventory(commands.Cog):
                         f_embed.set_thumbnail(url=ctx.message.author.avatar_url_as())
                         m = await ctx.send(embed=f_embed)
                         while True:
-                            if temp == len(user['images']):
+                            if temp == len(user['image_name']):
                                 temp -= (temp % 10)
                             inventory = ''
                             for item in range(temp, len(user['image_name'])):
