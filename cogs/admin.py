@@ -3,9 +3,10 @@
 import discord
 import os
 import json
+import random
 
 from discord.ext import commands
-from cogs import checkers
+from cogs import profile, leaderboard, checkers
 from math import floor
 
 class Admin(commands.Cog):
@@ -93,23 +94,17 @@ class Admin(commands.Cog):
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='replace', hidden=True)
+    @commands.command(name='rebalance', hidden=True)
     @checkers.is_plant_owner()
-    async def replace(self, ctx):
+    async def rebalance(self, ctx):
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
             d = json.loads(file.read())
-
         for user in d['users']:
-            temp = []
-            for image in user['images']:
-                if image != "Rafflesia":
-                    temp.append(image)
-            user.update({"images": temp})
+            user['points'] = floor(user['points'] * 1.08)
+
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
             json.dump(d, file)
-        print('images replaced')
-
-
+        await ctx.send("Rebalancing complete")
 
 
 
