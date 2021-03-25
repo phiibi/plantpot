@@ -30,7 +30,6 @@ async def on_guild_join(guild):
         break
     s = serversettings.ServerSetter(guild)
     await s.setupserver()
-    print('debug')
 
 @bot.event
 async def on_message(message):
@@ -42,7 +41,8 @@ async def on_message(message):
                'god dag',  'howdy', 'what\'s up', 'hai', 'gday', 'yassou', 'o/', 'salutations', 'greetings', 'whats gwaning', 'howzit',
                'what\'s gwaning', 'wazzup', 'wazup', 'whats up', 'henlo', 'heyo', 'salam', 'salaam', 'hey~', 'namaskaram', 'how\'s it hanging', 'how\'s it hangin',
                'hoi', 'oi', 'hei', 'dap me up', 'ola', 'whats good', 'what\'s good', 'good evening', 'good afternoon', 'god morgen',
-               'what it be', 'good morrow', 'what\'s crackalackin', 'morning', 'afternoon', 'evening', 'night', 'coucou', 'hewwo', 'how\'s it going']
+               'what it be', 'good morrow', 'what\'s crackalackin', 'morning', 'afternoon', 'evening', 'night', 'coucou', 'hewwo', 'how\'s it going',
+               'ello', 'yello', 'beep boop', 'top of the morning']
     plantreplies = ['it\'s one of rose days...', 'i\'m well, you asking me has made my daisy', 'sorting out my weed issue once and floral'
                     'i\'m feeling clover the moon!', 'i\'m well, how\'s it growing?', 'i was hoping some-bud-y would ask me that',
                     'lilac that you asked me that', 'i\'m doing bouquet', 'i\'m feeling dandy, i\'m not lion!', 'feeling a lily better now that you\'ve asked me',
@@ -75,7 +75,7 @@ async def on_message(message):
     if 'how many greetings do you have' in mcl():
         await message.channel.send(f'i can greet you in {len(replies)} different ways, can you find them all?')
 
-    if fullmatch('.*(love you|ily|plant)\s+(love you|ily|plant).*', mcl()):
+    if fullmatch('.*((love you|ily)\s+(plant)|(plant)\s+(love you|ily)).*', mcl()):
         await message.channel.send(f'i love you too {message.author.mention}')
 
     if 'bugged' in mcl():

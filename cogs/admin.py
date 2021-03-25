@@ -93,46 +93,27 @@ class Admin(commands.Cog):
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='rebalance', hidden=True)
-    @commands.is_owner()
-    async def rebalance(self, ctx):
+    @commands.command(name='replace', hidden=True)
+    @commands.is_plant_owner()
+    async def replace(self, ctx):
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
             d = json.loads(file.read())
-        with open(f'cogs/flowers.json', 'r') as file:
-            f = json.loads(file.read())
-
-        m = []
-        t = f['Mythic']
-        for flower in t:
-            fl = list(flower.keys())[0]
-            m.append(fl)
 
         for user in d['users']:
             temp = []
-            score = 0
-            print(user['images'])
             for image in user['images']:
-                if m.count(image) == 1:
-                    if temp.count(image) >= 1:
-                        score += 60
-                    else:
-                        score += 200
+                print(image)
+                if image == "Rafflesia":
+                    temp.append("Vileplume")
+                else:
                     temp.append(image)
-            for i in temp:
-                user['images'].remove(i)
-            print(user['images'])
-            print(user['points'])
-            print(score)
-            user['points'] -= score
-            await profile.Profile.addpoint(self, user['userid'], score*-1)
-            user['points'] = floor(user['points']*1.03)
-            if user['userid'] == 639162100719026195 or user['userid'] == 447691269225840641:
-                await leaderboard.Leaderboard.addpoint(self, user['userid'], ctx.guild.id, "Queen of the Night", 200)
-                await profile.Profile.addpoint(self, user['userid'], 200)
+            user.update({"images": temp})
 
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
             json.dump(d, file)
-        await ctx.send("Rebalancing complete")
+        print('images replaced')
+
+
 
 
 
