@@ -5,7 +5,7 @@ import os
 import json
 
 from discord.ext import commands
-from cogs import profile, leaderboard
+from cogs import checkers
 from math import floor
 
 class Admin(commands.Cog):
@@ -94,7 +94,7 @@ class Admin(commands.Cog):
             json.dump(d, file)
 
     @commands.command(name='replace', hidden=True)
-    @commands.is_plant_owner()
+    @checkers.is_plant_owner()
     async def replace(self, ctx):
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
             d = json.loads(file.read())
@@ -102,13 +102,9 @@ class Admin(commands.Cog):
         for user in d['users']:
             temp = []
             for image in user['images']:
-                print(image)
-                if image == "Rafflesia":
-                    temp.append("Vileplume")
-                else:
+                if image != "Rafflesia":
                     temp.append(image)
             user.update({"images": temp})
-
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
             json.dump(d, file)
         print('images replaced')
