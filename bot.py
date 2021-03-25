@@ -75,7 +75,7 @@ async def on_message(message):
     if 'how many greetings do you have' in mcl():
         await message.channel.send(f'i can greet you in {len(replies)} different ways, can you find them all?')
 
-    if fullmatch('.*(love you|ily|plant)\s+(love you|ily|plant).*', mcl()):
+    if fullmatch('.*(((love you|ily)\s+(plant))|((plant)\s+(love you|ily))).*', mcl()):
         await message.channel.send(f'i love you too {message.author.mention}')
 
     if 'bugged' in mcl():

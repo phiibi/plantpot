@@ -94,17 +94,21 @@ class Admin(commands.Cog):
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='rebalance', hidden=True)
+    @commands.command(name='replace', hidden=True)
     @checkers.is_plant_owner()
-    async def rebalance(self, ctx):
+    async def replace(self, ctx):
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
             d = json.loads(file.read())
-        for user in d['users']:
-            user['points'] = floor(user['points'] * 1.08)
 
+        for user in d['users']:
+            temp = []
+            for image in user['images']:
+                if image != "Rafflesia":
+                    temp.append(image)
+            user.update({"images": temp})
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
             json.dump(d, file)
-        await ctx.send("Rebalancing complete")
+
 
 
 
