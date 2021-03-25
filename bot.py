@@ -43,7 +43,7 @@ async def on_message(message):
                'what\'s gwaning', 'wazzup', 'wazup', 'whats up', 'henlo', 'heyo', 'salam', 'salaam', 'hey~', 'namaskaram', 'how\'s it hanging', 'how\'s it hangin',
                'hoi', 'oi', 'hei', 'dap me up', 'ola', 'whats good', 'what\'s good', 'good evening', 'good afternoon', 'god morgen',
                'what it be', 'good morrow', 'what\'s crackalackin', 'morning', 'afternoon', 'evening', 'night', 'coucou', 'hewwo', 'how\'s it going']
-    plantreplies = ['it\'s one of rose days...', 'i\'m well, you asking me has made my daisy', 'sorting out my weed issue once and floral'
+    plantreplies = ['it\'s one of rose days...', 'i\'m well, you asking me has made my daisy', 'sorting out my weed issue once and floral',
                     'i\'m feeling clover the moon!', 'i\'m well, how\'s it growing?', 'i was hoping some-bud-y would ask me that',
                     'lilac that you asked me that', 'i\'m doing bouquet', 'i\'m feeling dandy, i\'m not lion!', 'feeling a lily better now that you\'ve asked me',
                     'a pot better now you\'re here!', 'i really seed a break...', 'feeling a sense of impending bloom...',
