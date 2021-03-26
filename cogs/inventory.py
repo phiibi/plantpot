@@ -171,12 +171,13 @@ class Inventory(commands.Cog):
                         return m.channel == ctx.channel and m.author == user
 
                     try:
-                        m = await self.bot.wait_for('message', check=check, timeout=60)
-                        if m.content.lower() in ['y', 'yes']:
-                            await self.transferimage(ctx.message.author.id, user.id, image, sid)
-                            return await ctx.send(f'congratulations {user.mention}, you\'re a proud new owner of {image}')
-                        if m.content.lower() in ['n', 'no']:
-                            return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
+                        while True:
+                            m = await self.bot.wait_for('message', check=check, timeout=60)
+                            if m.content.lower() in ['y', 'yes']:
+                                await self.transferimage(ctx.message.author.id, user.id, image, sid)
+                                return await ctx.send(f'congratulations {user.mention}, you\'re a proud new owner of {image}')
+                            if m.content.lower() in ['n', 'no']:
+                                return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
                     except asyncio.TimeoutError:
                         return await ctx.send(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:

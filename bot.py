@@ -12,7 +12,7 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='.')
+bot = commands.Bot(command_prefix='!!')
 
 
 
@@ -42,7 +42,8 @@ async def on_message(message):
                'god dag',  'howdy', 'what\'s up', 'hai', 'gday', 'yassou', 'o/', 'salutations', 'greetings', 'whats gwaning', 'howzit',
                'what\'s gwaning', 'wazzup', 'wazup', 'whats up', 'henlo', 'heyo', 'salam', 'salaam', 'hey~', 'namaskaram', 'how\'s it hanging', 'how\'s it hangin',
                'hoi', 'oi', 'hei', 'dap me up', 'ola', 'whats good', 'what\'s good', 'good evening', 'good afternoon', 'god morgen',
-               'what it be', 'good morrow', 'what\'s crackalackin', 'morning', 'afternoon', 'evening', 'night', 'coucou', 'hewwo', 'how\'s it going']
+               'what it be', 'good morrow', 'what\'s crackalackin', 'morning', 'afternoon', 'evening', 'night', 'coucou', 'hewwo', 'how\'s it going', 'sweet dreams',
+               'sleep tight', 'heya', 'g\'morning', 'g,night', 'night night', 'what\'s crackalackin\'', 'what\'s crackalacking', 'haii']
     plantreplies = ['it\'s one of rose days...', 'i\'m well, you asking me has made my daisy', 'sorting out my weed issue once and floral',
                     'i\'m feeling clover the moon!', 'i\'m well, how\'s it growing?', 'i was hoping some-bud-y would ask me that',
                     'lilac that you asked me that', 'i\'m doing bouquet', 'i\'m feeling dandy, i\'m not lion!', 'feeling a lily better now that you\'ve asked me',
@@ -60,6 +61,15 @@ async def on_message(message):
 
     if 'plant sus' in mcl():
         await message.channel.send('plant was the imposter... 1 imposter left')
+
+    if 'sorry plant' in mcl():
+        replies = ['you better be',
+                   'i\'ll forgive you... this time',
+                   'no worries',
+                   'no problem',
+                   'it\'s ok',
+                   'i won\'t forget about this...']
+        await message.channel.send(random.choice(replies))
 
     if 'milf' in mcl():
         r = random.random();
@@ -83,7 +93,7 @@ async def on_message(message):
 
     if 'plant bias' in mcl():
         replies = ['i\'m not bias, you\'re just bad',
-                   'it\'s not bias if it\'s true,'
+                   'it\'s not bias if it\'s true',
                    'i don\'t get paid enough for this...']
         await message.channel.send(random.choice(replies))
 
@@ -105,6 +115,15 @@ async def on_message(message):
 
     if mcl() == 'and i oop':
         await message.channel.send('sksksk')
+
+    if mcl() == 'f':
+        await message.channel.send('f')
+
+    if mcl() == 'ue':
+        await message.channel.send('ue')
+
+    if mcl() == 'owa owa' or search('(can i get an owa owa)', mcl()):
+        await message.channel.send('owa owa')
 
     await bot.process_commands(message)
 

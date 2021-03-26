@@ -149,36 +149,24 @@ class Profile(commands.Cog):
         if p0['married']['users'].count(user.id) == 0:
             return await ctx.send(f'you aren\'t married to {user.display_name}!')
         else:
-            await ctx.send(f'{user.mention}! {usr.mention} wants to divorce you! do you accept? '
-                           '[(y)es/(n)o]')
-            def check(m):
-                return m.channel == ctx.channel and m.author == user
-
-            try:
-                m = await self.bot.wait_for('message', check=check, timeout=60)
-                if m.content.lower() in ['y', 'yes']:
-                    p0n = p0['married']['users'].index(user.id)
-                    p0['married']['users'].pop(p0n)
-                    p0['married']['dates'].pop(p0n)
-                    p1n = p1['married']['users'].index(usr.id)
-                    p1['married']['users'].pop(p1n)
-                    p1['married']['dates'].pop(p1n)
-                    p0.update({"married": {"users": p0['married']['users'],
-                                           "dates": p0['married']['dates']}})
-                    p1.update({"married": {"users": p1['married']['users'],
-                                           "dates": p1['married']['dates']}})
-                    for i, u in enumerate(d['users']):
-                        if u['userid'] == usr.id:
-                            d['users'][i].update(p0)
-                        if u['userid'] == user.id:
-                            d['users'][i].update(p1)
-                    with open('cogs/profiles.json', 'w') as file:
-                        json.dump(d, file)
-                    return await ctx.send('you are now divorced :(')
-                if m.content.lower() in ['n', 'no']:
-                    return await ctx.send(f'it seems like {user.mention} wants to keep working on things')
-            except asyncio.TimeoutError:
-                return await ctx.send(f'uh oh, it seems like {user.mention} is busy, try again later!')
+            p0n = p0['married']['users'].index(user.id)
+            p0['married']['users'].pop(p0n)
+            p0['married']['dates'].pop(p0n)
+            p1n = p1['married']['users'].index(usr.id)
+            p1['married']['users'].pop(p1n)
+            p1['married']['dates'].pop(p1n)
+            p0.update({"married": {"users": p0['married']['users'],
+                                   "dates": p0['married']['dates']}})
+            p1.update({"married": {"users": p1['married']['users'],
+                                   "dates": p1['married']['dates']}})
+            for i, u in enumerate(d['users']):
+                if u['userid'] == usr.id:
+                    d['users'][i].update(p0)
+                if u['userid'] == user.id:
+                    d['users'][i].update(p1)
+            with open('cogs/profiles.json', 'w') as file:
+                json.dump(d, file)
+            return await ctx.send('you are now divorced :(')
 
     @commands.command(name='rep', help='give another user rep')
     @commands.cooldown(1, 43200, commands.BucketType.user)
@@ -406,6 +394,9 @@ class Profile(commands.Cog):
             else:
                 await ctx.send(f'you are currently on cooldown, please try again in {h:g} hours and  {m:g} minutes')
         if isinstance(error, commands.errors.MissingRequiredArgument):
+            await ctx.send('please format as `.rep [mention]`')
+            ctx.command.reset_cooldown(ctx)
+        if isinstance(error, commands.BadArgument):
             await ctx.send('please format as `.rep [mention]`')
             ctx.command.reset_cooldown(ctx)
 

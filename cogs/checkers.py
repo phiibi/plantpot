@@ -40,11 +40,13 @@ class blacklistSpam:
 
     async def adduser(self, userid):
         await self.unloadtimes(time.time())
+        print(self.users)
         if await self.checkuser(userid):
             for user in self.users:
                 if user['userid'] == userid:
                     user['times'].append(time.time())
                     if len(user['times']) >= 2:
+                        print(self.users)
                         return True
         else:
             self.users.append({"userid": userid, "times": [time.time()]})
@@ -59,7 +61,8 @@ class blacklistSpam:
     async def unloadtimes(self, time):
         for user in self.users:
             for t in user['times']:
-                if time - t > 120:
+                if (time - t) > 120:
                     user['times'].remove(t)
             if not user['times']:
                 del self.users[user]
+

@@ -3,11 +3,10 @@
 import discord
 import os
 import json
-import random
 
 from discord.ext import commands
-from cogs import profile, leaderboard, checkers
-from math import floor
+from cogs import checkers
+
 
 class Admin(commands.Cog):
     def __init__(self, bot):

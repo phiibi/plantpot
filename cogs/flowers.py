@@ -118,7 +118,7 @@ class Flower(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def flowereventmean(self, ctx):
         await ctx.message.delete()
-        cd = 60
+        cd = 5
         start = time.time()
         c = checkers.SpamChecker()
         bls = checkers.blacklistSpam()
@@ -231,8 +231,6 @@ class Flower(commands.Cog):
             return random.choice(temp)
         elif rarity == 3:
             temp = d['Epic']
-            x = random.choice(temp)
-            print(x)
             return random.choice(temp)
         elif rarity == 4:
             temp = d["Plant's Favourites"]
