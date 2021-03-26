@@ -84,7 +84,7 @@ class Flower(commands.Cog):
                     elif x == 3:
                         p = 30
                     elif x == 4:
-                        x = 20
+                        p = 20
                     elif x == 5:
                         p = 10
                     elif x == 6:
@@ -188,7 +188,7 @@ class Flower(commands.Cog):
                     elif x == 3:
                         p = 30
                     elif x == 4:
-                        x = 20
+                        p = 20
                     elif x == 5:
                         p = 10
                     elif x == 6:
