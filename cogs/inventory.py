@@ -204,12 +204,13 @@ class Inventory(commands.Cog):
                         return m.channel == ctx.channel and m.author == user
 
                     try:
-                        m = await self.bot.wait_for('message', check=check, timeout=60)
-                        if m.content.lower() in ['y', 'yes']:
-                            await self.atransferimage(ctx.message.author.id, user.id, image, sid)
-                            return await ctx.send(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
-                        if m.content.lower() in ['n', 'no']:
-                            return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
+                        while True:
+                            m = await self.bot.wait_for('message', check=check, timeout=60)
+                            if m.content.lower() in ['y', 'yes']:
+                                await self.atransferimage(ctx.message.author.id, user.id, image, sid)
+                                return await ctx.send(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
+                            if m.content.lower() in ['n', 'no']:
+                                return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
                     except asyncio.TimeoutError as e:
                         return await ctx.send(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
@@ -335,14 +336,39 @@ class Inventory(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
 
-    async def getpoints(self, image, hadbefore):
+    @commands.command(name='hh')
+    async def getpoints(self, image):
+        hadbefore = True
+        points = {"Ultra Special Amazing": 500,
+                  "Legendary": 300,
+                  "Mythic": 200,
+                  "Epic": 100,
+                  "Plant\'s Favourites": 50,
+                  "Ultra Rare": 25,
+                  "Rare": 10,
+                  "Uncommon": 5,
+                  "Common": 1}
+        points_collected = {"Ultra Special Amazing": 200,
+                            "Legendary": 100,
+                            "Mythic": 60,
+                            "Epic": 30,
+                            "Plant\'s Favourites": 20,
+                            "Ultra Rare": 10,
+                            "Rare": 5,
+                            "Uncommon": 2,
+                            "Common": 1}
         with open(f'cogs/flowers.json', 'r') as file:
             f = json.loads(file.read())
         for cat in f:
             for flower in f[cat]:
                 t = list(flower.items())
                 if t[0][0] == image:
-                    temp = {"image": {"url": t[0][1], "desc": t[0][0]}}
+                    if hadbefore:
+                        print(points_collected.get(cat))
+                        return points_collected.get(cat)
+                    else:
+                        print(points.get(cat))
+                        return points.get(cat)
     @give.error
     async def giveerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):

@@ -144,7 +144,7 @@ class Badge(commands.Cog):
                             return True
                 return False
         return False
-    
+
 
 def setup(bot):
     bot.add_cog(Badge(bot))

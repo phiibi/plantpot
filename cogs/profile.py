@@ -30,6 +30,7 @@ class Profile(commands.Cog):
                        "setpronouns": "`.profile setpronouns [pronouns]` will set your pronouns to `[pronouns]`",
                        "setsexuality": "`.profile setsexuality [sexuality]` will set your sexuality to `[sexuality]`",
                        "setimage": "`.profile setimage [desc]` will set your display to the image named `[desc]` if you own it",
+                       "setbadge": "`.profile setbadge [badge]` will add [badge] to your profile",
                        "rep": "`.rep [mention]` will give a rep to the user you mention, this command has a 12 hour cooldown",
                        "marry": "`.marry [mention]` will allow you to marry a user you've mentioned (with their consent)",
                        "divorce":"`.divorce [mention]` will allow you to divorce a user you've married"}
@@ -111,26 +112,27 @@ class Profile(commands.Cog):
                 return m.channel == ctx.channel and m.author == user
 
             try:
-                m = await self.bot.wait_for('message', check=check, timeout=60)
-                if m.content.lower() in ['y', 'yes']:
-                    p0['married']['users'].append(user.id)
-                    p0['married']['dates'].append(date.today().strftime('%Y-%m-%d'))
-                    p0.update({"married": {"users": p0['married']['users'],
-                                           "dates": p0['married']['dates']}})
-                    p1['married']['users'].append(usr.id)
-                    p1['married']['dates'].append(date.today().strftime('%Y-%m-%d'))
-                    p1.update({"married": {"users": p1['married']['users'],
-                                           "dates": p1['married']['dates']}})
-                    for i, u in enumerate(d['users']):
-                        if u['userid'] == usr.id:
-                            d['users'][i].update(p0)
-                        if u['userid'] == user.id:
-                            d['users'][i].update(p1)
-                    with open('cogs/profiles.json', 'w') as file:
-                        json.dump(d, file)
-                    return await ctx.send('congratulations! you\'re now married!')
-                if m.content.lower() in ['n', 'no']:
-                    return await ctx.send('oh no! rejection! better luck next time!')
+                while True:
+                    m = await self.bot.wait_for('message', check=check, timeout=60)
+                    if m.content.lower() in ['y', 'yes']:
+                        p0['married']['users'].append(user.id)
+                        p0['married']['dates'].append(date.today().strftime('%Y-%m-%d'))
+                        p0.update({"married": {"users": p0['married']['users'],
+                                               "dates": p0['married']['dates']}})
+                        p1['married']['users'].append(usr.id)
+                        p1['married']['dates'].append(date.today().strftime('%Y-%m-%d'))
+                        p1.update({"married": {"users": p1['married']['users'],
+                                               "dates": p1['married']['dates']}})
+                        for i, u in enumerate(d['users']):
+                            if u['userid'] == usr.id:
+                                d['users'][i].update(p0)
+                            if u['userid'] == user.id:
+                                d['users'][i].update(p1)
+                        with open('cogs/profiles.json', 'w') as file:
+                            json.dump(d, file)
+                        return await ctx.send('congratulations! you\'re now married!')
+                    if m.content.lower() in ['n', 'no']:
+                        return await ctx.send('oh no! rejection! better luck next time!')
             except asyncio.TimeoutError:
                     return await ctx.send(f'uh oh, it seems like {user.mention} is busy, try again later!')
 
@@ -202,6 +204,8 @@ class Profile(commands.Cog):
             return await ctx.send('the correct format is `.profile setimage [image name]`')
         if 'sexuality' in args.lower():
             return await ctx.send('the correct format is `.profile setsexuality [sexuality]')
+        if 'badge' in args.lower():
+            return await ctx.send('the correct format is `.profile setbadge [badge]`')
         else:
             return await ctx.send('i don\'t recognise that command, please use `.profile help` for more information about profile commands')
 
@@ -370,6 +374,7 @@ class Profile(commands.Cog):
             **setpronouns**: sets your pronouns
             **setsexuality**: sets your sexuality
             **setimage**: sets a display image
+            **setbadge**: sets a badge to profile
             **rep**: gifts a rep to another user
             **marry**: lets you marry another user
             **divorce**: lets you divorce a user you've married"""
@@ -395,6 +400,11 @@ class Profile(commands.Cog):
     async def setsexualityerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
             await ctx.send('please format as `.profile setsexuality [sexuality]`')
+
+    @setbadge.error
+    async def setbadgeerror(self, ctx, error):
+        if isinstance(error, commands.errors.MissingRequiredArgument):
+            await ctx.send('please format as `.profile setbadge [badge]`')
 
     @rep.error
     async def reperror(self, ctx, error):
