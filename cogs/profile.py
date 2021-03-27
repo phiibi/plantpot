@@ -294,14 +294,16 @@ class Profile(commands.Cog):
 
     @profile.command(name='setbadge', help='sets your profile badge')
     async def setbadge(self, ctx, *, badge):
+        uid = ctx.message.author.id
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
-        if await badges.Badge.checkbadge(self, ctx, badge, d):
+        t = await badges.Badge.checkbadge(self, ctx, uid, badge, d)
+        if t:
             with open('cogs/profiles.json', 'r') as file:
                 p = json.loads(file.read())
             for user in p['users']:
-                if user['userid'] == ctx.message.author.id:
-                    b = await badges.Badge.getbadge(self, badge)
+                if user['userid'] == uid:
+                    b = d['badges'].get(badge)
                     user['badges'].append(b)
                     with open('cogs/profiles.json', 'w') as file:
                         json.dump(p, file)

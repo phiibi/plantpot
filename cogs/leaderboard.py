@@ -190,7 +190,7 @@ class AnimeLeaderboard(commands.Cog):
                     if lb[i]['userid'] == ctx.message.author.id:
                         embed = discord.Embed()
                         embed.title = f'you are in #{i+1} place!'
-                        embed.description = 'you have collected {0} items so far! keep it up!'.format(lb[i]['points'])
+                        embed.description = 'you have collected {0} characters so far, totalling {1} points! keep it up!'.format(len(lb[i]['image_name']), lb[i]['points'])
                         embed.set_thumbnail(url=ctx.message.author.avatar_url_as())
                         return await ctx.send(embed=embed)
             await ctx.send('you haven\'t collected anything this event!')
@@ -202,7 +202,7 @@ class AnimeLeaderboard(commands.Cog):
                     if lb[i]['userid'] == username.id:
                         embed = discord.Embed()
                         embed.title = f'{username.display_name} is #{i+1} place!'
-                        embed.description = 'they have collected {0} items so far!'.format(lb[i]['points'])
+                        embed.description = 'they have collected {0} characters so far, totalling {1} points!'.format(len(lb[i]['image_name']), lb[i]['points'])
                         embed.set_thumbnail(url=username.avatar_url_as())
                         return await ctx.send(embed=embed)
             await ctx.send(f'{username.display_name} has\'t collected anything this event!')

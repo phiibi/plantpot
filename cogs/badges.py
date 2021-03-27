@@ -12,7 +12,7 @@ class Badge(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(name='badge', help='work in progress')
+    @commands.group(name='badge', hidden=True, help='use .badge help for more help!')
     async def badge(self, ctx):
         if ctx.invoked_subcommand is None:
             pass
@@ -109,56 +109,44 @@ class Badge(commands.Cog):
     async def give(self, ctx, user: discord.Member, *, name):
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
-        d = await Badge.adduser(self, ctx, user.id,  d)
-        print(d)
+        if not await self.checkuser(user.id, d):
+            await self.adduser(user.id, d)
+        if await self.checkbadge(user.id, name, d):
+            return await ctx.send(f'{user.display_name} already has that badge')
         temp = d['badges'].get(name)
-        if not temp:
-            return await ctx.send('I couldn\'t find that badge...')
-        else:
-            for i, n in enumerate(d['users']):
-                if n['userid'] == user.id:
-                    print('found hh')
-                    if await Badge.checkbadge(self, ctx, user.id, name, d):
-                        print('hhhhh')
-                        return await ctx.send('this user already has that badge!')
-                    else:
-                        print('adding badge')
-                        n['badges'].append({name: temp})
-                        await ctx.send('{0} just got {1} {2}!'.format(user.mention, name, temp))
+        for u in d['users']:
+            if u['userid'] == user.id:
+                u['badges'].append({name: temp})
+                await ctx.send(f'{user.display_name} has just received {name} {temp}')
+
         with open('cogs/badges.json', 'w') as file:
             json.dump(d, file)
 
-    async def adduser(self, ctx, uid, d):
-        u = await Badge.checkuser(self, ctx, uid, d)
-        if not u:
-            u = {"userid": ctx.message.author.id,
-                 "badges": []}
-            d['users'].append(u)
-        return d
-    
-    async def checkuser(self, ctx, uid, d):
-        for i in range(len(d['users'])):
-            print(d['users'][i]['userid'])
-            print(uid)
-            if d['users'][i]['userid'] == uid:
+    async def checkuser(self, uid, d):
+        for user in d['users']:
+            if user['userid'] == uid:
                 return True
-        return False
+        else:
+            return False
 
-    async def checkbadge(self, ctx, uid, badge, d):
-        for u in d['users']:
-            if u['userid'] == uid:
-                for i in u['badges']:
-                    for n in i:
-                        if n == badge:
+    async def adduser(self, uid, d):
+        d['users'].append({'userid': uid,
+                           'badges': []})
+        print(d)
+        return d
+
+    async def checkbadge(self, uid, name, data):
+        for user in data['users']:
+            if user['userid'] == uid:
+                for badge in user['badges']:
+                    for n in badge:
+                        if n == name:
                             return True
+                return False
         return False
-
-    async def getbadge(self, badge):
-        with open('cogs/badges.json', 'r') as file:
-            d = json.loads(file.read())
-        return d['badges'].get(badge)
-
-
+    
 
 def setup(bot):
     bot.add_cog(Badge(bot))
+
+#i wuv you
