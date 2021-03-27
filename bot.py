@@ -14,8 +14,6 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='!!')
 
-
-
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
@@ -65,6 +63,8 @@ async def on_message(message):
     if 'sorry plant' in mcl():
         replies = ['you better be',
                    'i\'ll forgive you... this time',
+                   'you\'ll be hearing from my lawyer',
+                   'i forgive you!',
                    'no worries',
                    'no problem',
                    'it\'s ok',

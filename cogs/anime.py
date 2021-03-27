@@ -16,7 +16,7 @@ class Anime(commands.Cog):
         self.bot = bot
         self.emoji = '\U0001F338'
 
-    @commands.group(help='anime related commands')
+    @commands.group(help='anime related commands', hidden=True)
     async def anime(self, ctx):
         if ctx.invoked_subcommand is None:
                 return

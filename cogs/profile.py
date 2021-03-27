@@ -25,17 +25,17 @@ class Profile(commands.Cog):
 
     @profile.command(name='help', help='full help for leaderboard commands')
     async def help(self, ctx, command):
-        commandhelp = {"profile": "```.profile [mention]``` will display your (or somebody you mention's) profile",
-                       "setbio": "```.profile setbio [desc]``` will set your bio to ``[desc]``",
-                       "setpronouns": "```.profile setpronouns [pronouns]``` will set your pronouns to ``[pronouns]``",
-                       "setsexuality": "```.profile setsexuality [sexuality]``` will set your sexuality to ``[sexuality]``",
-                       "setimage": "```.profile setimage [desc]``` will set your display to the image named ``[desc]`` if you own it",
-                       "rep": "```.rep [mention]``` will give a rep to the user you mention, this command has a 12 hour cooldown",
-                       "marry": "```.marry [mention]``` will allow you to marry a user you've mentioned (with their consent)",
-                       "divorce":"```.divorce [mention]``` will allow you to divorce a user you've married (with their consent)"}
+        commandhelp = {"profile": "`.profile [mention]` will display your (or somebody you mention's) profile",
+                       "setbio": "`.profile setbio [desc]` will set your bio to `[desc]`",
+                       "setpronouns": "`.profile setpronouns [pronouns]` will set your pronouns to `[pronouns]`",
+                       "setsexuality": "`.profile setsexuality [sexuality]` will set your sexuality to `[sexuality]`",
+                       "setimage": "`.profile setimage [desc]` will set your display to the image named `[desc]` if you own it",
+                       "rep": "`.rep [mention]` will give a rep to the user you mention, this command has a 12 hour cooldown",
+                       "marry": "`.marry [mention]` will allow you to marry a user you've mentioned (with their consent)",
+                       "divorce":"`.divorce [mention]` will allow you to divorce a user you've married"}
         helpstr = commandhelp.get(command)
         if helpstr is None:
-            await ctx.send('please enter a valid command, type ``.profile help`` for a command list')
+            await ctx.send('please enter a valid command, type `.profile help` for a command list')
         else:
             embed = discord.Embed()
             embed.title = f'{command} help'
@@ -191,6 +191,19 @@ class Profile(commands.Cog):
         with open('cogs/profiles.json', 'w') as file:
             json.dump(d, file)
         await ctx.send(f'you gave {user.display_name} a rep!')
+
+    @profile.command(name='set', hidden=True)
+    async def set(self, ctx, *, args):
+        if 'bio' in args.lower():
+            return await ctx.send('the correct format is `.profile setbio [bio]`')
+        if 'pronouns' in args.lower():
+            return await ctx.send('the correct format is `.profile setpronouns [pronouns]`')
+        if 'image' in args.lower():
+            return await ctx.send('the correct format is `.profile setimage [image name]`')
+        if 'sexuality' in args.lower():
+            return await ctx.send('the correct format is `.profile setsexuality [sexuality]')
+        else:
+            return await ctx.send('i don\'t recognise that command, please use `.profile help` for more information about profile commands')
 
     @profile.command(name='setbio', help='sets your profile description')
     async def setbio(self, ctx, *, desc):
@@ -348,7 +361,7 @@ class Profile(commands.Cog):
     async def helperror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
             embed = discord.Embed()
-            embed.title = 'please format this command as .profile help [command]'
+            embed.title = 'please format this command as .profile help [command] for more information'
             embed.description = """profile commands are:
             **profile**: posts your profile
             **setbio**: sets your bio
@@ -369,7 +382,7 @@ class Profile(commands.Cog):
     @setbio.error
     async def setbioerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            await ctx.send('please format as `.profile setbio [description]`')
+            await ctx.send('please format as `.profile setbio [bio]`')
 
     @setimage.error
     async def setimageerror(self, ctx, error):

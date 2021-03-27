@@ -9,13 +9,13 @@ from discord.ext import commands
 class Interactive(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.spam = True
 
     @commands.command(name='avatar', help='returns my avatar')
     async def avatar(self, ctx):
         embed = discord.Embed()
         embed.title = 'here\'s my avatar!'
         embed.set_image(url='https://i.imgur.com/I9SPukW.jpg')
+        embed.set_footer(text='art done by https://twitter.com/bunnabells')
         await ctx.send(embed=embed)
 
     @commands.command(name='ping', help='pong')
@@ -46,6 +46,7 @@ class Interactive(commands.Cog):
     async def kill(self, ctx):
         await ctx.send('shutting down plant')
         await ctx.bot.logout()
+
     @commands.command(name='loader', hidden=True)
     @commands.is_owner()
     async def loader(self, ctx, *, module):
@@ -55,6 +56,7 @@ class Interactive(commands.Cog):
             await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
             await ctx.send(f'{module} loaded')
+
 def setup(bot):
     bot.add_cog(Interactive(bot))
 

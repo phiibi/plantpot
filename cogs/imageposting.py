@@ -18,7 +18,7 @@ class Imageposting(commands.Cog):
         self.store = 'randomImages'
         self.emoji = '\U0001F338'
 
-    @commands.group(help='image related commands, ".image help" for more help')
+    @commands.group(help='please use .image help for more help', hidden=True)
     async def image(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('please specify a command, type ``.image help`` for more help')
@@ -31,7 +31,7 @@ class Imageposting(commands.Cog):
                        "all": "`.image all` will post all images"}
         helpstr = commandhelp.get(command)
         if helpstr is None:
-            await ctx.send('please enter a valid command, type ```.image help``` for a command list')
+            await ctx.send('please enter a valid command, type `.image help` for a command list')
         else:
             embed = discord.Embed()
             embed.title = f'".image {command}" help'
