@@ -13,7 +13,7 @@ class Admin(commands.Cog):
         self.bot = bot
 
     @commands.command(name='load', hidden=True)
-    @commands.is_owner()
+    @checkers.is_plant_owner()
     async def load(self, ctx, *, module: str):
         """Loads a module."""
         try:
@@ -36,7 +36,7 @@ class Admin(commands.Cog):
             await self.bot.say('\N{OK HAND SIGN}')
 
     @commands.command(name='reload', hidden=True)
-    @commands.is_owner()
+    @checkers.is_plant_owner()
     async def _reload(self, ctx, *, module: str):
         try:
             self.bot.unload_extension(f'cogs.{module}')
@@ -65,7 +65,7 @@ class Admin(commands.Cog):
             json.dump(d, file)
 
     @commands.command(name="refresh", hidden=True)
-    @commands.is_owner()
+    @checkers.is_plant_owner()
     async def refresh(self, ctx):
         tempstr =''
         for f in os.listdir('./cogs/'):
@@ -107,6 +107,7 @@ class Admin(commands.Cog):
             user.update({"images": temp})
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
             json.dump(d, file)
+
 
 
 

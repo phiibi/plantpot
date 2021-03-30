@@ -301,7 +301,8 @@ class Profile(commands.Cog):
         uid = ctx.message.author.id
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
-        t = await badges.Badge.checkbadge(self, ctx, uid, badge, d)
+        t = await badges.Badge.checkbadge(self, uid, badge, d)
+        print(t)
         if t:
             with open('cogs/profiles.json', 'r') as file:
                 p = json.loads(file.read())

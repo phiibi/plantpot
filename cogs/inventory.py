@@ -66,7 +66,7 @@ class Inventory(commands.Cog):
                                             else:
                                                 if temp < 20:
                                                     temp = 0
-                                                if temp % 10 == 0:
+                                                elif temp % 10 == 0:
                                                     temp -= 20
                                                 else:
                                                     temp -= 10 + (temp % 10)
@@ -336,7 +336,7 @@ class Inventory(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
 
-    @commands.command(name='hh')
+    @commands.command(name='hh', hidden=True)
     async def getpoints(self, image):
         hadbefore = True
         points = {"Ultra Special Amazing": 500,
