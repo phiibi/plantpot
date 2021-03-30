@@ -309,6 +309,8 @@ class Profile(commands.Cog):
             for user in p['users']:
                 if user['userid'] == uid:
                     b = d['badges'].get(badge)
+                    if user['badges'].count(b):
+                        return await ctx.send('you\'ve already set this badge!')
                     user['badges'].append(b)
                     with open('cogs/profiles.json', 'w') as file:
                         json.dump(p, file)

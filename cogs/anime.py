@@ -124,7 +124,6 @@ async def pickcharacter(r):
     return url
 
 async def getanime(rarity):
-
     c = {'characters': []}
     rarities = {1: {"upper": 4,
                     "lower": 0},
@@ -161,6 +160,27 @@ async def getanime(rarity):
     else:
         return await getanime(rarity)
 
+async def getcharacterbyrarity(rarity):
+    rarities = {1: {"upper": 4,
+                    "lower": 0},
+                2: {"upper": 19,
+                    "lower": 5},
+                3: {"upper": 49,
+                    "lower": 20},
+                4: {"upper": 99,
+                    "lower": 50},
+                5: {"upper": 249,
+                    "lower": 100},
+                6: {"upper": 4950,
+                    "lower": 4200},
+                7: {"upper": 4199,
+                    "lower": 3700},
+                8: {"upper": 3699,
+                    "lower": 3300},
+                9: {"upper": 3299,
+                    "lower": 250}}
+    l = rarities[rarity]['lower']
+    u = rarities[rarity]['upper']
 
 async def findshow(lower, upper):
     rating = 'Rx'

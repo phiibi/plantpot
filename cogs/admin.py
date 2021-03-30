@@ -108,6 +108,18 @@ class Admin(commands.Cog):
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
             json.dump(d, file)
 
+    @commands.command(name='teleports', hidden=True)
+    @checkers.is_plant_owner()
+    async def teleports(self, ctx, user: discord.Member, *, name):
+        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
+            d = json.loads(file.read())
+
+        for u in d['users']:
+            if u['userid'] == user.id:
+                u['images'].append(name)
+        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
+                json.dump(d, file)
+
 
 
 
