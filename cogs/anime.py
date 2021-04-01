@@ -5,6 +5,7 @@ import random
 import requests
 import discord
 import time
+import operator
 
 from math import ceil, floor
 from re import fullmatch, split
@@ -181,6 +182,28 @@ async def getcharacterbyrarity(rarity):
                     "lower": 250}}
     l = rarities[rarity]['lower']
     u = rarities[rarity]['upper']
+
+async def findcharacter(lower, upper):
+    try:
+        r = random.randrange(lower, upper)
+        p = ceil((r+1)/50)
+        d = requests.get(f'https://api.jikan.moe/v3/top/characters/{p}')
+        d = d.json()
+        c = d['top'][r-(floor(r/50)*50)]
+    except requests.exceptions.Timeout:
+        if not retry(findcharacter(lower, upper)):
+            print('timed out')
+    except requests.exceptions.HTTPError as e:
+        raise SystemExit(e)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+    return c
+
+async def parseshow(c):
+    if c['animeography']:
+        shows = c['animeography']
+        shows.sort(key=operator.itemgetter('mal_id'))
+
 
 async def findshow(lower, upper):
     rating = 'Rx'
