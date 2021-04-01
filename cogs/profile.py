@@ -212,7 +212,10 @@ class Profile(commands.Cog):
     @profile.command(name='setbio', help='sets your profile description')
     async def setbio(self, ctx, *, desc):
         u = ctx.message.author
-        p = Profile.addprofile(self, u.id)
+        Profile.addprofile(self, u.id)
+
+        if len(desc) > 1024:
+            return await ctx.send('this bio is too long, please make sure it is fewer than 1024 characters')
 
         with open('cogs/profiles.json', 'r') as file:
             d = json.loads(file.read())
@@ -232,6 +235,9 @@ class Profile(commands.Cog):
         u = ctx.message.author
         Profile.addprofile(self, u.id)
 
+        if len(pronouns) > 1024:
+            return await ctx.send('these pronouns are too long, please make sure it is fewer than 1024 characters')
+
         with open('cogs/profiles.json', 'r') as file:
             d = json.loads(file.read())
         temp = {"pronouns": pronouns}
@@ -249,6 +255,9 @@ class Profile(commands.Cog):
     async def setsexuality(self, ctx, *, s):
         u = ctx.message.author
         Profile.addprofile(self, u.id)
+
+        if len(s) > 1024:
+            return await s.send('this bio is too long, please make sure it is fewer than 1024 characters')
 
         with open('cogs/profiles.json', 'r') as file:
             d = json.loads(file.read())
