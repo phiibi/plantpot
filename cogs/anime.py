@@ -169,6 +169,7 @@ async def pickcharacter(r):
     return url
 
 async def getanime(rarity):
+    c = {'characters': []}
     rarities = {1: {"upper": 4,
                     "lower": 0},
                 2: {"upper": 19,
