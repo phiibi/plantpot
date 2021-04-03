@@ -125,7 +125,7 @@ class Imageposting(commands.Cog):
     #starts posting images as over a function of time
     @image.command(name='event', help='starts an image collecting event')
     @checkers.is_guild_owner()
-    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.max_concurrency(2, commands.BucketType.guild)
     async def event(self, ctx, season: str = None):
         if season == "spring":
             return await flowers.Flower.flowerevent(self, ctx)
