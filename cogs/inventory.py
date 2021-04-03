@@ -14,24 +14,30 @@ class Inventory(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='inventory', help='displays inventory')
+    @commands.command(name='inventory', help='displays your inventory')
     async def inventory(self, ctx):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
-        if await leaderboard.Leaderboard.checkuser(self, ctx.message.author.id, d):
+        c = await leaderboard.Leaderboard.checkuser(self, ctx.message.author.id, d)
+        if c:
             for user in d['users']:
-                if ctx.message.author.id == user['userid']:
-                    inventory = ''
-                    if len(user['images']) < 10:
-                        for item in range(0, len(user['images'])):
-                            inventory += '{0}. **'.format(item+1) + user['images'][item] + '**\n'
+                if user['userid'] == ctx.message.author.id:
+                    inv = ''
+                    if len(user['images']) <= 10:
+                        for i, kv in enumerate(user['images'], start=1):
+                            for k, v in kv.items():
+                                inv += f'{i}.\U00002800 {v}x **{k}** \n'
                         embed = discord.Embed()
                         embed.title = 'your inventory'
-                        embed.description = inventory
+                        embed.description = inv
                         embed.set_thumbnail(url=ctx.message.author.avatar_url_as())
                         return await ctx.send(embed=embed)
                     else:
+                        if len(user['images']) >= 200:
+                            perpage = 20
+                        else:
+                            perpage = 10
                         start = time.time()
                         temp = 0
                         f_embed = discord.Embed()
@@ -40,17 +46,18 @@ class Inventory(commands.Cog):
                         m = await ctx.send(embed=f_embed)
                         while True:
                             if temp == len(user['images']):
-                                temp -= (temp % 10)
-                            inventory = ''
-                            for item in range(temp, len(user['images'])):
-                                inventory += f'{item+1}. **' + user['images'][item] + '**\n'
+                                temp -= (temp % perpage)
+                            inv = ''
+                            for i in range(temp, len(user['images'])):
+                                for k, v in user['images'][i].items():
+                                    inv += f'{i+1}. \U00002800 {v}x **{k}**\n'
                                 temp += 1
-                                if (item + 1) % 10 == 0:
-                                    temp = item + 1
+                                if (i + 1) % perpage == 0:
+                                    temp = i + 1
                                     break
                             embed = f_embed
-                            embed.description = inventory
-                            embed.set_footer(text='page {0}/{1}'.format(ceil(temp/10), ceil(len(user['images'])/10)))
+                            embed.description = inv
+                            embed.set_footer(text='page {0}/{1}'.format(ceil(temp/perpage), ceil(len(user['images'])/perpage)))
                             await m.edit(embed=embed)
                             await m.add_reaction('\U00002B05')
                             await m.add_reaction('\U000027A1')
@@ -61,15 +68,15 @@ class Inventory(commands.Cog):
                                 if m.reactions[0].count > 1:
                                     async for u in m.reactions[0].users():
                                         if u == ctx.message.author:
-                                            if temp == 9:
+                                            if temp == perpage - 1:
                                                 pass
                                             else:
-                                                if temp < 20:
+                                                if temp < perpage * 2:
                                                     temp = 0
-                                                elif temp % 10 == 0:
-                                                    temp -= 20
+                                                elif temp % perpage == 0:
+                                                    temp -= perpage * 2
                                                 else:
-                                                    temp -= 10 + (temp % 10)
+                                                    temp -= perpage + (temp % perpage)
                                                 break
                                     await m.reactions[0].remove(ctx.message.author)
                                     break
@@ -101,6 +108,10 @@ class Inventory(commands.Cog):
                         embed.set_thumbnail(url=ctx.message.author.avatar_url_as())
                         return await ctx.send(embed=embed)
                     else:
+                        if len(user['image_name']) >= 200:
+                            perpage = 20
+                        else:
+                            perpage = 10
                         start = time.time()
                         temp = 0
                         f_embed = discord.Embed()
@@ -109,17 +120,17 @@ class Inventory(commands.Cog):
                         m = await ctx.send(embed=f_embed)
                         while True:
                             if temp == len(user['image_name']):
-                                temp -= (temp % 10)
+                                temp -= (temp % perpage)
                             inventory = ''
                             for item in range(temp, len(user['image_name'])):
                                 inventory += f'{item+1}. **' + user['image_name'][item] + '**\n'
                                 temp += 1
-                                if (item + 1) % 10 == 0:
+                                if (item + 1) % perpage == 0:
                                     temp = item + 1
                                     break
                             embed = f_embed
                             embed.description = inventory
-                            embed.set_footer(text='page {0}/{1}'.format(ceil(temp/10), ceil(len(user['image_name'])/10)))
+                            embed.set_footer(text='page {0}/{1}'.format(ceil(temp/perpage), ceil(len(user['image_name'])/perpage)))
                             await m.edit(embed=embed)
                             await m.add_reaction('\U00002B05')
                             await m.add_reaction('\U000027A1')
@@ -130,16 +141,16 @@ class Inventory(commands.Cog):
                                 if m.reactions[0].count > 1:
                                     async for u in m.reactions[0].users():
                                         if u == ctx.message.author:
-                                            if temp == 9:
+                                            if temp == perpage - 1:
                                                 pass
                                             else:
-                                                if temp < 20:
+                                                if temp < perpage * 2:
                                                     temp = 0
                                                 else:
-                                                    if temp % 10 == 0:
-                                                        temp -= 20
+                                                    if temp % perpage == 0:
+                                                        temp -= perpage * 2
                                                     else:
-                                                        temp -= 10 + (temp % 10)
+                                                        temp -= perpage + (temp % perpage)
                                                 break
                                     await m.reactions[0].remove(ctx.message.author)
                                     break
@@ -164,7 +175,7 @@ class Inventory(commands.Cog):
             return await ctx.send('you can\'t give yourself something!')
         for u in d['users']:
             if ctx.message.author.id == u['userid']:
-                if u['images'].count(image) >= 1:
+                if await leaderboard.Leaderboard.checkimage(self, u['userid'], ctx.guild.id, image):
                     await ctx.send(f'{user.mention}! {um} wants to give you {image}, do you accept? '
                                     '[(y)es/(n)o]')
                     def check(m):
@@ -309,11 +320,14 @@ class Inventory(commands.Cog):
             d = json.loads(file.read())
         for i, user in enumerate(d['users']):
             if user['userid'] == uid0:
-                images = user['images']
-                images.remove(image)
-                d['users'][i].update({"userid": uid0,
-                                      "points": user['points'],
-                                      "images": images})
+                for im in user['images']:
+                    for k in im.items():
+                        if k[0] == image:
+                            if im.get(image) == 1:
+                                print('hhh')
+                                user['images'].remove(im)
+                            else:
+                                im.update({f'{image}': im.get(image)-1})
                 break
         with open(f'cogs/leaderboards/lb{sid}.json', 'w') as file:
             json.dump(d, file)

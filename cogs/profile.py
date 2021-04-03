@@ -275,39 +275,58 @@ class Profile(commands.Cog):
     @profile.command(name='setimage', help='sets a display image')
     async def setimage(self, ctx, *, image):
         u = ctx.message.author
+        Profile.addprofile(self, u.id)
+        with open('cogs/profiles.json', 'r') as file:
+            p = json.loads(file.read())
+        temp = None
 
-        if leaderboard.Leaderboard.checkimage(self, u.id, ctx.guild.id, image):
-            with open('cogs/profiles.json', 'r') as file:
-                p = json.loads(file.read())
+        if await leaderboard.Leaderboard.checkimage(self, u.id, ctx.guild.id, image):
             with open(f'cogs/{self.store}.json', 'r') as file:
                 d = json.loads(file.read())
-            with open(f'cogs/flowers.json', 'r') as file:
-                f = json.loads(file.read())
 
-            temp = None
             for im in d['images']:
                 if im['desc'] == image:
                     temp = {"image": {"url": im['url'], "desc": image}}
                     break
             if temp is None:
+                with open(f'cogs/flowers.json', 'r') as file:
+                    f = json.loads(file.read())
                 for cat in f:
                     for flower in f[cat]:
                         t = list(flower.items())
                         if t[0][0] == image:
                             temp = {"image": {"url": t[0][1], "desc": t[0][0]}}
+                            break
             for i, user in enumerate(p['users']):
                 if user['userid'] == u.id:
                     p['users'][i].update(temp)
                     break
             with open('cogs/profiles.json', 'w') as file:
                 json.dump(p, file)
-            await ctx.send('image set')
+            return await ctx.send('image set')
+        elif leaderboard.AnimeLeaderboard.checkimage(self, u.id, ctx.guild.id, image):
+            with open (f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
+                a = json.loads(file.read())
+            for user in a['users']:
+                if user['userid'] == u.id:
+                    for i in range(len(user['image_name'])):
+                        if user['image_name'][i] == image:
+                            temp = {"image": {"url": user['image_url'][i], "desc": user['image_name'][i]}}
+                            break
+            for i, user in enumerate(p['users']):
+                if user['userid'] == u.id:
+                    p['users'][i].update(temp)
+                    break
+            with open('cogs/profiles.json', 'w') as file:
+                json.dump(p, file)
+            return await ctx.send('image set')
         else:
-            await ctx.send('you don\'t have that item yet!')
+            return await ctx.send('you don\'t have that item yet!')
 
     @profile.command(name='setbadge', help='sets your profile badge')
     async def setbadge(self, ctx, *, badge):
         uid = ctx.message.author.id
+        Profile.addprofile(self, uid)
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
         t = await badges.Badge.checkbadge(self, uid, badge, d)

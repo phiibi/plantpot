@@ -119,10 +119,31 @@ class Admin(commands.Cog):
                 u['images'].append(name)
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
                 json.dump(d, file)
+        await ctx.send('*teleports behind you* nothing personnel kid')
 
+    @commands.command(name='declutter', hidden=True)
+    @checkers.is_plant_owner()
+    async def declutter(self, ctx):
+        for f in os.listdir('./cogs/leaderboards'):
+            if f.startswith('lb'):
+                with open(f'cogs/leaderboards/{f}', 'r') as file:
+                    d = json.loads(file.read())
+                for user in d['users']:
+                    newinv = []
+                    added = []
+                    for image in user['images']:
+                        if added.count(image):
+                            pass
+                        else:
+                            count = user['images'].count(image)
+                            newinv.append({f'{image}': count})
+                            added.append(image)
+                    user.update({"images": newinv})
 
+                with open(f'cogs/leaderboards/{f}', 'w') as file:
+                    json.dump(d, file)
 
-
+        await ctx.send('Inventories decluttered')
 
 def setup(bot):
     bot.add_cog(Admin(bot))

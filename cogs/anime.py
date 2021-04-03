@@ -25,44 +25,72 @@ class Anime(commands.Cog):
     @anime.command(name='event', help='starts an event using anime characters')
     @commands.max_concurrency(1, commands.BucketType.guild)
     @checkers.is_guild_owner()
-    async def anime_event(self, ctx):
+    async def anime_event(self, ctx, type: str = None):
         await ctx.message.delete()
         cd = 60
 
         start = time.time()
+        c = checkers.SpamChecker()
         while True:
             await asyncio.sleep(5)
             if imageposting.Imageposting.checktime(self, start):
                 r = random.random()
-                if r >= 0.995:
-                    p = 100
-                    x = 1
-                elif r >= 0.985:
-                    p = 50
-                    x = 2
-                elif r >= 0.965:
-                    p = 10
-                    x = 3
-                elif r >= 0.925:
-                    p = 7
-                    x = 4
-                elif r >= 0.8:
-                    p = 5
-                    x = 5
-                elif r <= 0.025:
-                    p = 10
-                    x = 6
-                elif r <= 0.075:
-                    p = 7
-                    x = 7
-                elif r <= 0.15:
-                    p = 5
-                    x = 8
+                if type is None:
+                    if r >= 0.995:
+                        p = 100
+                        x = 1
+                    elif r >= 0.985:
+                        p = 50
+                        x = 2
+                    elif r >= 0.965:
+                        p = 10
+                        x = 3
+                    elif r >= 0.925:
+                        p = 7
+                        x = 4
+                    elif r >= 0.8:
+                        p = 5
+                        x = 5
+                    elif r <= 0.025:
+                        p = 10
+                        x = 6
+                    elif r <= 0.075:
+                        p = 7
+                        x = 7
+                    elif r <= 0.15:
+                        p = 5
+                        x = 8
+                    else:
+                        p = 1
+                        x = 9
+                    ac = await pickcharacter(x)
+                    rarities = {1: "legendary popular", 2: "mythic popular", 3: "epic popular", 4: "rare popular", 5: "uncommon popular", 6: "epic obscure", 7: "rare obscure", 8: "uncommon obscure", 9: "common"}
+                elif type == "1135":
+                    if r <= 0.005:
+                        p = 300
+                        x = 1
+                    elif r <= 0.0075:
+                        p = 150
+                        x = 2
+                    elif r <= 0.013:
+                        p = 75
+                        x = 3
+                    elif r <= 0.035:
+                        p = 25
+                        x = 4
+                    elif r <= 0.075:
+                        p = 10
+                        x = 5
+                    elif r <= 0.15:
+                        p = 5
+                        x = 6
+                    else:
+                        p = 1
+                        x = 7
+                    ac = await getcharacterbyrarity(x)
+                    rarities = {1: "legendary", 2: "mythic", 3: "epic", 4: "ultra rare", 5: "rare", 6: "uncommon", 7: "common"}
                 else:
-                    p = 1
-                    x = 9
-                ac = await pickcharacter(x)
-                rarities = {1: "legendary popular", 2: "mythic popular", 3: "epic popular", 4: "rare popular", 5: "uncommon popular", 6: "epic obscure", 7: "rare obscure", 8: "uncommon obscure", 9: "common"}
+                    return await ctx.send('please format this command as `.anime event`')
                 embed = discord.Embed()
                 name = ac['character_name']
                 if name[0] == " ":
@@ -72,27 +100,43 @@ class Anime(commands.Cog):
                 embed.set_image(url=url)
                 pst = await ctx.send(embed=embed)
                 await pst.add_reaction('<:frogsmile:817589614905917440>')
+                await pst.add_reaction('\U0001F504')
                 while True:
+                    reroll = False
                     def check(r, u):
-                        if str(r.emoji) == '<:frogsmile:817589614905917440>' and r.message.id == pst.id and u != self.bot.user:
+                        if str(r.emoji) == '<:frogsmile:817589614905917440>' and r.message.id == pst.id and u != self.bot.user:#
                             return r, u
+                        if str(r.emoji) == '\U0001F504' and r.count == 4:
+                            return False, False
                     r, usr = await self.bot.wait_for('reaction_add', check=check)
-                    if leaderboard.AnimeLeaderboard.checkimage(self, usr.id, ctx.guild.id, name):
-                        await ctx.send(f'{usr.mention}! You already have this character!')
-                        await r.remove(usr)
-                    else:
+                    if str(r) == '\U0001F504':
+                        reroll = True
                         break
-                await leaderboard.AnimeLeaderboard.addpoint(self, usr.id, ctx.guild.id, url, name, p)
-                await profile.Profile.addpoint(self, usr.id, p)
-                r = rarities[x]
-                if x == 1 or x == 2 or x == 4 or x == 7 or x == 9:
-                    await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up a {r} character!** {self.emoji}')
+                    else:
+                        if leaderboard.AnimeLeaderboard.checkimage(self, usr.id, ctx.guild.id, name):
+                            await ctx.send(f'{usr.mention}! You already have this character!')
+                            await r.remove(usr)
+                        elif await c.checkuser(ctx, usr.id) and type == "1135":
+                            await ctx.send(f'hold up {usr.mention}, you\'ve collected a character too recently, please wait a second to give other users a chance!')
+                            await r.remove(usr)
+                        else:
+                            break
+                if reroll:
+                    await ctx.send('you have decided to reroll this character')
+                    await ctx.send('no users get any points')
                 else:
-                    await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up an {r} character!** {self.emoji}')
-                if p == 1:
-                    await ctx.send('**you\'ve earned 1 point!**')
-                else:
-                    await ctx.send(f'**you\'ve earned {p} points!**')
+                    await leaderboard.AnimeLeaderboard.addpoint(self, usr.id, ctx.guild.id, url, name, p)
+                    await profile.Profile.addpoint(self, usr.id, p)
+                    vowels = ['a', 'e', 'i', 'o', 'u']
+                    r = rarities[x]
+                    if r[0] in vowels:
+                        await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up an {r} character!** {self.emoji}')
+                    else:
+                        await ctx.send(f'{self.emoji} {usr.mention}**, you just picked up a {r} character!** {self.emoji}')
+                    if p == 1:
+                        await ctx.send('**you\'ve earned 1 point!**')
+                    else:
+                        await ctx.send(f'**you\'ve earned {p} points!**')
                 await asyncio.sleep(cd)
                 start = time.time()
                 print('restarting countdown')
@@ -125,7 +169,6 @@ async def pickcharacter(r):
     return url
 
 async def getanime(rarity):
-    c = {'characters': []}
     rarities = {1: {"upper": 4,
                     "lower": 0},
                 2: {"upper": 19,
@@ -146,6 +189,7 @@ async def getanime(rarity):
                     "lower": 250}}
     l = rarities[rarity]['lower']
     u = rarities[rarity]['upper']
+
 
     while not c['characters']:
         s = await findshow(l, u)
@@ -161,35 +205,48 @@ async def getanime(rarity):
     else:
         return await getanime(rarity)
 
+
+
 async def getcharacterbyrarity(rarity):
-    rarities = {1: {"upper": 4,
+    rarities = {1: {"upper": 49,
                     "lower": 0},
-                2: {"upper": 19,
-                    "lower": 5},
-                3: {"upper": 49,
-                    "lower": 20},
-                4: {"upper": 99,
+                2: {"upper": 149,
                     "lower": 50},
-                5: {"upper": 249,
-                    "lower": 100},
-                6: {"upper": 4950,
-                    "lower": 4200},
-                7: {"upper": 4199,
-                    "lower": 3700},
-                8: {"upper": 3699,
-                    "lower": 3300},
-                9: {"upper": 3299,
-                    "lower": 250}}
+                3: {"upper": 299,
+                    "lower": 150},
+                4: {"upper": 549,
+                    "lower": 300},
+                5: {"upper": 1049,
+                    "lower": 550},
+                6: {"upper": 2049,
+                    "lower": 1050},
+                7: {"upper": 4999,
+                    "lower": 2050}}
+
     l = rarities[rarity]['lower']
     u = rarities[rarity]['upper']
 
+    c = await findcharacter(l, u)
+    s = await parseshow(c)
+
+    r = {"title": s['name'],
+         "character_url": c['image_url'],
+         "character_name": sanitisename(c['title'])}
+
+    return r
+
 async def findcharacter(lower, upper):
     try:
-        r = random.randrange(lower, upper)
-        p = ceil((r+1)/50)
-        d = requests.get(f'https://api.jikan.moe/v3/top/characters/{p}')
-        d = d.json()
-        c = d['top'][r-(floor(r/50)*50)]
+        temp = []
+        while temp == []:
+            r = random.randrange(lower, upper)
+            p = ceil((r+1)/50)
+            d = requests.get(f'https://api.jikan.moe/v3/top/characters/{p}')
+            d = d.json()
+            c = d['top'][r-(floor(r/50)*50)]
+            temp = c['animeography']
+            if c['mal_id'] == 2515:
+                temp = []
     except requests.exceptions.Timeout:
         if not retry(findcharacter(lower, upper)):
             print('timed out')
@@ -200,9 +257,9 @@ async def findcharacter(lower, upper):
     return c
 
 async def parseshow(c):
-    if c['animeography']:
-        shows = c['animeography']
-        shows.sort(key=operator.itemgetter('mal_id'))
+    shows = c['animeography']
+    shows.sort(key=operator.itemgetter('mal_id'))
+    return shows[0]
 
 
 async def findshow(lower, upper):

@@ -5,7 +5,7 @@ import operator
 import discord
 
 from discord.ext import commands
-
+from cogs import checkers
 
 class Leaderboard(commands.Cog):
     def __init__(self, bot):
@@ -92,7 +92,16 @@ class Leaderboard(commands.Cog):
             for i, user in enumerate(d['users']):
                 if user['userid'] == uid:
                     images = user['images']
-                    images.append(image)
+                    c = await Leaderboard.checkimage(self, uid, sid, image)
+                    if c:
+                        for im in images:
+                            for k in im.items():
+                                if k[0] == image:
+                                    im.update({f'{image}': im.get(image)+1})
+                                    print(im)
+                    else:
+                        images.append({image: 1})
+
                     temp['users'][i].update({"userid": uid,
                                              "points": user['points'] + points,
                                              "images": images})
@@ -110,7 +119,7 @@ class Leaderboard(commands.Cog):
         else:
             data['users'].append({"userid": uid,
                                   "points": points,
-                                  "images": [image]})
+                                  "images": [{f'{image}': 1}]})
             return data
 
     async def checkuser(self, userid, data):
@@ -119,16 +128,19 @@ class Leaderboard(commands.Cog):
                 return True
         return False
 
-    def checkimage(self, uid, sid, image):
+    async def checkimage(self, uid, sid, image):
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for user in d['users']:
-            if user['userid'] == uid and user['images'].count(image) >= 1:
-                return True
+            if user['userid'] == uid:
+                for i in user['images']:
+                    for k in i:
+                        if k == image:
+                            return True
         return False
 
     @leaderboard.command(name='clear', help='clears the leaderboard', hidden=True)
-    @commands.is_owner()
+    @checkers.is_plant_owner()
     async def clearlb(self, ctx):
         cleared = {"users": []}
         with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
@@ -249,7 +261,7 @@ class AnimeLeaderboard(commands.Cog):
         return False
 
     @ani.command(name='clear', help='clears the leaderboard', hidden=True)
-    @commands.is_owner()
+    @checkers.is_plant_owner()
     async def clearlb(self, ctx):
         cleared = {"users": []}
         with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
