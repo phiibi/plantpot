@@ -120,7 +120,7 @@ class Admin(commands.Cog):
                 u['image_url'].append(url)
         with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
                 json.dump(d, file)
-        await ctx.send('*teleports behind you* nothing personnel kid')
+        await ctx.send('*teleports behind you* nothing personal kid')
 
     @commands.command(name='declutter', hidden=True)
     @checkers.is_plant_owner()
