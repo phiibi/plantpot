@@ -324,7 +324,6 @@ class Inventory(commands.Cog):
                     for k in im.items():
                         if k[0] == image:
                             if im.get(image) == 1:
-                                print('hhh')
                                 user['images'].remove(im)
                             else:
                                 im.update({f'{image}': im.get(image)-1})
@@ -335,12 +334,15 @@ class Inventory(commands.Cog):
     async def atransferimage(self, uid0, uid1, imagename, sid):
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
+        tempname = ""
+        tempurl = ""
         for i, user in enumerate(d['users']):
             if user['userid'] == uid0:
                 n = user['image_name'].index(imagename)
                 image_n = user['image_name']
                 image_u = user['image_url']
-                await leaderboard.AnimeLeaderboard.addpoint(self, uid1, sid, image_u[n], image_n[n], 0)
+                tempname = image_n[n]
+                imageurl = image_u[n]
                 image_n.remove(imagename)
                 image_u.pop(n)
                 d['users'][i].update({"userid": uid0,
@@ -349,6 +351,7 @@ class Inventory(commands.Cog):
                 break
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
+        await leaderboard.AnimeLeaderboard.addpoint(self, uid1, sid, tempname, tempurl, 0)
 
     @commands.command(name='hh', hidden=True)
     async def getpoints(self, image):

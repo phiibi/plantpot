@@ -110,14 +110,15 @@ class Admin(commands.Cog):
 
     @commands.command(name='teleports', hidden=True)
     @checkers.is_plant_owner()
-    async def teleports(self, ctx, user: discord.Member, *, name):
-        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
+    async def teleports(self, ctx, user: discord.Member, url,  *, name):
+        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
             d = json.loads(file.read())
 
         for u in d['users']:
             if u['userid'] == user.id:
-                u['images'].append(name)
-        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
+                u['image_name'].append(name)
+                u['image_url'].append(url)
+        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
                 json.dump(d, file)
         await ctx.send('*teleports behind you* nothing personnel kid')
 

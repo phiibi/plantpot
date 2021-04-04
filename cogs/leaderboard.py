@@ -98,7 +98,6 @@ class Leaderboard(commands.Cog):
                             for k in im.items():
                                 if k[0] == image:
                                     im.update({f'{image}': im.get(image)+1})
-                                    print(im)
                     else:
                         images.append({image: 1})
 
@@ -240,6 +239,7 @@ class AnimeLeaderboard(commands.Cog):
             temp = updated
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(temp, file)
+        return temp
 
     async def adduser(self, uid, imageurl, imagename, points, data):
         if await Leaderboard.checkuser(self, uid, data):
@@ -261,7 +261,7 @@ class AnimeLeaderboard(commands.Cog):
         return False
 
     @ani.command(name='clear', help='clears the leaderboard', hidden=True)
-    @checkers.is_plant_owner()
+    @checkers.is_guild_owner()
     async def clearlb(self, ctx):
         cleared = {"users": []}
         with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
