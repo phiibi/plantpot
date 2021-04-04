@@ -342,7 +342,7 @@ class Inventory(commands.Cog):
                 image_n = user['image_name']
                 image_u = user['image_url']
                 tempname = image_n[n]
-                imageurl = image_u[n]
+                tempurl = image_u[n]
                 image_n.remove(imagename)
                 image_u.pop(n)
                 d['users'][i].update({"userid": uid0,
@@ -351,7 +351,7 @@ class Inventory(commands.Cog):
                 break
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
-        await leaderboard.AnimeLeaderboard.addpoint(self, uid1, sid, tempname, tempurl, 0)
+        await leaderboard.AnimeLeaderboard.addpoint(self, uid1, sid, tempurl, tempname, 0)
 
     @commands.command(name='hh', hidden=True)
     async def getpoints(self, image):
