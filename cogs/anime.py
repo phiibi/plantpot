@@ -25,7 +25,7 @@ class Anime(commands.Cog):
     @anime.command(name='event', help='starts an event using anime characters')
     @commands.max_concurrency(1, commands.BucketType.guild)
     @checkers.is_guild_owner()
-    async def anime_event(self, ctx, type: str = None):
+    async def anime_event(self, ctx):
         await ctx.message.delete()
         cd = 60
 
@@ -35,7 +35,31 @@ class Anime(commands.Cog):
             await asyncio.sleep(5)
             if imageposting.Imageposting.checktime(self, start):
                 r = random.random()
-                if type is None:
+                if ctx.guild.id == 813532137050341407:
+                    if r <= 0.005:
+                        p = 300
+                        x = 1
+                    elif r <= 0.0075:
+                        p = 150
+                        x = 2
+                    elif r <= 0.013:
+                        p = 75
+                        x = 3
+                    elif r <= 0.035:
+                        p = 25
+                        x = 4
+                    elif r <= 0.075:
+                        p = 10
+                        x = 5
+                    elif r <= 0.15:
+                        p = 5
+                        x = 6
+                    else:
+                        p = 1
+                        x = 7
+                    ac = await getcharacterbyrarity(x)
+                    rarities = {1: "legendary", 2: "mythic", 3: "epic", 4: "ultra rare", 5: "rare", 6: "uncommon", 7: "common"}
+                else:
                     if r >= 0.995:
                         p = 100
                         x = 1
@@ -65,32 +89,7 @@ class Anime(commands.Cog):
                         x = 9
                     ac = await pickcharacter(x)
                     rarities = {1: "legendary popular", 2: "mythic popular", 3: "epic popular", 4: "rare popular", 5: "uncommon popular", 6: "epic obscure", 7: "rare obscure", 8: "uncommon obscure", 9: "common"}
-                elif type == "1135":
-                    if r <= 0.005:
-                        p = 300
-                        x = 1
-                    elif r <= 0.0075:
-                        p = 150
-                        x = 2
-                    elif r <= 0.013:
-                        p = 75
-                        x = 3
-                    elif r <= 0.035:
-                        p = 25
-                        x = 4
-                    elif r <= 0.075:
-                        p = 10
-                        x = 5
-                    elif r <= 0.15:
-                        p = 5
-                        x = 6
-                    else:
-                        p = 1
-                        x = 7
-                    ac = await getcharacterbyrarity(x)
-                    rarities = {1: "legendary", 2: "mythic", 3: "epic", 4: "ultra rare", 5: "rare", 6: "uncommon", 7: "common"}
-                else:
-                    return await ctx.send('please format this command as `.anime event`')
+
                 embed = discord.Embed()
                 name = ac['character_name']
                 if name[0] == " ":
@@ -104,10 +103,8 @@ class Anime(commands.Cog):
                 while True:
                     reroll = False
                     def check(r, u):
-                        if str(r.emoji) == '<:frogsmile:817589614905917440>' and r.message.id == pst.id and u != self.bot.user:#
+                        if r.message.id == pst.id and ((str(r.emoji) == '<:frogsmile:817589614905917440>' and u != self.bot.user) or (str(r.emoji) == '\U0001F504' and r.count == 4)):
                             return r, u
-                        if str(r.emoji) == '\U0001F504' and r.count == 4:
-                            return False, False
                     r, usr = await self.bot.wait_for('reaction_add', check=check)
                     if str(r) == '\U0001F504':
                         reroll = True
@@ -116,7 +113,7 @@ class Anime(commands.Cog):
                         if leaderboard.AnimeLeaderboard.checkimage(self, usr.id, ctx.guild.id, name):
                             await ctx.send(f'{usr.mention}! You already have this character!')
                             await r.remove(usr)
-                        elif await c.checkuser(ctx, usr.id) and type == "1135":
+                        elif await c.checkuser(ctx, usr.id) and ctx.guild.id == 813532137050341407:
                             await ctx.send(f'hold up {usr.mention}, you\'ve collected a character too recently, please wait a second to give other users a chance!')
                             await r.remove(usr)
                         else:
@@ -138,6 +135,7 @@ class Anime(commands.Cog):
                     else:
                         await ctx.send(f'**you\'ve earned {p} points!**')
                 await asyncio.sleep(cd)
+                await c.unloadusers(ctx)
                 start = time.time()
                 print('restarting countdown')
 

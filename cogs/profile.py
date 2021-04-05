@@ -285,7 +285,7 @@ class Profile(commands.Cog):
                 d = json.loads(file.read())
 
             for im in d['images']:
-                if im['desc'] == image:
+                if im['desc'].lower() == image.lower():
                     temp = {"image": {"url": im['url'], "desc": image}}
                     break
             if temp is None:
@@ -294,7 +294,7 @@ class Profile(commands.Cog):
                 for cat in f:
                     for flower in f[cat]:
                         t = list(flower.items())
-                        if t[0][0] == image:
+                        if t[0][0].lower() == image.lower():
                             temp = {"image": {"url": t[0][1], "desc": t[0][0]}}
                             break
             for i, user in enumerate(p['users']):
@@ -310,7 +310,7 @@ class Profile(commands.Cog):
             for user in a['users']:
                 if user['userid'] == u.id:
                     for i in range(len(user['image_name'])):
-                        if user['image_name'][i] == image:
+                        if user['image_name'][i].lower() == image.lower():
                             temp = {"image": {"url": user['image_url'][i], "desc": user['image_name'][i]}}
                             break
             for i, user in enumerate(p['users']):

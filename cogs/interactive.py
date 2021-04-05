@@ -2,8 +2,10 @@
 
 import discord
 import random
+import json
 
 from discord.ext import commands
+from cogs import leaderboard
 
 #cog for fun things
 class Interactive(commands.Cog):
@@ -40,12 +42,59 @@ class Interactive(commands.Cog):
         embed.set_image(url='https://i.imgur.com/ZiwFFNJ.png')
         await ctx.send(embed=embed)
 
+    @commands.command(name='progression', help='check event progress')
+    async def progression(self, ctx, *, event: str):
+        if event == 'spring':
+            await self.getspringprogress(ctx, ctx.message.author)
+        if event == 'anime' and ctx.guild.id == 813532137050341407:
+            await self.getanimeprogress(ctx, ctx.message.author)
 
-    @commands.command(name='kill', help='wrong lever!', hidden=True)
-    @commands.is_owner()
-    async def kill(self, ctx):
-        await ctx.send('shutting down plant')
-        await ctx.bot.logout()
+    async def getspringprogress(self, ctx, user):
+        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
+            d = json.loads(file.read())
+
+        f = await self.getflowernames()
+        count = 0
+        for u in d['users']:
+            if u['userid'] == user.id:
+                for item in u['images']:
+                    if f.count(list(item.items())[0][0]) == 1:
+                        count += 1
+        embed = discord.Embed()
+        embed.title = f'{user.display_name}\'s progression'
+        if count == 0:
+            embed.description = 'you haven\'t picked up anything yet!'
+        else:
+            embed.description = f'you\'ve collected {count}/{len(f)} flowers, keep it up!'
+        embed.set_thumbnail(url=user.avatar_url_as())
+        return await ctx.send(embed=embed)
+
+
+    async def getanimeprogress(self, ctx, user):
+        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
+            d = json.loads(file.read())
+
+        count = 0
+        for u in d['users']:
+            if u['userid'] == user.id:
+                count = u['image_name']
+        embed = discord.Embed()
+        embed.title = f'{user.display_name}\'s progression'
+        embed.description = f'you\'ve collected {count}/5000 characters, keep it up!'
+        embed.set_thumbnail(url=user.avatar_url_as())
+        return await ctx.send(embed=embed)
+
+    async def getflowernames(self):
+        with open(f'cogs/flowers.json', 'r') as file:
+            f = json.loads(file.read())
+
+        temp = []
+        for cat in f:
+            for flower in f[cat]:
+                t = list(flower.items())
+                temp.append(list(flower.items())[0][0])
+
+        return temp
 
     @commands.command(name='loader', hidden=True)
     @commands.is_owner()
@@ -56,6 +105,11 @@ class Interactive(commands.Cog):
             await ctx.send('{}: {}'.format(type(e).__name__, e))
         else:
             await ctx.send(f'{module} loaded')
+
+    @progression.error
+    async def progressionerror(self, ctx, error):
+        if isinstance(error, commands.errors.MissingRequiredArgument):
+            await ctx.send('please format as `.progression [event name]`')
 
 def setup(bot):
     bot.add_cog(Interactive(bot))

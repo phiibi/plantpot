@@ -15,7 +15,7 @@ class Inventory(commands.Cog):
         self.bot = bot
 
     @commands.command(name='inventory', help='displays your inventory')
-    async def inventory(self, ctx):
+    async def inventory(self, ctx, mode: str = None):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())

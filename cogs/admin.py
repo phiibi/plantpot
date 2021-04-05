@@ -46,24 +46,6 @@ class Admin(commands.Cog):
         else:
             await ctx.send(f'{module} reloaded')
 
-
-    @commands.command(name='parsa', hidden=True, help="debug")
-    @commands.is_owner()
-    async def parsa(self, ctx):
-        sid = ctx.guild.id
-        with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
-            d = json.loads(file.read())
-        for n, u in enumerate(d['users']):
-            temp = []
-            for i in u['image_name']:
-                if i[0] == " ":
-                    temp.append(i[1:])
-                else:
-                    temp.append(i)
-            d['users'][n].update({"image_name": temp})
-        with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
-            json.dump(d, file)
-
     @commands.command(name="refresh", hidden=True)
     @checkers.is_plant_owner()
     async def refresh(self, ctx):
@@ -82,31 +64,11 @@ class Admin(commands.Cog):
         embed.description = tempstr
         await ctx.send(embed=embed)
 
-    @commands.command(name='badgeparsa', hidden=True)
+    @commands.command(name='kill', help='wrong lever!', hidden=True)
     @commands.is_owner()
-    async def badgeparse(self, ctx):
-        with open(f'cogs/profiles.json', 'r') as file:
-            d = json.loads(file.read())
-        temp = {"badges": []}
-        for i in range(len(d['users'])):
-            d['users'][i].update(temp)
-        with open(f'cogs/profiles.json', 'w') as file:
-            json.dump(d, file)
-
-    @commands.command(name='replace', hidden=True)
-    @checkers.is_plant_owner()
-    async def replace(self, ctx):
-        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'r') as file:
-            d = json.loads(file.read())
-
-        for user in d['users']:
-            temp = []
-            for image in user['images']:
-                if image != "Rafflesia":
-                    temp.append(image)
-            user.update({"images": temp})
-        with open(f'cogs/leaderboards/lb{ctx.guild.id}.json', 'w') as file:
-            json.dump(d, file)
+    async def kill(self, ctx):
+        await ctx.send('shutting down plant')
+        await ctx.bot.logout()
 
     @commands.command(name='teleports', hidden=True)
     @checkers.is_plant_owner()
@@ -121,30 +83,6 @@ class Admin(commands.Cog):
         with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
                 json.dump(d, file)
         await ctx.send('*teleports behind you* nothing personal kid')
-
-    @commands.command(name='declutter', hidden=True)
-    @checkers.is_plant_owner()
-    async def declutter(self, ctx):
-        for f in os.listdir('./cogs/leaderboards'):
-            if f.startswith('lb'):
-                with open(f'cogs/leaderboards/{f}', 'r') as file:
-                    d = json.loads(file.read())
-                for user in d['users']:
-                    newinv = []
-                    added = []
-                    for image in user['images']:
-                        if added.count(image):
-                            pass
-                        else:
-                            count = user['images'].count(image)
-                            newinv.append({f'{image}': count})
-                            added.append(image)
-                    user.update({"images": newinv})
-
-                with open(f'cogs/leaderboards/{f}', 'w') as file:
-                    json.dump(d, file)
-
-        await ctx.send('Inventories decluttered')
 
 def setup(bot):
     bot.add_cog(Admin(bot))
