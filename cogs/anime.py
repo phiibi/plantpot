@@ -6,6 +6,7 @@ import requests
 import discord
 import time
 import operator
+import json
 
 from math import ceil, floor
 from re import fullmatch, split
@@ -158,13 +159,28 @@ class Anime(commands.Cog):
         embed.description = tempstr
         await ctx.send(embed=embed)
 
-def setup(bot):
-    bot.add_cog(Anime(bot))
+    @anime.command(name='blacklist', hidden=True)
+    async def addblacklist(self, ctx, id: int):
+        with open(f'cogs/character_blacklist.json', 'r') as file:
+            d = json.loads(file.read())
+        if d['ids'].count(id):
+            return await ctx.send('character already blacklisted')
+        d['ids'].append(id)
+        with open('cogs/character_blacklist.json', 'w') as file:
+            json.dump(d, file)
 
 
 async def pickcharacter(r):
     url = await getanime(r)
     return url
+
+async def checkblacklist(id):
+    with open(f'cogs/character_blacklist.json', 'r') as file:
+        d = json.loads(file.read())
+    if d['ids'].count(id):
+        return True
+    else:
+        return False
 
 async def getanime(rarity):
     c = {'characters': []}
@@ -204,8 +220,6 @@ async def getanime(rarity):
     else:
         return await getanime(rarity)
 
-
-
 async def getcharacterbyrarity(rarity):
     rarities = {1: {"upper": 49,
                     "lower": 0},
@@ -239,13 +253,11 @@ async def findcharacter(lower, upper):
         temp = []
         while temp == []:
             r = random.randrange(lower, upper)
-            p = ceil((r+1)/50)
+            p = floor((r+1)/50)
             d = requests.get(f'https://api.jikan.moe/v3/top/characters/{p}')
             d = d.json()
             c = d['top'][r-(floor(r/50)*50)]
             temp = c['animeography']
-            if c['mal_id'] == 2515:
-                temp = []
     except requests.exceptions.Timeout:
         if not retry(findcharacter(lower, upper)):
             print('timed out')
@@ -343,4 +355,7 @@ async def retry(func, *args, retry_count=5, delay=5, **kwargs):
             pass
         await asyncio.sleep(delay)
     return response
+
+def setup(bot):
+    bot.add_cog(Anime(bot))
 

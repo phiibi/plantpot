@@ -77,7 +77,7 @@ class Interactive(commands.Cog):
         count = 0
         for u in d['users']:
             if u['userid'] == user.id:
-                count = u['image_name']
+                count = len(u['image_name'])
         embed = discord.Embed()
         embed.title = f'{user.display_name}\'s progression'
         embed.description = f'you\'ve collected {count}/5000 characters, keep it up!'
