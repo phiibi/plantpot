@@ -24,7 +24,6 @@ def mainloop(low, high):
             for show in character['animeography']:
                 time.sleep(6)
                 if whitelist.count(show['mal_id']):
-                    print('safe')
                     pass
                 elif blacklist_anime.count(show['mal_id']):
                     blacklist_character.append(character['mal_id'])
@@ -46,8 +45,6 @@ def mainloop(low, high):
 
 
 print(checkanime(39392))
-mainloop(0, 9)
-print('0, 9')
 mainloop(10, 19)
 print('10, 19')
 mainloop(20, 29)
