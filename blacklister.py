@@ -37,9 +37,9 @@ def mainloop(low, high):
                     whitelist.append(show['mal_id'])
     with open('cogs/characters_blacklist.json', 'r') as file:
         d = json.loads(file.read())
-    temp = d['ids']
-    for id in blacklist_character:
-        temp.append(id)
+    temp = d
+    for character in blacklist_character:
+        temp['id'].append(character)
     with open('cogs/characters_blacklist.json', 'w') as file:
         json.dump(temp, file)
 
