@@ -4,7 +4,7 @@ import os
 import discord
 import random
 from re import fullmatch, search
-from cogs import interactive, imageposting, leaderboard, inventory, profile, serversettings, admin
+from cogs import quiz, premium, serversettings
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -12,7 +12,7 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='.')
+bot = commands.Bot(command_prefix='!!')
 
 @bot.event
 async def on_ready():
@@ -52,8 +52,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    #if message.guild.id == 813532137050341407:
-    #    return
+    if message.guild.id == 813532137050341407:
+        return
 
     for word in replies:
         if word + ' plant' in mcl():
@@ -139,4 +139,6 @@ bot.load_extension('cogs.admin')
 bot.load_extension('cogs.anime')
 bot.load_extension('cogs.badges')
 bot.load_extension('cogs.flowers')
+bot.add_cog(quiz.Quiz(bot))
+bot.add_cog(premium.Premium(bot))
 bot.run(TOKEN)
