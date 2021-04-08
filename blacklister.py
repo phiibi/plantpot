@@ -22,8 +22,9 @@ def mainloop(low, high):
             if not character['animeography']:
                 blacklist_character.append(character['mal_id'])
             for show in character['animeography']:
-                time.sleep(10)
+                time.sleep(6)
                 if whitelist.count(show['mal_id']):
+                    ('safe')
                     pass
                 elif blacklist_anime.count(show['mal_id']):
                     blacklist_character.append(character['mal_id'])
