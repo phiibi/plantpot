@@ -12,7 +12,7 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='!!')
+bot = commands.Bot(command_prefix='.')
 
 @bot.event
 async def on_ready():
@@ -52,8 +52,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.guild.id == 813532137050341407:
-        return
+    #if message.guild.id == 813532137050341407:
+    #    return
 
     for word in replies:
         if word + ' plant' in mcl():
