@@ -24,7 +24,7 @@ def mainloop(low, high):
             for show in character['animeography']:
                 time.sleep(6)
                 if whitelist.count(show['mal_id']):
-                    ('safe')
+                    print('safe')
                     pass
                 elif blacklist_anime.count(show['mal_id']):
                     blacklist_character.append(character['mal_id'])
@@ -32,6 +32,7 @@ def mainloop(low, high):
                 elif not checkanime(show['mal_id']):
                     blacklist_anime.append(show['mal_id'])
                     blacklist_character.append(character['mal_id'])
+                    print(blacklist_character)
                     break
                 else:
                     whitelist.append(show['mal_id'])
@@ -40,7 +41,7 @@ def mainloop(low, high):
     temp = d['ids']
     for id in blacklist_character:
         temp.append(id)
-    with open('cogs/character_blacklist.json', 'w') as file:
+    with open('cogs/characters_blacklist.json', 'w') as file:
         json.dump(temp, file)
 
 
