@@ -182,7 +182,7 @@ async def pickcharacter(r):
 async def checkblacklist(id):
     with open(f'cogs/characters_blacklist.json', 'r') as file:
         d = json.loads(file.read())
-    if d['ids'].count(id) >= 1:
+    if d['id'].count(id) >= 1:
         return True
     else:
         return False
