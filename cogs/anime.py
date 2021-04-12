@@ -160,6 +160,7 @@ class Anime(commands.Cog):
         await ctx.send(embed=embed)
 
     @anime.command(name='blacklist', hidden=True)
+    @checkers.is_plant_owner()
     async def addblacklist(self, ctx, cid: int):
         with open(f'cogs/characters_blacklist.json', 'r') as file:
             d = json.loads(file.read())
