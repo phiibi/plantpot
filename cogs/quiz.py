@@ -1,6 +1,6 @@
 # -----  Matthew Hammond, 2021  -----
 # ----  Plant Bot Quiz Commands  ----
-# -------------  v1.3  --------------
+# -------------  v1.4  --------------
 
 
 import discord
@@ -1278,7 +1278,7 @@ class Quiz(commands.Cog):
                 SELECT answers.emoji FROM quizzes
                 INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
                 INNER JOIN answers ON questions.question_id = answers.question_id
-                WHERE LENGTH(answers.emoji) > 1 AND quizzes.name = ? AND quizzes.server_id = ?
+                WHERE LENGTH(answers.emoji) > 18 AND quizzes.name = ? AND quizzes.server_id = ?
             """, (quiz, ctx.guild.id))]
             
             for customEmoji in customEmojis:

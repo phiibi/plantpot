@@ -55,8 +55,10 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    #if message.guild.id == 813532137050341407:
+    #if message.guild.id == 813532137050341407 and not (message.channel.id == 817503953008590849 and 'frog man' in mcl()):
     #    return
+    #else:
+    #    await message.channel.send('frog man')
 
     for word in replies:
         if word + ' plant' in mcl():
