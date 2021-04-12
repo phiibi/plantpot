@@ -4,7 +4,7 @@ import os
 import discord
 import random
 from re import fullmatch, search
-from cogs import quiz, premium, serversettings
+from cogs import quiz, premium, serversettings, misc
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -144,4 +144,5 @@ bot.load_extension('cogs.badges')
 bot.load_extension('cogs.flowers')
 bot.add_cog(quiz.Quiz(bot))
 bot.add_cog(premium.Premium(bot))
+bot.add_cog(misc.Misc(bot))
 bot.run(TOKEN)
