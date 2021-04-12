@@ -258,7 +258,7 @@ async def findcharacter(lower, upper):
             d = d.json()
             c = d['top'][r-(floor(r/50)*50)]
             temp = c['animeography']
-            if checkblacklist(d['mal_id']):
+            if checkblacklist(c['mal_id']):
                 print('bad character')
                 temp = []
     except requests.exceptions.Timeout:
