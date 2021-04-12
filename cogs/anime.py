@@ -160,12 +160,13 @@ class Anime(commands.Cog):
         await ctx.send(embed=embed)
 
     @anime.command(name='blacklist', hidden=True)
-    async def addblacklist(self, ctx, id: int):
+    async def addblacklist(self, ctx, cid: int):
         with open(f'cogs/characters_blacklist.json', 'r') as file:
             d = json.loads(file.read())
-        if d['id'].count(id):
+        if d['id'].count(cid):
             return await ctx.send('character already blacklisted')
-        d['id'].append(id)
+        d['id'].append(cid)
+        await ctx.send(f'blacklisted {cid}')
         with open('cogs/characters_blacklist.json', 'w') as file:
             json.dump(d, file)
 
@@ -258,10 +259,10 @@ async def findcharacter(lower, upper):
             d = d.json()
             c = d['top'][r-(floor(r/50)*50)]
             temp = c['animeography']
-            #if await checkblacklist(c['mal_id']):
-            #    print(c['title'])
-            #    print('bad character')
-            #    temp = []
+            if await checkblacklist(c['mal_id']):
+                print(c['title'])
+                print('bad character')
+                temp = []
     except requests.exceptions.Timeout:
         if not retry(findcharacter(lower, upper)):
             print('timed out')
