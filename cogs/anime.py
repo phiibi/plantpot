@@ -177,7 +177,7 @@ async def pickcharacter(r):
 async def checkblacklist(id):
     with open(f'cogs/characters_blacklist.json', 'r') as file:
         d = json.loads(file.read())
-    if d['ids'].count(id):
+    if d['ids'].count(id) >= 1:
         return True
     else:
         return False
@@ -258,10 +258,10 @@ async def findcharacter(lower, upper):
             d = d.json()
             c = d['top'][r-(floor(r/50)*50)]
             temp = c['animeography']
-            if checkblacklist(c['mal_id']):
-                print(c['title'])
-                print('bad character')
-                temp = []
+            #if await checkblacklist(c['mal_id']):
+            #    print(c['title'])
+            #    print('bad character')
+            #    temp = []
     except requests.exceptions.Timeout:
         if not retry(findcharacter(lower, upper)):
             print('timed out')
