@@ -112,7 +112,7 @@ class Anime(commands.Cog):
                         break
                     else:
                         if leaderboard.AnimeLeaderboard.checkimage(self, usr.id, ctx.guild.id, name):
-                            await ctx.send(f'{usr.mention}! You already have this character!')
+                            await ctx.send(f'{usr.mention}! You already have this character! If you and 2 other users react \U0001F504 then you will reroll this character')
                             await r.remove(usr)
                         elif await c.checkuser(ctx, usr.id) and (ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181):
                             await ctx.send(f'hold up {usr.mention}, you\'ve collected a character too recently, please wait a second to give other users a chance!')
