@@ -66,7 +66,10 @@ class Flower(commands.Cog):
                         if str(r.emoji) == self.emoji and r.message.id == post.id and u != self.bot.user:
                             return r, u
 
-                    r, usr = await self.bot.wait_for('reaction_add', check=check)
+                    try:
+                        r, usr = await self.bot.wait_for('reaction_add', check=check, timeout=14400)
+                    except asyncio.TimeoutError:
+                        return await ctx.send('Event timed out due to inactivity, please restart event using `.image event spring`')
                     if await c.checkuser(ctx, usr.id):
                         await ctx.send(f'hold up {usr.mention}, you\'ve collected a flower too recently, please wait a second to give other users a chance!')
                         await r.remove(usr)

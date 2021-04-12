@@ -106,7 +106,10 @@ class Anime(commands.Cog):
                     def check(r, u):
                         if r.message.id == pst.id and ((str(r.emoji) == '<:frogsmile:817589614905917440>' and u != self.bot.user) or (str(r.emoji) == '\U0001F504' and r.count == 4)):
                             return r, u
-                    r, usr = await self.bot.wait_for('reaction_add', check=check)
+                    try:
+                        r, usr = await self.bot.wait_for('reaction_add', check=check, timeout=14400)
+                    except asyncio.TimeoutError:
+                        return await ctx.send('Event timed out due to inactivity, please restart event using `.anime event`')
                     if str(r) == '\U0001F504':
                         reroll = True
                         break
