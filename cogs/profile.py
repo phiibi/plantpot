@@ -88,6 +88,7 @@ class Profile(commands.Cog):
 
     @commands.command(name='marry', help='lets you marry another user')
     async def marry(self, ctx, user: discord.Member):
+
         if user == self.bot.user:
             return await ctx.send('thank you but the law doesn\'t recognise me as somebody you could marry...')
         if user == ctx.message.author:
