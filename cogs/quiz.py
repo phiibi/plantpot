@@ -1,6 +1,6 @@
 # -----  Matthew Hammond, 2021  -----
 # ----  Plant Bot Quiz Commands  ----
-# -------------  v1.5  --------------
+# -------------  v1.7  --------------
 
 
 import discord
@@ -931,6 +931,73 @@ class Quiz(commands.Cog):
             WHERE answer_id = ?
         """, (answerCorrect, answerId))
 
+    def get_quizzes(self, ctx):
+
+        availableQuizzes = [quiz[0] for quiz in self.executeSQL("""
+            SELECT name FROM quizzes
+            WHERE (
+                SELECT COUNT(*) FROM questions
+                WHERE (
+                    SELECT COUNT(DISTINCT answers.correct) FROM answers
+                    WHERE answers.question_id = questions.question_id
+                ) = 2 AND questions.quiz_id = quizzes.quiz_id
+            ) = (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id)
+            AND (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id) > 0
+            AND server_id = ?
+        """, (ctx.guild.id,))]
+        # Selects all the valid quizzes. (1 correct and incorrect answer for every question and only valid emojis).
+
+        invalidQuizzes = []
+        for quiz in availableQuizzes:
+            customEmojis = [emoji[0] for emoji in self.executeSQL("""
+                SELECT answers.emoji FROM quizzes
+                INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
+                INNER JOIN answers ON questions.question_id = answers.question_id
+                WHERE LENGTH(answers.emoji) > 18 AND quizzes.name = ? AND quizzes.server_id = ?
+            """, (quiz, ctx.guild.id))]
+            
+            for customEmoji in customEmojis:
+                customEmojiId = int(customEmoji.split(":")[2][:-1])
+                if (self.bot.get_emoji(customEmojiId) == None):
+                    invalidQuizzes.append(quiz)
+                    break
+
+        for quiz in invalidQuizzes:
+            availableQuizzes.remove(quiz)
+
+        globalQuizzes = [quiz[0] for quiz in self.executeSQL("""
+            SELECT name FROM quizzes
+            WHERE (
+                SELECT COUNT(*) FROM questions
+                WHERE (
+                    SELECT COUNT(DISTINCT answers.correct) FROM answers
+                    WHERE answers.question_id = questions.question_id
+                ) = 2 AND questions.quiz_id = quizzes.quiz_id
+            ) = (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id)
+            AND (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id) > 0
+            AND server_id = 813532137050341407
+        """)]
+
+        invalidQuizzes = []
+        for quiz in globalQuizzes:
+            customEmojis = [emoji[0] for emoji in self.executeSQL("""
+                SELECT answers.emoji FROM quizzes
+                INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
+                INNER JOIN answers ON questions.question_id = answers.question_id
+                WHERE LENGTH(answers.emoji) > 18 AND quizzes.name = ? AND quizzes.server_id = 813532137050341407
+            """, (quiz,))]
+            
+            for customEmoji in customEmojis:
+                customEmojiId = int(customEmoji.split(":")[2][:-1])
+                if (self.bot.get_emoji(customEmojiId) == None):
+                    invalidQuizzes.append(quiz)
+                    break
+
+        for quiz in invalidQuizzes:
+            globalQuizzes.remove(quiz)
+
+        return availableQuizzes, globalQuizzes
+
     @commands.command(
         name = "quiz",
         aliases = ["q"],
@@ -966,23 +1033,45 @@ class Quiz(commands.Cog):
 
             args = " ".join(args).split(" -")
 
-            quizId = self.executeSQL("""
-                SELECT quiz_id FROM quizzes
-                WHERE server_id = ? AND name = ?
-            """, (ctx.guild.id, args[0]))
-            
-            customEmojis = [emoji[0] for emoji in self.executeSQL("""
-                SELECT answers.emoji FROM quizzes
-                INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
-                INNER JOIN answers ON questions.question_id = answers.question_id
-                WHERE LENGTH(answers.emoji) > 18 AND server_id = ? AND name = ?
-            """, (ctx.guild.id, args[0]))]
-            
-            invalidEmojis = False
-            for customEmoji in customEmojis:
-                customEmojiId = int(customEmoji.split(":")[2][:-1])
-                if (self.bot.get_emoji(customEmojiId) == None):
-                    invalidEmojis = True
+            if ("g" in args[1:] or "global" in args[1:]):
+                quizId = self.executeSQL("""
+                    SELECT quiz_id FROM quizzes
+                    WHERE server_id = 813532137050341407 AND name = ?
+                """, (args[0],))
+                
+                if (len(quizId)):
+                    customEmojis = [emoji[0] for emoji in self.executeSQL("""
+                        SELECT answers.emoji FROM quizzes
+                        INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
+                        INNER JOIN answers ON questions.question_id = answers.question_id
+                        WHERE LENGTH(answers.emoji) > 18 AND quizzes.quiz_id = ?
+                    """, (quizId[0][0],))]
+                    
+                    invalidEmojis = False
+                    for customEmoji in customEmojis:
+                        customEmojiId = int(customEmoji.split(":")[2][:-1])
+                        if (self.bot.get_emoji(customEmojiId) == None):
+                            invalidEmojis = True
+
+            else:
+                quizId = self.executeSQL("""
+                    SELECT quiz_id FROM quizzes
+                    WHERE server_id = ? AND name = ?
+                """, (ctx.guild.id, args[0]))
+
+                if (len(quizId)):
+                    customEmojis = [emoji[0] for emoji in self.executeSQL("""
+                        SELECT answers.emoji FROM quizzes
+                        INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
+                        INNER JOIN answers ON questions.question_id = answers.question_id
+                        WHERE LENGTH(answers.emoji) > 18 AND quizzes.quiz_id = ?
+                    """, (quizId[0][0],))]
+                    
+                    invalidEmojis = False
+                    for customEmoji in customEmojis:
+                        customEmojiId = int(customEmoji.split(":")[2][:-1])
+                        if (self.bot.get_emoji(customEmojiId) == None):
+                            invalidEmojis = True
 
             if (not len(quizId) or
                 not len(self.executeSQL("""
@@ -1056,6 +1145,9 @@ class Quiz(commands.Cog):
                         await msg.edit(embed = embed)
 
                 elif (cmd in ["g", "gap"]):
+                    if (cmd == "g" and (len(arg)) == 0):
+                        continue
+
                     try:
                         if (arg[0][-1] == "s"):
                             arg[0] = arg[0][:-1]
@@ -1234,7 +1326,7 @@ class Quiz(commands.Cog):
 
         embed = discord.Embed(
             title = "Quiz Parameters",
-            description = "Use .quizlist to see a list of available quizzes. Use these parameters by adding a hyphen followed by the parameter.\ne.g\n.quiz -accuracy -time 30\n.quiz -speed -random -time 3600 -gap 3600",
+            description = "Use .quizlist to see a list of available and global quizzes.\nUse these parameters by adding a hyphen followed by the parameter.\ne.g\n.quiz -accuracy -time 30\n.quiz -speed -random -time 3600 -gap 3600",
             colour = ctx.guild.get_member(self.bot.user.id).colour,
             timestamp = datetime.now(),
         )
@@ -1245,7 +1337,7 @@ class Quiz(commands.Cog):
         )
         embed.add_field(
             name = "Other",
-            value = "**random** - Randomises the order of questions and answers. (Default: False)\n**time <seconds>** - The maximum time people have to answer in seconds. (Default: 30)\n**gap <seconds>** - The time between the end of one question and the start of the next one. (Default: 10)",
+            value = "**global** - Uses a global quiz, made by the Plant Team!\n**random** - Randomises the order of questions and answers. (Default: False)\n**time <seconds>** - The maximum time people have to answer in seconds. (Default: 30)\n**gap <seconds>** - The time between the end of one question and the start of the next one. (Default: 10)",
             inline = False,
         )
         await ctx.send(embed = embed)
@@ -1258,62 +1350,15 @@ class Quiz(commands.Cog):
     )
     async def quizList(self, ctx):
 
-        availableQuizzes = [quiz[0] for quiz in self.executeSQL("""
-            SELECT name FROM quizzes
-            WHERE (
-                SELECT COUNT(*) FROM questions
-                WHERE (
-                    SELECT COUNT(DISTINCT answers.correct) FROM answers
-                    WHERE answers.question_id = questions.question_id
-                ) = 2 AND questions.quiz_id = quizzes.quiz_id
-            ) = (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id)
-            AND (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id) > 0
-            AND server_id = ?
-        """, (ctx.guild.id,))]
-        # Selects all the valid quizzes. (1 correct and incorrect answer for every question and only valid emojis).
+        availableQuizzes, globalQuizzes = self.get_quizzes(ctx)
 
-        invalidQuizzes = []
-        for quiz in availableQuizzes:
-            customEmojis = [emoji[0] for emoji in self.executeSQL("""
-                SELECT answers.emoji FROM quizzes
-                INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
-                INNER JOIN answers ON questions.question_id = answers.question_id
-                WHERE LENGTH(answers.emoji) > 18 AND quizzes.name = ? AND quizzes.server_id = ?
-            """, (quiz, ctx.guild.id))]
-            
-            for customEmoji in customEmojis:
-                customEmojiId = int(customEmoji.split(":")[2][:-1])
-                if (self.bot.get_emoji(customEmojiId) == None):
-                    invalidQuizzes.append(quiz)
-                    break
-
-        for quiz in invalidQuizzes:
-            availableQuizzes.remove(quiz)
-
-        embed = discord.Embed(
+        embed = discord.Embed(                                  
             title = "Available Quizzes",
             description = "\n".join(availableQuizzes)
         )
+        if (ctx.guild.id != 813532137050341407):
+            embed.add_field(name = "Global Quizzes", value = "\n".join(globalQuizzes))
         await ctx.send(embed = embed)
-
-    async def executeSQLCheck(ctx):
-        return 817801520074063974 in [role.id for role in ctx.author.roles]
-        # Must have the Dev Team role to use executeSQL.
-
-    @commands.command(
-        name = "executeSQL",
-        aliases = ["esql"],
-
-        hidden = True,
-    )
-    @commands.check(executeSQLCheck)
-    async def eSQL(self, ctx, *execute):
-
-        try:
-            data = self.executeSQL(" ".join(execute))
-            await ctx.send(data)
-        except Exception as data:
-            await ctx.send(data)
 
     def cog_unload(self):
 
