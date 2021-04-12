@@ -9,10 +9,13 @@ from cogs import quiz, premium, serversettings
 from dotenv import load_dotenv
 from discord.ext import commands
 
+intents = discord.Intents.default()
+intents.members = True
+
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='.')
+bot = commands.Bot(command_prefix='.', intents=intents)
 
 @bot.event
 async def on_ready():
@@ -41,7 +44,7 @@ async def on_message(message):
                'what\'s gwaning', 'wazzup', 'wazup', 'whats up', 'henlo', 'heyo', 'salam', 'salaam', 'hey~', 'namaskaram', 'how\'s it hanging', 'how\'s it hangin',
                'hoi', 'oi', 'hei', 'dap me up', 'ola', 'whats good', 'what\'s good', 'good evening', 'good afternoon', 'god morgen',
                'what it be', 'good morrow', 'what\'s crackalackin', 'morning', 'afternoon', 'evening', 'night', 'coucou', 'hewwo', 'how\'s it going', 'sweet dreams',
-               'sleep tight', 'heya', 'g\'morning', 'g,night', 'night night', 'what\'s crackalackin\'', 'what\'s crackalacking', 'haii', 'oyasumi']
+               'sleep tight', 'heya', 'g\'morning', 'g,night', 'night night', 'what\'s crackalackin\'', 'what\'s crackalacking', 'haii', 'oyasumi', 'hiya']
     plantreplies = ['it\'s one of rose days...', 'i\'m well, you asking me has made my daisy', 'sorting out my weed issue once and floral',
                     'i\'m feeling clover the moon!', 'i\'m well, how\'s it growing?', 'i was hoping some-bud-y would ask me that',
                     'lilac that you asked me that', 'i\'m doing bouquet', 'i\'m feeling dandy, i\'m not lion!', 'feeling a lily better now that you\'ve asked me',

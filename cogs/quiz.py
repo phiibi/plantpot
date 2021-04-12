@@ -1,15 +1,17 @@
 # -----  Matthew Hammond, 2021  -----
 # ----  Plant Bot Quiz Commands  ----
-# -------------  v1.0  --------------
+# -------------  v1.3  --------------
 
 
 import discord
 from discord.ext import commands
 import asyncio
 
+
 from sqlite3 import connect
 from datetime import datetime
 from random import shuffle
+
 
 class Quiz(commands.Cog):
 
@@ -45,29 +47,30 @@ class Quiz(commands.Cog):
 
         self.executeSQL("""
             CREATE TABLE IF NOT EXISTS quizzes (
-                id INTEGER PRIMARY KEY,
-                server INTEGER NOT NULL,
+                quiz_id INTEGER PRIMARY KEY,
+                server_id INTEGER NOT NULL,
                 name TEXT NOT NULL
             )
         """)
         self.executeSQL("""
             CREATE TABLE IF NOT EXISTS questions (
-                id INTEGER PRIMARY KEY,
-                quiz INTEGER NOT NULL,
+                question_id INTEGER PRIMARY KEY,
+                quiz_id INTEGER NOT NULL,
                 text TEXT NOT NULL,
-                CONSTRAINT fk_quiz FOREIGN KEY (quiz) REFERENCES quizzes(id) ON DELETE CASCADE
+                CONSTRAINT fk_quiz FOREIGN KEY (quiz_id) REFERENCES quizzes(quiz_id) ON DELETE CASCADE
             )
         """)
         self.executeSQL("""
             CREATE TABLE IF NOT EXISTS answers (
-                id INTEGER PRIMARY KEY,
-                question INTEGER NOT NULL,
+                answer_id INTEGER PRIMARY KEY,
+                question_id INTEGER NOT NULL,
                 text TEXT NOT NULL,
                 emoji TEXT NOT NULL,
                 correct INTEGER NOT NULL,
-              CONSTRAINT fk_question FOREIGN KEY (question) REFERENCES questions(id) ON DELETE CASCADE
+                CONSTRAINT fk_question FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE CASCADE
             )
         """)
+        # If, for some reason, the tables are missing, create them.
 
     def executeSQL(self, statement, data = ()):
 
@@ -79,9 +82,6 @@ class Quiz(commands.Cog):
         return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles]
         # Must have the Plant Team role to use the quiz wizard.
 
-    async def quizcheck(ctx):
-        return ctx.guild.id == 813532137050341407
-
     @commands.command(
         name = "quizwizard",
         aliases = ["quizwiz", "qw"],
@@ -89,8 +89,6 @@ class Quiz(commands.Cog):
         brief = "Create and edit quizzes.",
         description = "Create and edit quizzes, questions, and answers for this server.\nRequires the user to have the Manage Server permission.",
         help = "Premium is required for custom emojis, more quizzes, and more questions per quiz.",
-        
-        usage = "quizwizard",
     )
     @commands.check(quizWizardCheck)
     async def quizWizard(self, ctx):
@@ -122,8 +120,8 @@ class Quiz(commands.Cog):
             return ctx.author.id == user.id and msg.id == reaction.message.id
 
         availableQuizzes = self.executeSQL("""
-            SELECT id, name FROM quizzes
-            WHERE server = ?
+            SELECT quiz_id, name FROM quizzes
+            WHERE server_id = ?
         """, (ctx.guild.id,))
         page = 0
 
@@ -164,8 +162,8 @@ class Quiz(commands.Cog):
             elif (reaction.emoji == self.EMOJIS["new"]):
                 await self.newQuiz(ctx, msg)
                 availableQuizzes = self.executeSQL("""
-                    SELECT id, name FROM quizzes
-                    WHERE server = ?
+                    SELECT quiz_id, name FROM quizzes
+                    WHERE server_id = ?
                 """, (ctx.guild.id,))
                 page = 0
 
@@ -176,27 +174,28 @@ class Quiz(commands.Cog):
                 if (page*10 + int(reaction.emoji[0]) < len(availableQuizzes)):
                     await self.quizMenu(ctx, msg, availableQuizzes[page*10 + int(reaction.emoji[0])][0])
                     availableQuizzes = self.executeSQL("""
-                        SELECT id, name FROM quizzes
-                        WHERE server = ?
+                        SELECT quiz_id, name FROM quizzes
+                        WHERE server_id = ?
                     """, (ctx.guild.id,))
                     page = 0
 
     async def newQuiz(self, ctx, msg):
 
         def text_check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
         def reaction_check(reaction, user):
             return reaction.emoji == self.EMOJIS["eject"] and ctx.author.id == user.id
 
         if (len(self.executeSQL("""
-            SELECT id FROM premiumServers
-            WHERE id = ?
+            SELECT server_id FROM premium_servers
+            WHERE server_id = ?
         """, (ctx.guild.id,))) or
             not len(self.executeSQL("""
-                SELECT id FROM quizzes
-                WHERE server = ?
+                SELECT quiz_id FROM quizzes
+                WHERE server_id = ?
             """, (ctx.guild.id,)))):
+            # Only if the server has premium, or hasn't hit the limit of 1 quiz per server.
 
             embed = discord.Embed(
                 title = "Quiz Wizard - Create a quiz.",
@@ -215,7 +214,7 @@ class Quiz(commands.Cog):
 
             usedQuizNames = [quiz[0] for quiz in self.executeSQL("""
                 SELECT name FROM quizzes
-                WHERE server = ?
+                WHERE server_id = ?
             """, (ctx.guild.id,))]
 
             if (quizName in usedQuizNames):
@@ -236,13 +235,13 @@ class Quiz(commands.Cog):
 
             else:
                 self.executeSQL("""
-                    INSERT INTO quizzes (server, name)
+                    INSERT INTO quizzes (server_id, name)
                     VALUES (?, ?)
                 """, (ctx.guild.id, quizName))
 
                 quizId = self.executeSQL("""
-                    SELECT id FROM quizzes
-                    WHERE (server = ? AND name = ?)
+                    SELECT quiz_id FROM quizzes
+                    WHERE (server_id = ? AND name = ?)
                 """, (ctx.guild.id, quizName))[0][0]
 
                 await self.quizMenu(ctx, msg, quizId)
@@ -269,8 +268,8 @@ class Quiz(commands.Cog):
             return ctx.author.id == user.id and msg.id == reaction.message.id
 
         availableQuestions = self.executeSQL("""
-            SELECT id, text FROM questions
-            WHERE quiz = ?
+            SELECT question_id, text FROM questions
+            WHERE quiz_id = ?
         """, (quizId,))
         page = 0
 
@@ -311,8 +310,8 @@ class Quiz(commands.Cog):
             elif (reaction.emoji == self.EMOJIS["new"]):
                 await self.newQuestion(ctx, msg, quizId)
                 availableQuestions = self.executeSQL("""
-                    SELECT id, text FROM questions
-                    WHERE quiz = ?
+                    SELECT question_id, text FROM questions
+                    WHERE quiz_id = ?
                 """, (quizId,))
                 page = 0
 
@@ -330,19 +329,19 @@ class Quiz(commands.Cog):
                 if (page*10 + int(reaction.emoji[0]) < len(availableQuestions)):
                     await self.questionMenu(ctx, msg, availableQuestions[page*10 + int(reaction.emoji[0])][0])
                     availableQuestions = self.executeSQL("""
-                        SELECT id, text FROM questions
-                        WHERE quiz = ?
+                        SELECT question_id, text FROM questions
+                        WHERE quiz_id = ?
                     """, (quizId,))
                     page = 0
 
     async def changeQuizName(self, ctx, msg, quizId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
         data = self.executeSQL("""
             SELECT name FROM quizzes
-            WHERE id = ?
+            WHERE quiz_id = ?
         """, (quizId,))[0][0]
 
         embed = discord.Embed(
@@ -364,13 +363,13 @@ class Quiz(commands.Cog):
         self.executeSQL("""
             UPDATE questions
             SET text = ?
-            WHERE id = ?
+            WHERE quiz_id = ?
         """, (quizName, quizId))
 
     async def deleteQuiz(self, ctx, msg, quizId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
         
         embed = discord.Embed(
             title = "Quiz Wizard - Deleting a quiz.",
@@ -391,7 +390,7 @@ class Quiz(commands.Cog):
 
         self.executeSQL("""
             DELETE FROM quizzes
-            WHERE id = ?
+            WHERE quiz_id = ?
         """, (quizId,))
 
         return True
@@ -399,16 +398,17 @@ class Quiz(commands.Cog):
     async def newQuestion(self, ctx, msg, quizId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
         if (len(self.executeSQL("""
-            SELECT id FROM premiumServers
-            WHERE id = ?
+            SELECT server_id FROM premium_servers
+            WHERE server_id = ?
         """, (ctx.guild.id,))) or
             len(self.executeSQL("""
-                SELECT id FROM questions
-                WHERE quiz = ?
+                SELECT question_id FROM questions
+                WHERE quiz_id = ?
             """, (quizId,))) < 10):
+            # Only if the server has premium, or hasn't hit the limit of 10 questions per quiz.
 
             embed = discord.Embed(
                 title = "Quiz Wizard - Create a question.",
@@ -426,13 +426,13 @@ class Quiz(commands.Cog):
             questionText = questionText.content
 
             self.executeSQL("""
-                INSERT INTO questions (quiz, text)
+                INSERT INTO questions (quiz_id, text)
                 VALUES (?, ?)
             """, (quizId, questionText))
 
             questionId = self.executeSQL("""
-                SELECT id FROM questions
-                WHERE (quiz = ? AND text = ?)
+                SELECT question_id FROM questions
+                WHERE (quiz_id = ? AND text = ?)
             """, (quizId, questionText))[0][0]
 
             await self.questionMenu(ctx, msg, questionId)
@@ -459,8 +459,8 @@ class Quiz(commands.Cog):
             return user.id == ctx.author.id and msg.id == reaction.message.id
 
         availableAnswers = self.executeSQL("""
-            SELECT id, text, emoji, correct FROM answers
-            WHERE question = ?
+            SELECT answer_id, text, emoji, correct FROM answers
+            WHERE question_id = ?
         """, (questionId,))
         page = 0
 
@@ -501,8 +501,8 @@ class Quiz(commands.Cog):
             elif (reaction.emoji == self.EMOJIS["new"]):
                 await self.newAnswer(ctx, msg, questionId)
                 availableAnswers = self.executeSQL("""
-                    SELECT id, text, emoji, correct FROM answers
-                    WHERE question = ?
+                    SELECT answer_id, text, emoji, correct FROM answers
+                    WHERE question_id = ?
                 """, (questionId,))
                 page = 0
 
@@ -520,20 +520,20 @@ class Quiz(commands.Cog):
                 if (page*10 + int(reaction.emoji[0]) < len(availableAnswers)):
                     await self.answerMenu(ctx, msg, availableAnswers[page*10 + int(reaction.emoji[0])][0])
                     availableAnswers = self.executeSQL("""
-                        SELECT id, text, emoji, correct FROM answers
-                        WHERE question = ?
+                        SELECT answer_id, text, emoji, correct FROM answers
+                        WHERE question_id = ?
                     """, (questionId,))
                     page = 0
 
     async def changeQuestionName(self, ctx, msg, questionId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
         data = self.executeSQL("""
-            SELECT quiz.name, questions.text FROM questions
-            INNER JOIN quiz ON quiz.id = questions.quiz 
-            WHERE questions.id = ?
+            SELECT quizzes.name, questions.text FROM questions
+            INNER JOIN quizzes ON quizzes.quiz_id = questions.quiz_id
+            WHERE questions.question_id = ?
         """, (questionId,))[0]
 
         embed = discord.Embed(
@@ -556,13 +556,13 @@ class Quiz(commands.Cog):
         self.executeSQL("""
             UPDATE questions
             SET text = ?
-            WHERE id = ?
+            WHERE question_id = ?
         """, (questionText, questionId))
 
     async def deleteQuestion(self, ctx, msg, questionId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
         
         embed = discord.Embed(
             title = "Quiz Wizard - Deleting a question.",
@@ -583,7 +583,7 @@ class Quiz(commands.Cog):
 
         self.executeSQL("""
             DELETE FROM questions
-            WHERE id = ?
+            WHERE question_id = ?
         """, (questionId,))
 
         return True
@@ -591,22 +591,23 @@ class Quiz(commands.Cog):
     async def newAnswer(self, ctx, msg, questionId):
 
         def text_check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
-        def emoji_check(reaction, user):
+        def reaction_check(reaction, user):
             return ctx.author.id == user.id and msg.id == reaction.message.id
 
         def correct_check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and msg.content.lower()[0] in ["y", "n"]
             
         if (len(self.executeSQL("""
-            SELECT id FROM premiumServers
-            WHERE id = ?
+            SELECT server_id FROM premium_servers
+            WHERE server_id = ?
         """, (ctx.guild.id,))) or
             len(self.executeSQL("""
-                SELECT id FROM answers
-                WHERE question = ?
+                SELECT answer_id FROM answers
+                WHERE question_id = ?
             """, (questionId,))) < 4):
+            # Only if the server has premium, or hasn't hit the limit of 4 answers per question.
 
             embed = discord.Embed(
                 title = "Quiz Wizard - Create an answer.",
@@ -624,8 +625,8 @@ class Quiz(commands.Cog):
             answerText = answerText.content
 
             if (len(self.executeSQL("""
-                SELECT id FROM premiumServers
-                WHERE id = ?
+                SELECT server_id FROM premium_servers
+                WHERE server_id = ?
             """, (ctx.guild.id,)))):
 
                 embed = discord.Embed(
@@ -637,16 +638,33 @@ class Quiz(commands.Cog):
                 await msg.edit(embed = embed)
 
                 try:
-                    answerEmoji, user = await self.bot.wait_for("reaction_add", timeout = 60, check = emoji_check)
+                    answerEmoji, user = await self.bot.wait_for("reaction_add", timeout = 60, check = reaction_check)
                 except asyncio.TimeoutError:
                     return
                 await msg.remove_reaction(answerEmoji, user)
-                answerEmoji = answerEmoji.emoji
+                if (type(answerEmoji.emoji) == discord.PartialEmoji):
+                    embed = discord.Embed(
+                        title = "Quiz Wizard - Create an answer.",
+                        description = "You can only use emojis from this server.\nReact with :eject: or wait 60s to go back.",
+                        colour = ctx.guild.get_member(self.bot.user.id).colour,
+                        timestamp = datetime.now(),
+                    )
+                    await msg.edit(embed = embed)
+
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = reaction_check)
+                    except asyncio.TimeoutError:
+                        return
+                    await msg.remove_reaction(reaction, user)
+                    return
+                    
+                else:
+                    answerEmoji = str(answerEmoji)
 
             else:
                 answerEmoji = self.DEFAULT_ANSWER_EMOJIS[len(self.executeSQL("""
-                    SELECT * FROM answers
-                    WHERE question = ?
+                    SELECT answer_id FROM answers
+                    WHERE question_id = ?
                 """, (questionId,)))]
 
             embed = discord.Embed(
@@ -665,7 +683,7 @@ class Quiz(commands.Cog):
             answerCorrect = int(answerCorrect.content.lower()[0] == "y")
 
             self.executeSQL("""
-                INSERT INTO answers (question, text, emoji, correct)
+                INSERT INTO answers (question_id, text, emoji, correct)
                 VALUES (?, ?, ?, ?)
             """, (questionId, answerText, answerEmoji, answerCorrect))
 
@@ -679,7 +697,7 @@ class Quiz(commands.Cog):
             await msg.edit(embed = embed)
 
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = emoji_check)
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = reaction_check)
             except asyncio.TimeoutError:
                 return
             await msg.remove_reaction(reaction, user)
@@ -692,7 +710,7 @@ class Quiz(commands.Cog):
         
         answer = self.executeSQL("""
             SELECT text, emoji, correct FROM answers
-            WHERE id = ?
+            WHERE answer_id = ?
         """, (answerId,))[0]
 
         while True:
@@ -725,27 +743,27 @@ class Quiz(commands.Cog):
                 await self.changeAnswerText(ctx, msg, answerId)
                 answer = self.executeSQL("""
                     SELECT text, emoji, correct FROM answers
-                    WHERE id = ?
+                    WHERE answer_id = ?
                 """, (answerId,))[0]
 
             elif (reaction.emoji == self.EMOJIS["1"]):
                 await self.changeAnswerEmoji(ctx, msg, answerId)
                 answer = self.executeSQL("""
                     SELECT text, emoji, correct FROM answers
-                    WHERE id = ?
+                    WHERE answer_id = ?
                 """, (answerId,))[0]
 
             elif (reaction.emoji == self.EMOJIS["2"]):
                 await self.changeAnswerCorrect(ctx, msg, answerId)
                 answer = self.executeSQL("""
                     SELECT text, emoji, correct FROM answers
-                    WHERE id = ?
+                    WHERE answer_id = ?
                 """, (answerId,))[0]
 
     async def deleteAnswer(self, ctx, msg, answerId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
         
         embed = discord.Embed(
             title = "Quiz Wizard - Deleting an answer.",
@@ -766,7 +784,7 @@ class Quiz(commands.Cog):
 
         self.executeSQL("""
             DELETE FROM answers
-            WHERE id = ?
+            WHERE answer_id = ?
         """, (answerId,))
 
         return True
@@ -774,12 +792,12 @@ class Quiz(commands.Cog):
     async def changeAnswerText(self, ctx, msg, answerId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
         data = self.executeSQL("""
             SELECT questions.text, answers.text FROM answers
-            INNER JOIN questions ON questions.id = answers.question
-            WHERE answers.id = ?
+            INNER JOIN questions ON questions.question_id = answers.question_id
+            WHERE answers.answer_id = ?
         """, (answerId,))[0]
 
         embed = discord.Embed(
@@ -802,7 +820,7 @@ class Quiz(commands.Cog):
         self.executeSQL("""
             UPDATE answers
             SET text = ?
-            WHERE id = ?
+            WHERE answer_id = ?
         """, (answerText, answerId))
 
     async def changeAnswerEmoji(self, ctx, msg, answerId):
@@ -811,14 +829,14 @@ class Quiz(commands.Cog):
             return ctx.author.id == user.id and msg.id == reaction.message.id
             
         if (len(self.executeSQL("""
-            SELECT id FROM premiumServers
-            WHERE id = ?
+            SELECT server_id FROM premium_servers
+            WHERE server_id = ?
         """, (ctx.guild.id,)))):
 
             data = self.executeSQL("""
-                SELECT questions.text, answers.emoji FROM answers
-                INNER JOIN questions ON questions.id = answers.question
-                WHERE answers.id = ?
+                SELECT questions.text, answers.text, answers.emoji FROM answers
+                INNER JOIN questions ON questions.question_id = answers.question_id
+                WHERE answers.answer_id = ?
             """, (answerId,))[0]
 
             embed = discord.Embed(
@@ -828,20 +846,38 @@ class Quiz(commands.Cog):
                 timestamp = datetime.now(),
             )
             embed.add_field(name = "Question", value = data[0])
-            embed.add_field(name = "Old Value", value = data[1])
+            embed.add_field(name = "Answer", value = data[1])
+            embed.add_field(name = "Old Value", value = data[2])
             await msg.edit(embed = embed)
 
             try:
-                answerEmoji, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+                answerEmoji, user = await self.bot.wait_for("reaction_add", timeout = 60, check = reaction_check)
             except asyncio.TimeoutError:
                 return
             await msg.remove_reaction(answerEmoji, user)
-            answerEmoji = answerEmoji.emoji
+            if (type(answerEmoji.emoji) == discord.PartialEmoji):
+                embed = discord.Embed(
+                    title = "Quiz Wizard - Create an answer.",
+                    description = "You can only use emojis from this server.\nReact with :eject: or wait 60s to go back.",
+                    colour = ctx.guild.get_member(self.bot.user.id).colour,
+                    timestamp = datetime.now(),
+                )
+                await msg.edit(embed = embed)
+
+                try:
+                    reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = reaction_check)
+                except asyncio.TimeoutError:
+                    return
+                await msg.remove_reaction(reaction, user)
+                return
+
+            else:
+                answerEmoji = str(answerEmoji)
 
             self.executeSQL("""
                 UPDATE answers
                 SET emoji = ?
-                WHERE id = ?
+                WHERE answer_id = ?
             """, (answerEmoji, answerId))
 
         else:
@@ -863,12 +899,12 @@ class Quiz(commands.Cog):
     async def changeAnswerCorrect(self, ctx, msg, answerId):
 
         def check(msg):
-            return ctx.author.id == msg.author.id
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
         data = self.executeSQL("""
-            SELECT questions.text, answers.correct FROM answers
-            INNER JOIN questions ON questions.id = answers.question
-            WHERE answers.id = ?
+            SELECT questions.text, answers.text, answers.correct FROM answers
+            INNER JOIN questions ON questions.question_id = answers.question_id
+            WHERE answers.answerid = ?
         """, (answerId,))[0]
 
         embed = discord.Embed(
@@ -878,7 +914,8 @@ class Quiz(commands.Cog):
             timestamp = datetime.now(),
         )
         embed.add_field(name = "Question", value = data[0])
-        embed.add_field(name = "Old Value", value = data[1])
+        embed.add_field(name = "Answer", value = data[1])
+        embed.add_field(name = "Old Value", value = data[2] == 1)
         await msg.edit(embed = embed)
 
         try:
@@ -891,8 +928,8 @@ class Quiz(commands.Cog):
         self.executeSQL("""
             UPDATE answers
             SET correct = ?
-            WHERE id = ?
-        """, (answerText, answerId))
+            WHERE answer_id = ?
+        """, (answerCorrect, answerId))
 
     @commands.command(
         name = "quiz",
@@ -904,7 +941,6 @@ class Quiz(commands.Cog):
         
         usage = "quiz [help|list|<name>] {parameters}",
     )
-    @commands.check(quizcheck)
     async def quiz(self, ctx, *args):
 
         def check(msg):
@@ -931,17 +967,38 @@ class Quiz(commands.Cog):
             args = " ".join(args).split(" -")
 
             quizId = self.executeSQL("""
-                SELECT id FROM quizzes
-                WHERE server = ? AND name = ?
+                SELECT quiz_id FROM quizzes
+                WHERE server_id = ? AND name = ?
             """, (ctx.guild.id, args[0]))
+            
+            customEmojis = [emoji[0] for emoji in self.executeSQL("""
+                SELECT answers.emoji FROM quizzes
+                INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
+                INNER JOIN answers ON questions.question_id = answers.question_id
+                WHERE LENGTH(answers.emoji) > 1 AND server_id = ? AND name = ?
+            """, (ctx.guild.id, args[0]))]
+            
+            invalidEmojis = False
+            for customEmoji in customEmojis:
+                customEmojiId = int(customEmoji.split(":")[2][:-1])
+                if (self.bot.get_emoji(customEmojiId) == None):
+                    invalidEmojis = True
 
             if (not len(quizId) or
                 not len(self.executeSQL("""
-                    SELECT DISTINCT quizzes.id FROM quizzes
-                    INNER JOIN questions ON quizzes.id = questions.quiz
-                    INNER JOIN answers ON questions.id = answers.question
-                    WHERE quizzes.id = ? AND answers.correct = 1
-                """, (quizId[0][0],)))):
+                    SELECT name FROM quizzes
+                    WHERE (
+                        SELECT COUNT(*) FROM questions
+                        WHERE (
+                            SELECT COUNT(DISTINCT answers.correct) FROM answers
+                            WHERE answers.question_id = questions.question_id
+                        ) = 2 AND questions.quiz_id = quizzes.quiz_id
+                    ) = (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id)
+                    AND (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id) > 0
+                    AND quiz_id = ?
+                """, (quizId[0][0],))) or
+                invalidEmojis):
+                # If the quiz doesn't exist or the quiz is not valid (at least 1 right and wrong answer for every question, and only valid emojis).
                 embed = discord.Embed(
                     title = "Quiz Error",
                     description = "Invalid Quiz Name: \"{}\"\nUse \"quiz list\" to see a list of available quizzes in this server.".format(args[0]),
@@ -1057,8 +1114,8 @@ class Quiz(commands.Cog):
     async def quizLoop(self, ctx, msg, quizId, mode, random, time, gap):
 
         questionData = self.executeSQL("""
-            SELECT id, text FROM questions
-            WHERE quiz = ?
+            SELECT question_id, text FROM questions
+            WHERE quiz_id = ?
         """, (quizId,))
 
         if (random):
@@ -1078,7 +1135,7 @@ class Quiz(commands.Cog):
 
             answerData = self.executeSQL("""
                 SELECT text, emoji, correct FROM answers
-                WHERE question = ?
+                WHERE question_id = ?
             """, (question[0],))
 
             if (random):
@@ -1093,7 +1150,7 @@ class Quiz(commands.Cog):
 
             embed = discord.Embed(
                 title = question[1],
-                description = "\n".join(["{} {}".format(answer[1], answer[0]) for answer in answerData]),
+                description = "\n".join(["{} {}".format(answer[1], answer[0]) for answer in answerData]) + ("\nOnly your first reaction counts!" if (mode == "s") else ""),
                 colour = ctx.guild.get_member(self.bot.user.id).colour,
                 timestamp = datetime.now(),
             )
@@ -1107,10 +1164,10 @@ class Quiz(commands.Cog):
 
             if (mode == "s"):
                 def check(reaction, user):
-                    correct = msg.id == reaction.message.id and reaction.emoji in correctEmojis and user.id not in reacted
-                    if (msg.id == reaction.message.id and user.id not in reacted):
+                    validReaction = msg.id == reaction.message.id and user.id not in reacted
+                    if (validReaction):
                         reacted.append(user.id)
-                    return correct
+                    return validReaction and str(reaction) in correctEmojis
 
                 reacted = []
 
@@ -1177,7 +1234,7 @@ class Quiz(commands.Cog):
 
         embed = discord.Embed(
             title = "Quiz Parameters",
-            description = "Use these by adding a hyphen followed by the parameter to add. e.g\nquiz [name] -accuracy -time 30\nUse .quizlist for a list of available quizzes",
+            description = "Use .quizlist to see a list of available quizzes. Use these parameters by adding a hyphen followed by the parameter.\ne.g\n.quiz -accuracy -time 30\n.quiz -speed -random -time 3600 -gap 3600",
             colour = ctx.guild.get_member(self.bot.user.id).colour,
             timestamp = datetime.now(),
         )
@@ -1201,21 +1258,64 @@ class Quiz(commands.Cog):
     )
     async def quizList(self, ctx):
 
-        availableQuizzes = self.executeSQL("""
-            SELECT DISTINCT quizzes.name FROM quizzes
-            INNER JOIN questions ON quizzes.id = questions.quiz
-            INNER JOIN answers ON questions.id = answers.question
-            WHERE quizzes.server = ? AND answers.correct = 1
-        """, (ctx.guild.id,))
+        availableQuizzes = [quiz[0] for quiz in self.executeSQL("""
+            SELECT name FROM quizzes
+            WHERE (
+                SELECT COUNT(*) FROM questions
+                WHERE (
+                    SELECT COUNT(DISTINCT answers.correct) FROM answers
+                    WHERE answers.question_id = questions.question_id
+                ) = 2 AND questions.quiz_id = quizzes.quiz_id
+            ) = (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id)
+            AND (SELECT COUNT(*) FROM questions WHERE questions.quiz_id = quizzes.quiz_id) > 0
+            AND server_id = ?
+        """, (ctx.guild.id,))]
+        # Selects all the valid quizzes. (1 correct and incorrect answer for every question and only valid emojis).
+
+        invalidQuizzes = []
+        for quiz in availableQuizzes:
+            customEmojis = [emoji[0] for emoji in self.executeSQL("""
+                SELECT answers.emoji FROM quizzes
+                INNER JOIN questions ON quizzes.quiz_id = questions.quiz_id
+                INNER JOIN answers ON questions.question_id = answers.question_id
+                WHERE LENGTH(answers.emoji) > 1 AND quizzes.name = ? AND quizzes.server_id = ?
+            """, (quiz, ctx.guild.id))]
+            
+            for customEmoji in customEmojis:
+                customEmojiId = int(customEmoji.split(":")[2][:-1])
+                if (self.bot.get_emoji(customEmojiId) == None):
+                    invalidQuizzes.append(quiz)
+                    break
+
+        for quiz in invalidQuizzes:
+            availableQuizzes.remove(quiz)
 
         embed = discord.Embed(
             title = "Available Quizzes",
-            description = "\n".join([quiz[0] for quiz in availableQuizzes])
+            description = "\n".join(availableQuizzes)
         )
         await ctx.send(embed = embed)
+
+    async def executeSQLCheck(ctx):
+        return 817801520074063974 in [role.id for role in ctx.author.roles]
+        # Must have the Dev Team role to use executeSQL.
+
+    @commands.command(
+        name = "executeSQL",
+        aliases = ["esql"],
+
+        hidden = True,
+    )
+    @commands.check(executeSQLCheck)
+    async def eSQL(self, ctx, *execute):
+
+        try:
+            data = self.executeSQL(" ".join(execute))
+            await ctx.send(data)
+        except Exception as data:
+            await ctx.send(data)
 
     def cog_unload(self):
 
         if (self.conn):
             self.conn.close()
-

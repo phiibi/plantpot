@@ -36,7 +36,7 @@ class Anime(commands.Cog):
             await asyncio.sleep(5)
             if imageposting.Imageposting.checktime(self, start):
                 r = random.random()
-                if ctx.guild.id == 813532137050341407:
+                if ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181:
                     if r <= 0.005:
                         p = 300
                         x = 1
@@ -114,7 +114,7 @@ class Anime(commands.Cog):
                         if leaderboard.AnimeLeaderboard.checkimage(self, usr.id, ctx.guild.id, name):
                             await ctx.send(f'{usr.mention}! You already have this character!')
                             await r.remove(usr)
-                        elif await c.checkuser(ctx, usr.id) and ctx.guild.id == 813532137050341407:
+                        elif await c.checkuser(ctx, usr.id) and (ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181):
                             await ctx.send(f'hold up {usr.mention}, you\'ve collected a character too recently, please wait a second to give other users a chance!')
                             await r.remove(usr)
                         else:
@@ -161,12 +161,12 @@ class Anime(commands.Cog):
 
     @anime.command(name='blacklist', hidden=True)
     async def addblacklist(self, ctx, id: int):
-        with open(f'cogs/character_blacklist.json', 'r') as file:
+        with open(f'cogs/characters_blacklist.json', 'r') as file:
             d = json.loads(file.read())
-        if d['ids'].count(id):
+        if d['id'].count(id):
             return await ctx.send('character already blacklisted')
-        d['ids'].append(id)
-        with open('cogs/character_blacklist.json', 'w') as file:
+        d['id'].append(id)
+        with open('cogs/characters_blacklist.json', 'w') as file:
             json.dump(d, file)
 
 
@@ -175,7 +175,7 @@ async def pickcharacter(r):
     return url
 
 async def checkblacklist(id):
-    with open(f'cogs/character_blacklist.json', 'r') as file:
+    with open(f'cogs/characters_blacklist.json', 'r') as file:
         d = json.loads(file.read())
     if d['ids'].count(id):
         return True
@@ -258,6 +258,8 @@ async def findcharacter(lower, upper):
             d = d.json()
             c = d['top'][r-(floor(r/50)*50)]
             temp = c['animeography']
+            if checkblacklist(d['mal_id']):
+                temp = []
     except requests.exceptions.Timeout:
         if not retry(findcharacter(lower, upper)):
             print('timed out')

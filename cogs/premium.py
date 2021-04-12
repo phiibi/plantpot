@@ -1,6 +1,6 @@
 # -------  Matthew Hammond, 2021  ------
 # ----  Plant Bot Premium Commands  ----
-# ---------------  v1.0  ---------------
+# ---------------  v1.1  ---------------
 
 
 import discord
@@ -22,8 +22,8 @@ class Premium(commands.Cog):
         self.executeSQL("PRAGMA foreign_keys = ON")
 
         self.executeSQL("""
-            CREATE TABLE IF NOT EXISTS premiumServers (
-                id INTEGER PRIMARY KEY
+            CREATE TABLE IF NOT EXISTS premium_servers (
+                server_id INTEGER PRIMARY KEY
             )
         """)
 
@@ -75,8 +75,8 @@ class Premium(commands.Cog):
         server = self.bot.get_guild(id)
         if (server):
             if (len(self.executeSQL("""
-                SELECT id FROM premiumServers
-                WHERE id = ?
+                SELECT server_id FROM premiumServers
+                WHERE server_id = ?
             """, (id,)))):
                 embed = discord.Embed(
                     title = "Enable Premium",
@@ -88,7 +88,7 @@ class Premium(commands.Cog):
 
             else:
                 self.executeSQL("""
-                    INSERT INTO premiumServers (id)
+                    INSERT INTO premiumServers (server_id)
                     VALUES (?)
                 """, (id,))
 
@@ -125,12 +125,12 @@ class Premium(commands.Cog):
         server = self.bot.get_guild(id)
         if (server):
             if (len(self.executeSQL("""
-                SELECT id FROM premiumServers
-                WHERE id = ?
+                SELECT server_id FROM premiumServers
+                WHERE server_id = ?
             """, (id,)))):
                 self.executeSQL("""
                     DELETE FROM premiumServers
-                    WHERE id = ?
+                    WHERE server_id = ?
                 """, (id,))
 
                 embed = discord.Embed(
