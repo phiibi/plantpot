@@ -55,11 +55,6 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    #if message.guild.id == 813532137050341407 and not (message.channel.id == 817503953008590849 and 'frog man' in mcl()):
-    #    return
-    #else:
-    #    await message.channel.send('frog man')
-
     for word in replies:
         if word + ' plant' in mcl():
             await message.channel.send('{0} {1}'.format(word, message.author.mention))
@@ -144,7 +139,7 @@ bot.load_extension('cogs.admin')
 bot.load_extension('cogs.anime')
 bot.load_extension('cogs.badges')
 bot.load_extension('cogs.flowers')
-bot.add_cog(quiz.Quiz(bot))
-bot.add_cog(premium.Premium(bot))
-bot.add_cog(misc.Misc(bot))
+bot.load_extension('cogs.quiz')
+bot.load_extension('cogs.premium')
+bot.load_extension('cogs.misc')
 bot.run(TOKEN)

@@ -88,7 +88,8 @@ class Profile(commands.Cog):
 
     @commands.command(name='marry', help='lets you marry another user')
     async def marry(self, ctx, user: discord.Member):
-
+        if ctx.guild.id == 502944697225052181:
+            return await ctx.send('This feature is disabled on this server')
         if user == self.bot.user:
             return await ctx.send('thank you but the law doesn\'t recognise me as somebody you could marry...')
         if user == ctx.message.author:
@@ -139,6 +140,8 @@ class Profile(commands.Cog):
 
     @commands.command(name='divorce', help='lets you divorce another user')
     async def divorce(self, ctx, user: discord.Member):
+        if ctx.guild.id == 502944697225052181:
+            return await ctx.send('This feature is disabled on this server')
         if user == self.bot.user:
             return await ctx.send('y-you mean, you want to break up with me...?')
 

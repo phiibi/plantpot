@@ -1,6 +1,6 @@
 # -------  Matthew Hammond, 2021  ------
 # ----  Plant Bot Premium Commands  ----
-# ---------------  v1.1  ---------------
+# ---------------  v1.2  ---------------
 
 
 import discord
@@ -11,6 +11,8 @@ from sqlite3 import connect
 from datetime import datetime
 
 class Premium(commands.Cog):
+
+    version = "1.2"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -177,3 +179,6 @@ class Premium(commands.Cog):
         )
 
         await ctx.send(embed = embed)
+
+def setup(bot):
+    bot.add_cog(Premium(bot))

@@ -275,16 +275,20 @@ class Inventory(commands.Cog):
     async def tradeloop(self, ctx, user):
         with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
             d = json.loads(file.read())
+
+        def check(m):
+            return m.channel == ctx.channel and m.author == user
+
         for user in d['users']:
             if user['userid'] == user.id:
                 remaininginv = user['image_name']
+
         if not remaininginv:
             return remaininginv
         temp = []
         while True:
             await Inventory.animeinventory(self, ctx)
-            def check(m):
-                return m.channel == ctx.channel and m.author == user
+
             while True:
                 await ctx.send('what you like to offer? if you would not like to offer anything, please say `no offer`')
                 try:
@@ -307,9 +311,9 @@ class Inventory(commands.Cog):
             try:
                 m = await self.bot.wait_for('message', check=check, timeout=90)
                 if m.content.lower() in ['y', 'yes']:
-                    return temp
-                if m.content.lower() in ['n', 'no']:
                     pass
+                if m.content.lower() in ['n', 'no']:
+                    return temp
             except asyncio.TimeoutError:
                 await ctx.send('uh oh, we ran out of time, please try again!')
                 return None

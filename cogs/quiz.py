@@ -1,6 +1,6 @@
 # -----  Matthew Hammond, 2021  -----
 # ----  Plant Bot Quiz Commands  ----
-# -------------  v1.7  --------------
+# -------------  v1.11  --------------
 
 
 import discord
@@ -14,6 +14,8 @@ from random import shuffle
 
 
 class Quiz(commands.Cog):
+
+    version = "1.11"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -153,11 +155,11 @@ class Quiz(commands.Cog):
 
             if (reaction.emoji == self.EMOJIS["left_arrow"]):
                 page -= 1
-                page %= (len(availableQuizzes) // 10 + 1)
+                page %= ((len(availableQuizzes) - 1) // 10 + 1)
 
             elif (reaction.emoji == self.EMOJIS["right_arrow"]):
                 page += 1
-                page %= (len(availableQuizzes) // 10 + 1)
+                page %= ((len(availableQuizzes) - 1) // 10 + 1)
 
             elif (reaction.emoji == self.EMOJIS["new"]):
                 await self.newQuiz(ctx, msg)
@@ -301,11 +303,11 @@ class Quiz(commands.Cog):
 
             if (reaction.emoji == self.EMOJIS["left_arrow"]):
                 page -= 1
-                page %= (len(availableQuestions) // 10 + 1)
+                page %= ((len(availableQuestions) - 1) // 10 + 1)
 
             elif (reaction.emoji == self.EMOJIS["right_arrow"]):
                 page += 1
-                page %= (len(availableQuestions) // 10 + 1)
+                page %= ((len(availableQuestions) - 1) // 10 + 1)
 
             elif (reaction.emoji == self.EMOJIS["new"]):
                 await self.newQuestion(ctx, msg, quizId)
@@ -492,11 +494,11 @@ class Quiz(commands.Cog):
 
             if (reaction.emoji == self.EMOJIS["left_arrow"]):
                 page -= 1
-                page %= (len(availableQuizzes) // 10 + 1)
+                page %= ((len(availableAnswers) - 1) // 10 + 1)
 
             elif (reaction.emoji == self.EMOJIS["right_arrow"]):
                 page += 1
-                page %= (len(availableQuizzes) // 10 + 1)
+                page %= ((len(availableAnswers) - 1) // 10 + 1)
 
             elif (reaction.emoji == self.EMOJIS["new"]):
                 await self.newAnswer(ctx, msg, questionId)
@@ -1283,16 +1285,18 @@ class Quiz(commands.Cog):
                 lost = []
 
                 for reaction in (await ctx.fetch_message(msg.id)).reactions:
-                    correct = reaction.emoji in correctEmojis
+                    correct = str(reaction.emoji) in correctEmojis
                     for user in await reaction.users().flatten():
                         if (user.id == self.bot.user.id):
                             continue
+
                         if (user.mention not in lost):
                             if (user.mention in gained):
-                                if (user.mention in scores and scores[user.mention] > 0):
-                                    scores[user.mention] -= 1
-                                gained.remove(user.mention)
-                                lost.append(user.mention)
+                                if (not correct):
+                                    if (user.mention in scores and scores[user.mention] > 0):
+                                        scores[user.mention] -= 1
+                                    gained.remove(user.mention)
+                                    lost.append(user.mention)
 
                             elif (correct):
                                 if (user.mention in scores):
@@ -1304,10 +1308,9 @@ class Quiz(commands.Cog):
                             else:
                                 lost.append(user.mention)
 
+                embed.add_field(name = "Winners", value = "{} ({}%)".format(len(gained), 100 * len(gained) / max(1, len(gained) + len(lost))))
 
-                embed.add_field(name = "Winners", value = "{} ({}%)".format(len(gained), 100*len(gained)/max(1, len(gained)+len(lost))))
-
-            embed.add_field(name = "Correct Answers", value = "\n".join([answer[0] for answer in answerData if answer[2]]))
+            embed.add_field(name = "Correct Answer{}".format("s" if len(correctEmojis) > 1 else ""), value = "\n".join([answer[0] for answer in answerData if answer[2]]))
             await msg.edit(embed = embed)
 
             await asyncio.sleep(gap)
@@ -1364,3 +1367,6 @@ class Quiz(commands.Cog):
 
         if (self.conn):
             self.conn.close()
+
+def setup(bot):
+    bot.add_cog(Quiz(bot))

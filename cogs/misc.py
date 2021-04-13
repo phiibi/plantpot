@@ -1,16 +1,20 @@
 # -------  Matthew Hammond, 2021  ------
 # ------  Misc Plant Bot Commands  -----
-# ---------------  v1.2  ---------------
+# ---------------  v1.4  ---------------
 
 
 import discord
 from discord.ext import commands, tasks
 
 from sqlite3 import connect
+from datetime import datetime
+
 from json import loads
 from operator import itemgetter
 
 class Misc(commands.Cog):
+
+    version = "1.4"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -39,8 +43,8 @@ class Misc(commands.Cog):
         lb.sort(key = itemgetter('points'), reverse=True)
         ids = [user["userid"] for user in lb[:min(len(lb), 10)]]
         # Gets all the ids of users in the top 10 of the regular leaderboard.
-        
-        with open(f'cogs/leaderboards/alb813532137050341407.json', 'r') as file:
+
+        with open(f'cogs/leaderboards/a813532137050341407.json', 'r') as file:
             data = loads(file.read())
 
         lb = data['users']
@@ -48,15 +52,15 @@ class Misc(commands.Cog):
         ids += [user["userid"] for user in lb[:min(len(lb), 10)]]
         # Gets all the ids of users in the top 10 of the anime leaderboard, and adds them to the list of regular leaderboard ids.
 
-        server = self.bot.get_guild(813532137050341407)
-        for member in server.members:
+        server = await self.bot.fetch_guild(813532137050341407)
+        for member in await server.fetch_members().flatten():
             roleIds = [role.id for role in member.roles]
 
-            if 825240728778047568 in roleIds and member.id not in ids:
+            if (825240728778047568 in roleIds and member.id not in ids):
                 await member.remove_roles(server.get_role(825240728778047568))
                 # If the member has the role, but is not in the top 10 of a leaderboard, remove it.
 
-            elif 825240728778047568 not in roleIds and member.id in ids:
+            elif (825240728778047568 not in roleIds and member.id in ids):
                 await member.add_roles(server.get_role(825240728778047568))
                 # If the member is in the top 10 of a leaderboard, but does not have the role, add it.
     
@@ -79,3 +83,26 @@ class Misc(commands.Cog):
                 await ctx.send(data)
             except Exception as data:
                 await ctx.send(data)
+
+    @commands.command(
+        name = "cogVersions",
+        aliases = ["cv"],
+
+        hidden = True,
+    )
+    async def cogVersions(self, ctx):
+
+        embed = discord.Embed(
+            title = "Cog Versions",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        for name, cog in self.bot.cogs.items():
+            try:
+                embed.add_field(name = name, value = "v" + cog.version)
+            except AttributeError:
+                embed.add_field(name = name, value = "Unspecified")
+        await ctx.send(embed = embed)
+
+def setup(bot):
+    bot.add_cog(Misc(bot))
