@@ -267,7 +267,8 @@ class Inventory(commands.Cog):
             return await ctx.send(f'uh oh, looks like {u.mention} didn\'t make an offer')
 
         embed = discord.Embed(title=f'{u.display_name}\'s offer',
-                              description='\n'.join([character for character in offer0]))
+                              description='\n'.join([character for character in offer0]),
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.set_thumbnail(url=u.avatar_url_as())
 
         menu = await ctx.send(embed=embed)
@@ -297,10 +298,12 @@ class Inventory(commands.Cog):
             return await ctx.send(f'uh oh, looks like {user.mention} didn\'t make an offer')
 
         embed = discord.Embed(title=f'{user.display_name}\'s offer',
-                              description='\n'.join([character for character in offer0]))
+                              description='\n'.join([character for character in offer0]),
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
 
         temp0 = await ctx.send(f'{u.mention}, this is {user.mention}\'s offer, do you accept? [(y)es/(n)o]')
-        embed = discord.Embed(title='Final trade')
+        embed = discord.Embed(title='Final trade',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.add_field(name=f'{u.display_name}\'s trade', value='\n'.join([character for character in offer0]))
         embed.add_field(name=f'{user.display_name}\'s trade', value='\n'.join([character for character in offer1]))
         menu = await ctx.send(embed=embed)
@@ -342,7 +345,8 @@ class Inventory(commands.Cog):
         def check(m):
             return m.channel == ctx.channel and m.author == user
 
-        embed = discord.Embed(title='Trading')
+        embed = discord.Embed(title='Trading',
+                              colour = ctx.guild.get_member(self.bot.user.id).colour)
         embed.add_field(name=f'{user.display_name}\'s offer', value='\U0000200B')
         embed.set_thumbnail(url=user.avatar_url_as())
 
@@ -370,7 +374,8 @@ class Inventory(commands.Cog):
                         offer.append(m.content)
                         remaininginv.remove(m.content)
 
-                        embed = discord.Embed(title='Trading')
+                        embed = discord.Embed(title='Trading',
+                                              colour=ctx.guild.get_member(self.bot.user.id).colour)
                         embed.add_field(name=f'{user.display_name}\'s offer', value='\n'.join([character for character in offer]))
                         embed.set_thumbnail(url=user.avatar_url_as())
 
