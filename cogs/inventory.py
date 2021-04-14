@@ -188,11 +188,11 @@ class Inventory(commands.Cog):
                             m = await self.bot.wait_for('message', check=check, timeout=60)
                             if m.content.lower() in ['y', 'yes']:
                                 await self.transferimage(ctx.message.author.id, user.id, image, sid)
-                                return await msg.edit(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
+                                return await msg.edit(content=f'congratulations {user.mention}, you\'re the proud new owner of {image}')
                             if m.content.lower() in ['n', 'no']:
-                                return await msg.edit(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
+                                return await msg.edit(content=f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
                     except asyncio.TimeoutError:
-                        return await msg.edit(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
+                        return await msg.edit(content=f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
                     return await ctx.send(f'you don\'t have {image}s to give out')
         else:
@@ -221,14 +221,15 @@ class Inventory(commands.Cog):
                             m = await self.bot.wait_for('message', check=check, timeout=60)
                             if m.content.lower() in ['y', 'yes']:
                                 if leaderboard.AnimeLeaderboard.checkimage(self, user.id, ctx.guild.id, image):
-                                    return await msg.edit(f'{user.mention} already has this character!')
+                                    return await msg.edit(content=f'{user.mention} already has this character!')
                                 else:
                                     await self.atransferimage(ctx.message.author.id, user.id, image, sid)
-                                    return await msg.edit(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
+                                    return await msg.edit(content=f'congratulations {user.mention}, you\'re the proud new owner of {image}')
                             if m.content.lower() in ['n', 'no']:
-                                return await msg.edit(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
+                                await msg.edit(content=f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
+                                return
                     except asyncio.TimeoutError as e:
-                        return await msg.edit(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
+                        return await msg.edit(content=f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
                     return await ctx.send(f'you don\'t have any {image}s to give out!')
         else:

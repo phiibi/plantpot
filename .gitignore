@@ -12,3 +12,4 @@
 *.xml
 *.db
 blacklister.py
+testbot.py
