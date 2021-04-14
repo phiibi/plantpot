@@ -30,7 +30,7 @@ class Leaderboard(commands.Cog):
             embed.description = helpstr
             await ctx.send(embed=embed)
 
-    @commands.command(name='myleaderboard', help='shows yours, or a given user\'s position on leaderboard', hidden=True)
+    @commands.command(name='myleaderboard', help='shows yours, or a given user\'s position on leaderboard', aliases=['mylb', 'position', 'pos', 'mypos'])
     async def position(self, ctx, *, username: discord.Member=None):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
@@ -61,7 +61,7 @@ class Leaderboard(commands.Cog):
             await ctx.send(f'{username.display_name} has\'t collected anything this event!')
 
 
-    @commands.command(name='top10', help='displays the current leaderboard', hidden=True)
+    @commands.command(name='top10', help='displays the current leaderboard', aliases=['lb'])
     async def getlb(self, ctx):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
@@ -167,7 +167,7 @@ class AnimeLeaderboard(commands.Cog):
             await AnimeLeaderboard.getlb(self, ctx)
             return
 
-    @commands.command(name='animetop10', help='displays the current anime leaderboard', aliases=['animeleaderboard'])
+    @commands.command(name='animetop10', help='displays the current anime leaderboard', aliases=['animeleaderboard', 'animelb', 'alb'])
     async def getlb(self, ctx):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
@@ -188,7 +188,7 @@ class AnimeLeaderboard(commands.Cog):
         embed.description = lbtxt
         await ctx.send(embed=embed)
 
-    @commands.command(name='myanimeleaderboard', help='shows yours, or a given user\'s position on the anime leaderboard')
+    @commands.command(name='myanimeleaderboard', help='shows yours, or a given user\'s position on the anime leaderboard', aliases=['animeposition', 'myanimelb'])
     async def position(self, ctx, *, username: discord.Member=None):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:

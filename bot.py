@@ -21,6 +21,8 @@ bot = commands.Bot(command_prefix='.', intents=intents)
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
     print(os.getcwd())
+    for guild in bot.guilds:
+        print(guild.name)
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name='photosynthesis'))
 
 @bot.event

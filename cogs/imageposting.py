@@ -107,14 +107,14 @@ class Imageposting(commands.Cog):
     @image.command(name='rarity', help='displays different rarities, their chances, and points given')
     async def rarity(self, ctx):
         tempstr = ''
-        temp = ["Legendary **(300/100)**: 0.25%",
-                "Mythic **(200/60)**: 0.75%",
-                "Epic **(100/30)**: 1.5%",
-                "Plant's favourite **(50/20)**: 2.5%",
-                "Ultra rare **(25/10)**: 5%",
-                "Rare **(10/5)**: 10%",
-                "Uncommon **(5/2)**: 20%",
-                "Common **(1/1)**: 60%"]
+        temp = ["Legendary **(600/150)**: 0.5%",
+                "Mythic **(400/100)**: 1.5%",
+                "Epic **(200/50)**: 3%",
+                "Plant's favourite **(100/30)**: 5%",
+                "Ultra rare **(50/15)**: 12.5%",
+                "Rare **(20/8)**: 17.5%",
+                "Uncommon **(10/4)**: 25%",
+                "Common **(1/1)**: 35%"]
         for r in temp:
             tempstr += r +'\n'
         embed = discord.Embed()

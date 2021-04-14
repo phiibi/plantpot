@@ -5,7 +5,7 @@ import os
 import json
 
 from discord.ext import commands
-from cogs import checkers
+from cogs import checkers, leaderboard
 
 
 class Admin(commands.Cog):
@@ -73,16 +73,13 @@ class Admin(commands.Cog):
     @commands.command(name='teleports', hidden=True)
     @checkers.is_plant_owner()
     async def teleports(self, ctx, user: discord.Member, url,  *, name):
-        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
-            d = json.loads(file.read())
-
-        for u in d['users']:
-            if u['userid'] == user.id:
-                u['image_name'].append(name)
-                u['image_url'].append(url)
-        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
-                json.dump(d, file)
+        await leaderboard.AnimeLeaderboard.addpoint(self, user.id, ctx.guild.id, url, name, 0)
         await ctx.send('*teleports behind you* nothing personal kid')
+
+    @commands.command(name='hoot', hidden=True)
+    @checkers.is_plant_owner()
+    async def gifting(self, ctx, user: discord.Member, *, name):
+        await leaderboard.Leaderboard.addpoint(self, user.id, ctx.guild.id, name, 0)
 
 def setup(bot):
     bot.add_cog(Admin(bot))

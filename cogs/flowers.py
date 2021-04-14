@@ -26,29 +26,29 @@ class Flower(commands.Cog):
             await asyncio.sleep(5)
             if imageposting.Imageposting.checktime(self, start):
                 r = random.random()
-                if r <= 0.00001:
-                    p = 500
+                if r <= 0.0001:
+                    p = 1500
                     x = 0
-                elif r <= 0.0025:
-                    p = 300
+                elif r <= 0.005:
+                    p = 600
                     x = 1
-                elif r <= 0.0075:
-                    p = 200
+                elif r <= 0.02:
+                    p = 400
                     x = 2
-                elif r <= 0.015:
-                    p = 100
-                    x = 3
-                elif r <= 0.025:
-                    p = 50
-                    x = 4
                 elif r <= 0.05:
-                    p = 25
-                    x = 5
+                    p = 200
+                    x = 3
                 elif r <= 0.1:
-                    p = 10
+                    p = 100
+                    x = 4
+                elif r <= 0.225:
+                    p = 50
+                    x = 5
+                elif r <= 0.425:
+                    p = 20
                     x = 6
-                elif r <= 0.2:
-                    p = 5
+                elif r <= 0.7:
+                    p = 10
                     x = 7
                 else:
                     p = 1
@@ -79,21 +79,21 @@ class Flower(commands.Cog):
                 if await leaderboard.Leaderboard.checkimage(self, usr.id, ctx.guild.id, image[0]):
                     coll = True
                     if x == 0:
-                        p = 200
+                        p = 500
                     elif x == 1:
-                        p = 100
+                        p = 150
                     elif x == 2:
-                        p = 60
+                        p = 100
                     elif x == 3:
-                        p = 30
+                        p = 50
                     elif x == 4:
-                        p = 20
+                        p = 30
                     elif x == 5:
-                        p = 10
+                        p = 15
                     elif x == 6:
-                        p = 5
+                        p = 8
                     elif x == 7:
-                        p = 2
+                        p = 4
                     else:
                         p = 1
                 await leaderboard.Leaderboard.addpoint(self, usr.id, ctx.guild.id, image[0], p)
