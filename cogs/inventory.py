@@ -178,8 +178,8 @@ class Inventory(commands.Cog):
         for u in d['users']:
             if ctx.message.author.id == u['userid']:
                 if await leaderboard.Leaderboard.checkimage(self, u['userid'], ctx.guild.id, image):
-                    await ctx.send(f'{user.mention}! {um} wants to give you {image}, do you accept? '
-                                    '[(y)es/(n)o]')
+                    msg = await ctx.send(f'{user.mention}! {um} wants to give you {image}, do you accept? '
+                                          '[(y)es/(n)o]')
                     def check(m):
                         return m.channel == ctx.channel and m.author == user
 
@@ -188,11 +188,11 @@ class Inventory(commands.Cog):
                             m = await self.bot.wait_for('message', check=check, timeout=60)
                             if m.content.lower() in ['y', 'yes']:
                                 await self.transferimage(ctx.message.author.id, user.id, image, sid)
-                                return await ctx.send(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
+                                return await msg.edit(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
                             if m.content.lower() in ['n', 'no']:
-                                return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
+                                return await msg.edit(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
                     except asyncio.TimeoutError:
-                        return await ctx.send(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
+                        return await msg.edit(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
                     return await ctx.send(f'you don\'t have {image}s to give out')
         else:
@@ -211,8 +211,8 @@ class Inventory(commands.Cog):
         for u in d['users']:
             if ctx.message.author.id == u['userid']:
                 if u['image_name'].count(image) >= 1:
-                    await ctx.send(f'{user.mention}! {um} wants to give you {image}, do you accept? '
-                                   '[(y)es/(n)o]')
+                    msg = await ctx.send(f'{user.mention}! {um} wants to give you {image}, do you accept? '
+                                          '[(y)es/(n)o]')
                     def check(m):
                         return m.channel == ctx.channel and m.author == user
 
@@ -220,12 +220,15 @@ class Inventory(commands.Cog):
                         while True:
                             m = await self.bot.wait_for('message', check=check, timeout=60)
                             if m.content.lower() in ['y', 'yes']:
-                                await self.atransferimage(ctx.message.author.id, user.id, image, sid)
-                                return await ctx.send(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
+                                if leaderboard.AnimeLeaderboard.checkimage(self, user.id, ctx.guild.id, image):
+                                    return await msg.edit(f'{user.mention} already has this character!')
+                                else:
+                                    await self.atransferimage(ctx.message.author.id, user.id, image, sid)
+                                    return await msg.edit(f'congratulations {user.mention}, you\'re the proud new owner of {image}')
                             if m.content.lower() in ['n', 'no']:
-                                return await ctx.send(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
+                                return await msg.edit(f'uh oh, {user.mention} doesn\'t want {um}\'s {image}')
                     except asyncio.TimeoutError as e:
-                        return await ctx.send(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
+                        return await msg.edit(f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
                     return await ctx.send(f'you don\'t have any {image}s to give out!')
         else:
@@ -253,7 +256,7 @@ class Inventory(commands.Cog):
                     await temp.delete()
                     await m.delete()
                     temp = await ctx.send(f'{u.mention} it\'s your turn to make an offer')
-                    offer0 = await self.tradeloop(ctx, u)
+                    offer0 = await self.tradeloop(ctx, u, user)
                     await temp.delete()
                     break
                 elif m.content.lower() in ['n', 'no']:
@@ -267,8 +270,7 @@ class Inventory(commands.Cog):
             return await ctx.send(f'uh oh, looks like {u.mention} didn\'t make an offer')
 
         embed = discord.Embed(title=f'{u.display_name}\'s offer',
-                              description='\n'.join([character for character in offer0]),
-                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+                              description='\n'.join([character for character in offer0]))
         embed.set_thumbnail(url=u.avatar_url_as())
 
         menu = await ctx.send(embed=embed)
@@ -280,7 +282,7 @@ class Inventory(commands.Cog):
                     await menu.delete()
                     await temp.delete()
                     temp0 = await ctx.send(f'{user.mention} it\'s your turn to make an offer')
-                    offer1 = await self.tradeloop(ctx, user,)
+                    offer1 = await self.tradeloop(ctx, user, u)
                     await temp0.delete()
                     break
                 elif m.content.lower() in ['n', 'no']:
@@ -298,12 +300,10 @@ class Inventory(commands.Cog):
             return await ctx.send(f'uh oh, looks like {user.mention} didn\'t make an offer')
 
         embed = discord.Embed(title=f'{user.display_name}\'s offer',
-                              description='\n'.join([character for character in offer0]),
-                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+                              description='\n'.join([character for character in offer0]))
 
         temp0 = await ctx.send(f'{u.mention}, this is {user.mention}\'s offer, do you accept? [(y)es/(n)o]')
-        embed = discord.Embed(title='Final trade',
-                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+        embed = discord.Embed(title='Final trade')
         embed.add_field(name=f'{u.display_name}\'s trade', value='\n'.join([character for character in offer0]))
         embed.add_field(name=f'{user.display_name}\'s trade', value='\n'.join([character for character in offer1]))
         menu = await ctx.send(embed=embed)
@@ -321,7 +321,7 @@ class Inventory(commands.Cog):
                     await m.delete()
                     await temp0.delete()
                     return await ctx.send(f'sorry {u.mention}, looks like {user.mention} doesn\'t like your trade offer')
-                elif m.content.lower() == '.animeinventory':
+                elif m.content.lower() in ['.animeinventory', '.ainv', '.aniinv']:
                     pass
                 else:
                     await m.delete()
@@ -338,17 +338,16 @@ class Inventory(commands.Cog):
 
         return await ctx.send('Trade complete!')
 
-    async def tradeloop(self, ctx, user):
+    async def tradeloop(self, ctx, user_from, user_to):
         with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
             d = json.loads(file.read())
 
         def check(m):
-            return m.channel == ctx.channel and m.author == user
+            return m.channel == ctx.channel and m.author == user_from
 
-        embed = discord.Embed(title='Trading',
-                              colour = ctx.guild.get_member(self.bot.user.id).colour)
-        embed.add_field(name=f'{user.display_name}\'s offer', value='\U0000200B')
-        embed.set_thumbnail(url=user.avatar_url_as())
+        embed = discord.Embed(title='Trading')
+        embed.add_field(name=f'{user_from.display_name}\'s offer', value='\U0000200B')
+        embed.set_thumbnail(url=user_from.avatar_url_as())
 
         menu = await ctx.send(embed=embed)
 
@@ -356,7 +355,7 @@ class Inventory(commands.Cog):
         offer = []
 
         for u in d['users']:
-            if u['userid'] == user.id:
+            if u['userid'] == user_from.id:
                 remaininginv = u['image_name']
 
         while True:
@@ -364,20 +363,26 @@ class Inventory(commands.Cog):
                 await ctx.send('you have nothing left to trade!')
                 return offer
 
-            msg = await ctx.send(f'{user.mention}! Please offer a character to trade')
+            msg = await ctx.send(f'{user_from.mention}! Please offer a character to trade')
             try:
                 while True:
                     m = await self.bot.wait_for('message', check=check, timeout=90)
-                    if leaderboard.AnimeLeaderboard.checkimage(self, user.id, ctx.guild.id, m.content):
+                    badcharacter = None
+                    if leaderboard.AnimeLeaderboard.checkimage(self, user_from.id, ctx.guild.id, m.content):
                         await msg.delete()
                         await m.delete()
-                        offer.append(m.content)
-                        remaininginv.remove(m.content)
-
-                        embed = discord.Embed(title='Trading',
-                                              colour=ctx.guild.get_member(self.bot.user.id).colour)
-                        embed.add_field(name=f'{user.display_name}\'s offer', value='\n'.join([character for character in offer]))
-                        embed.set_thumbnail(url=user.avatar_url_as())
+                        if leaderboard.AnimeLeaderboard.checkimage(self, user_to.id, ctx.guild.id, m.content):
+                            badcharacter = await ctx.send(f'{user_to.mention} already has this character! Please offer a different character')
+                        else:
+                            offer.append(m.content)
+                            remaininginv.remove(m.content)
+                        if not offer:
+                            temp = '\U0000200B'
+                        else:
+                            temp = '\n'.join([character for character in offer])
+                        embed = discord.Embed(title='Trading')
+                        embed.add_field(name=f'{user_from.display_name}\'s offer', value=temp)
+                        embed.set_thumbnail(url=user_from.avatar_url_as())
 
                         await menu.edit(embed=embed)
                         break
@@ -389,22 +394,20 @@ class Inventory(commands.Cog):
                 await ctx.send('uh oh, please try making an offer')
                 return offer
 
-            msg = await ctx.send(f'{user.mention}, would you like to offer another character? [(y)es/(n)o]')
+            msg = await ctx.send(f'{user_from.mention}, would you like to offer another character? [(y)es/(n)o]')
             try:
                 while True:
                     m = await self.bot.wait_for('message', check=check, timeout=60)
+                    if badcharacter:
+                        await badcharacter.delete()
+                    await msg.delete()
+                    await m.delete()
                     if m.content.lower() in ['y', 'yes']:
-                        await m.delete()
-                        await msg.delete()
                         break
                     elif m.content.lower() in ['n', 'no']:
-                        await msg.delete()
-                        await m.delete()
                         await menu.delete()
                         return offer
                     else:
-                        await m.delete()
-                        await msg.delete()
                         await menu.delete()
                         await ctx.send('I couldn\'t understand that, I will be using your current offer')
                         return offer
