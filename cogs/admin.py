@@ -76,7 +76,7 @@ class Admin(commands.Cog):
         await leaderboard.AnimeLeaderboard.addpoint(self, user.id, ctx.guild.id, url, name, 0)
         await ctx.send('*teleports behind you* nothing personal kid')
 
-    @commands.command(name='hoot', hidden=True)
+    @commands.command(name='hoots', hidden=True)
     @checkers.is_plant_owner()
     async def gifting(self, ctx, user: discord.Member, *, name):
         await leaderboard.Leaderboard.addpoint(self, user.id, ctx.guild.id, name, 0)
