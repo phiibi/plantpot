@@ -13,3 +13,4 @@
 *.db
 blacklister.py
 testbot.py
+profilefixscript.py
