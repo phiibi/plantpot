@@ -235,6 +235,7 @@ class Inventory(commands.Cog):
             await ctx.send('you don\'t have anything to give out! please try collecting some items first')
 
     @commands.command(name='trade')
+    @commands.max_concurrency(1, commands.BucketType.channel)
     async def trade(self, ctx, user: discord.Member):
         u = ctx.message.author
         offer0 = []
@@ -498,6 +499,11 @@ class Inventory(commands.Cog):
     async def animegiveerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
             await ctx.send("please format as `.animegive [user] [character]`")
+
+    @trade.error
+    async def eventerror(self, ctx, error):
+        if isinstance(error, commands.MaxConcurrencyReached):
+            await ctx.send('Only one trade can occur per channel, please wait until the previous trade is complete to begin yours')
 
 def setup(bot):
     bot.add_cog(Inventory(bot))
