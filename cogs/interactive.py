@@ -96,12 +96,20 @@ class Interactive(commands.Cog):
 
         return temp
 
+    async def getpoints(self, uid, sid):
+        with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
+            d = json.loads(file.read())
+        for user in d['users']:
+            if user['userid'] == uid:
+                return user['points']
+        return False
+
     @commands.command(name='hoot', help='hoot')
     async def hoot(self, ctx):
         matt = 178806981128093697
         plant = 813532137050341407
         await leaderboard.Leaderboard.addpoint(self, matt, plant, "hoot hoot", 0)
-        return await ctx.send(f"You've given Matt a hoot hoot, he now has {await leaderboard.Leaderboard.getpoints(self, matt, plant)} hoot hoots")
+        return await ctx.send(f"You've given Matt a hoot hoot, he now has {await self.getpoints(matt, plant)} hoot hoots")
 
     @commands.command(name='loader', hidden=True)
     @commands.is_owner()

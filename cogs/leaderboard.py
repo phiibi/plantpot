@@ -138,13 +138,6 @@ class Leaderboard(commands.Cog):
                             return True
         return False
 
-    async def getpoints(self, uid, sid):
-        with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
-            d = json.loads(file.read())
-        for user in d['users']:
-            if user['userid'] == uid:
-                return user['points']
-        return False
 
 
     @leaderboard.command(name='clear', help='clears the leaderboard', hidden=True)
