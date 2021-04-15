@@ -418,7 +418,7 @@ class Profile(commands.Cog):
         with open(f'cogs/userblacklist.json', 'r') as file:
             d = json.loads(file.read())
         if d['id'].count(user.id):
-            d.remove(user.id)
+            d['id'].remove(user.id)
             await ctx.send(f'{user.mention} has been removed from the blacklist')
         else:
             return await ctx.send('user was not on the blacklist')
