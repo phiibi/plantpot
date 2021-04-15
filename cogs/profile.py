@@ -428,7 +428,7 @@ class Profile(commands.Cog):
     async def checkblacklist(self, userid):
         with open(f'cogs/userblacklist.json', 'r') as file:
             d = json.loads(file.read())
-        if d['id'].count(userid):
+        if d['id'].count(userid) >= 1:
             return True
         return False
 
