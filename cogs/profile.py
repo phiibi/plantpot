@@ -412,6 +412,19 @@ class Profile(commands.Cog):
         with open(f'cogs/userblacklist.json', 'w') as file:
             json.dump(d, file)
 
+    @commands.command(name='whitelist', hidden=True)
+    @checkers.is_plant_owner()
+    async def whitelist(self, ctx, user: discord.Member):
+        with open(f'cogs/userblacklist.json', 'r') as file:
+            d = json.loads(file.read())
+        if d['id'].count(user.id):
+            d.remove(user.id)
+            await ctx.send(f'{user.mention} has been removed from the blacklist')
+        else:
+            return await ctx.send('user was not on the blacklist')
+        with open(f'cogs/userblacklist.json', 'w') as file:
+            json.dump(d, file)
+
     async def checkblacklist(self, userid):
         with open(f'cogs/userblacklist.json', 'r') as file:
             d = json.loads(file.read())
