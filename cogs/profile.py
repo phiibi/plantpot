@@ -90,7 +90,7 @@ class Profile(commands.Cog):
     async def marry(self, ctx, user: discord.Member):
         if ctx.guild.id == 502944697225052181:
             return await ctx.send('This feature is disabled on this server')
-        if self.checkblacklist(ctx.user.id):
+        if self.checkblacklist(ctx.message.author.id):
             return await ctx.send('You are currently blacklisted from using this command')
         if self.checkblacklist(user.id):
             return await ctx.send(f'{user.mention} is currently blacklisted from using this command')
