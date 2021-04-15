@@ -6,7 +6,7 @@ import asyncio
 
 from discord.ext import commands
 from datetime import date
-from cogs import leaderboard, badges
+from cogs import leaderboard, badges, checkers
 
 
 class Profile(commands.Cog):
@@ -90,6 +90,10 @@ class Profile(commands.Cog):
     async def marry(self, ctx, user: discord.Member):
         if ctx.guild.id == 502944697225052181:
             return await ctx.send('This feature is disabled on this server')
+        if self.checkblacklist(ctx.user.id):
+            return await ctx.send('You are currently blacklisted from using this command')
+        if self.checkblacklist(user.id):
+            return await ctx.send(f'{user.mention} is currently blacklisted from using this command')
         if user == self.bot.user:
             return await ctx.send('thank you but the law doesn\'t recognise me as somebody you could marry...')
         if user == ctx.message.author:
@@ -394,6 +398,25 @@ class Profile(commands.Cog):
 
         with open(f'cogs/profiles.json', 'w') as file:
             json.dump(temp, file)
+
+    @commands.command(name='blacklist', hidden=True)
+    @checkers.is_plant_owner()
+    async def blacklist(self, ctx, user: discord.Member):
+        with open(f'cogs/userblacklist.json', 'r') as file:
+            d = json.loads(file.read())
+        if d['id'].count(user.id):
+            return await ctx.send('this user is already blacklisted')
+        else:
+            d['id'].append(user.id)
+        with open(f'cogs/userblacklist.json', 'w') as file:
+            json.dump(d, file)
+
+    async def checkblacklist(self, userid):
+        with open(f'cogs/userblacklist.json', 'r') as file:
+            d = json.loads(file.read())
+        if d['id'].count(userid):
+            return True
+        return False
 
 
 # -------------- Error handling -------------- #
