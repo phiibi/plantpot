@@ -90,9 +90,9 @@ class Profile(commands.Cog):
     async def marry(self, ctx, user: discord.Member):
         if ctx.guild.id == 502944697225052181:
             return await ctx.send('This feature is disabled on this server')
-        if self.checkblacklist(ctx.message.author.id):
+        if await self.checkblacklist(ctx.message.author.id):
             return await ctx.send('You are currently blacklisted from using this command')
-        if self.checkblacklist(user.id):
+        if await self.checkblacklist(user.id):
             return await ctx.send(f'{user.mention} is currently blacklisted from using this command')
         if user == self.bot.user:
             return await ctx.send('thank you but the law doesn\'t recognise me as somebody you could marry...')
@@ -428,8 +428,7 @@ class Profile(commands.Cog):
     async def checkblacklist(self, userid):
         with open(f'cogs/userblacklist.json', 'r') as file:
             d = json.loads(file.read())
-        if d['id'].count(userid) >= 1:
-            print('yes')
+        if d['id'].count(userid):
             return True
         return False
 
