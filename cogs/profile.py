@@ -429,6 +429,7 @@ class Profile(commands.Cog):
         with open(f'cogs/userblacklist.json', 'r') as file:
             d = json.loads(file.read())
         if d['id'].count(userid) >= 1:
+            print('yes')
             return True
         return False
 
