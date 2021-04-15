@@ -408,6 +408,7 @@ class Profile(commands.Cog):
             return await ctx.send('this user is already blacklisted')
         else:
             d['id'].append(user.id)
+            await ctx.send(f'{user.mention} has been blacklisted')
         with open(f'cogs/userblacklist.json', 'w') as file:
             json.dump(d, file)
 
