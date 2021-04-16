@@ -415,7 +415,7 @@ class Profile(commands.Cog):
         if isinstance(error, commands.errors.MissingRequiredArgument):
             embed = discord.Embed()
             embed.title = 'please format this command as .profile help [command] for more information'
-            embed.add_field(name='Please format these commands as .profile [command]', value='**setbio**: sets your bio \n **setpronouns**: sets your pronouns \n **setsexuality**: sets your sexuality \n **setimage**: sets a display image\n**setbadge**: sets a badge to profile', inline=False)
+            embed.add_field(name='Please format these commands as .profile [command]', value='**setbio**: sets your bio \n**setpronouns**: sets your pronouns \n**setsexuality**: sets your sexuality \n**setimage**: sets a display image\n**setbadge**: sets a badge to profile', inline=False)
             embed.add_field(name='Please format these commands as they are', value='**profile**: posts your profile\n**rep**: gifts a rep to another user\n**marry**: lets you marry another user\n**divorce**: lets you divorce a user you\'ve married', inline=False)
             await ctx.send(embed=embed)
 
