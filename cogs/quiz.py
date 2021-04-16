@@ -1,6 +1,6 @@
 # -----  Matthew Hammond, 2021  -----
 # ----  Plant Bot Quiz Commands  ----
-# -------------  v1.11  --------------
+# -------------  v1.11.2  --------------
 
 
 import discord
@@ -15,7 +15,7 @@ from random import shuffle
 
 class Quiz(commands.Cog):
 
-    version = "1.11.1"
+    version = "1.11.2s"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -527,7 +527,7 @@ class Quiz(commands.Cog):
                     """, (questionId,))
                     page = 0
 
-    async def changeQuestionName(self, ctx, msg, questionId):
+    async def changeQuestionText(self, ctx, msg, questionId):
 
         def check(msg):
             return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
