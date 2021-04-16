@@ -135,7 +135,7 @@ class Leaderboard(commands.Cog):
             if user['userid'] == uid:
                 for i in user['images']:
                     for k in i:
-                        if k == image:
+                        if k.lower() == image.lower():
                             return True
         return False
 
@@ -259,8 +259,10 @@ class AnimeLeaderboard(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for user in d['users']:
-            if user['userid'] == uid and user['image_name'].count(name) >= 1:
-                return True
+            if user['userid'] == uid:
+                for image in user['image_name']:
+                    if image.lower() == name.lower():
+                        return True
         return False
 
     @ani.command(name='clear', help='clears the leaderboard', hidden=True)

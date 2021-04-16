@@ -211,7 +211,7 @@ class Inventory(commands.Cog):
             return await ctx.send ('you can\'t give yourself something!')
         for u in d['users']:
             if ctx.message.author.id == u['userid']:
-                if u['image_name'].count(image) >= 1:
+                if leaderboard.AnimeLeaderboard.checkimage(self, ctx.author.id, ctx.guild.id, image):
                     msg = await ctx.send(f'{user.mention}! {um} wants to give you {image}, do you accept? '
                                           '[(y)es/(n)o]')
                     def check(m):
@@ -420,19 +420,20 @@ class Inventory(commands.Cog):
                 return offer
 
     async def transferimage(self, id_from, id_to, image, sid):
-        await leaderboard.Leaderboard.addpoint(self, id_to, sid, image, 0)
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         for i, user in enumerate(d['users']):
             if user['userid'] == id_from:
                 for im in user['images']:
                     for k in im.items():
-                        if k[0] == image:
-                            if im.get(image) == 1:
-                                user['images'].remove(im)
+                        if k[0].lower() == image.lower():
+                            temp = k[0]
+                            if k[1] == 1:
+                                user['images'].remove(k)
                             else:
-                                im.update({f'{image}': im.get(image)-1})
+                                im.update({f'{k[0]}': k[1]-1})
                 break
+        await leaderboard.Leaderboard.addpoint(self, id_to, sid, temp, 0)
         with open(f'cogs/leaderboards/lb{sid}.json', 'w') as file:
             json.dump(d, file)
 
@@ -443,16 +444,20 @@ class Inventory(commands.Cog):
         tempurl = ""
         for i, user in enumerate(d['users']):
             if user['userid'] == id_from:
-                n = user['image_name'].index(imagename)
+                for x, character in enumerate(user['image_name']):
+                    if character.lower() == imagename.lower():
+                        n = x
+                        break
                 image_n = user['image_name']
                 image_u = user['image_url']
-                tempname = image_n[n]
-                tempurl = image_u[n]
-                image_n.remove(imagename)
+                tempname = user['image_name'][n]
+                tempurl = user['image_url'][n]
+                image_n.remove(tempname)
                 image_u.pop(n)
                 d['users'][i].update({"userid": id_from,
                                       "points": user['points'],
-                                      "image_name": image_n})
+                                      "image_name": image_n,
+                                      "image_url": image_u})
                 break
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)

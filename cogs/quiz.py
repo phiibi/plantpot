@@ -1092,7 +1092,7 @@ class Quiz(commands.Cog):
                 # If the quiz doesn't exist or the quiz is not valid (at least 1 right and wrong answer for every question, and only valid emojis).
                 embed = discord.Embed(
                     title = "Quiz Error",
-                    description = "Invalid Quiz Name: \"{}\"\nUse \"quiz list\" to see a list of available quizzes in this server.".format(args[0]),
+                    description = "Invalid Quiz Name: \"{}\"\nUse \"quiz list\" to see a list of available quizzes in this server.\nIs this a global quiz? Please format this command as `.quiz [quiz name] -g [other modifiers]` if it is".format(args[0]),
                     colour = ctx.guild.get_member(self.bot.user.id).colour,
                     timestamp = datetime.now(),
                 )

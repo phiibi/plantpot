@@ -113,7 +113,7 @@ async def on_message(message):
     if mcl == 'good bot':
         await message.channel.send('good user')
 
-    if mcl() == 'thank you plant':
+    if fullmatch('(thank you|ty)\s(plant)', mcl()):
         await message.channel.send('you\'re welcome ' + message.author.mention)
 
     if mcl() == 'and i oop':
@@ -129,7 +129,6 @@ async def on_message(message):
         await message.channel.send('owa owa')
 
     await bot.process_commands(message)
-
 
 bot.load_extension('cogs.interactive')
 bot.load_extension('cogs.imageposting')

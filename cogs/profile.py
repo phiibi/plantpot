@@ -188,8 +188,6 @@ class Profile(commands.Cog):
         if user == ctx.message.author:
             await ctx.send('you cannot rep yourself!')
             return ctx.command.reset_cooldown(ctx)
-        if user is None:
-            return await ctx.send('hhh')
         p = Profile.addprofile(self, user.id)
 
         with open('cogs/profiles.json', 'r') as file:
@@ -455,7 +453,7 @@ class Profile(commands.Cog):
             elif h == 0:
                 await ctx.send(f'you are currently on cooldown, please try again in {m:g} minutes')
             else:
-                await ctx.send(f'you are currently on cooldown, please try again in {h:g} hours and  {m:g} minutes')
+                await ctx.send(f'you are currently on cooldown, please try again in {h:g} hours and {m:g} minutes')
         if isinstance(error, commands.errors.MissingRequiredArgument):
             await ctx.send('please format as `.rep [mention]`')
             ctx.command.reset_cooldown(ctx)
