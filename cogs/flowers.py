@@ -11,6 +11,7 @@ from cogs import imageposting, leaderboard, profile, checkers
 from discord.ext import commands
 
 class Flower(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
         self.emoji = '\U0001F338'

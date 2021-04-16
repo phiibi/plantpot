@@ -11,6 +11,7 @@ from cogs import leaderboard
 
 
 class Inventory(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
 

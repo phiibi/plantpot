@@ -9,6 +9,7 @@ from cogs import leaderboard, checkers
 from math import ceil
 
 class Badge(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
 

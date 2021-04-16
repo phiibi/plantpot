@@ -6,10 +6,11 @@ import asyncio
 
 from discord.ext import commands
 from datetime import date
-from cogs import leaderboard, badges, checkers
+from cogs import leaderboard, badges
 
 
 class Profile(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
         self.store = 'randomImages'
@@ -414,17 +415,8 @@ class Profile(commands.Cog):
         if isinstance(error, commands.errors.MissingRequiredArgument):
             embed = discord.Embed()
             embed.title = 'please format this command as .profile help [command] for more information'
-            embed.description = """profile commands are:
-            **profile**: posts your profile
-            **setbio**: sets your bio
-            **setpronouns**: sets your pronouns
-            **setsexuality**: sets your sexuality
-            **setimage**: sets a display image
-            **setbadge**: sets a badge to profile
-            **rep**: gifts a rep to another user
-            **marry**: lets you marry another user
-            **divorce**: lets you divorce a user you've married"""
-
+            embed.add_field(name='Please format these commands as .profile [command]', value='**setbio**: sets your bio \n **setpronouns**: sets your pronouns \n **setsexuality**: sets your sexuality \n **setimage**: sets a display image\n**setbadge**: sets a badge to profile')
+            embed.add_field(name='Please format these commands as they are', value='**profile**: posts your profile\n**rep**: gifts a rep to another user\n**marry**: lets you marry another user\n**divorce**: lets you divorce a user you\'ve married')
             await ctx.send(embed=embed)
 
     @setpronouns.error

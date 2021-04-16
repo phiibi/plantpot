@@ -14,6 +14,7 @@ from cogs import profile, leaderboard, imageposting, checkers
 from discord.ext import commands
 
 class Anime(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
         self.emoji = '\U0001F338'

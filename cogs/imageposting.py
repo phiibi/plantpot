@@ -12,6 +12,7 @@ from discord.ext import commands
 
 #cog with all image posting capabilities
 class Imageposting(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
         self.spam = False

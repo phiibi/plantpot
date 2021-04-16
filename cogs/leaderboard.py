@@ -8,6 +8,7 @@ from discord.ext import commands
 from cogs import checkers
 
 class Leaderboard(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
 

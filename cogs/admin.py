@@ -9,6 +9,7 @@ from cogs import checkers, leaderboard
 
 
 class Admin(commands.Cog):
+    version = '0.1'
     def __init__(self, bot):
         self.bot = bot
 
