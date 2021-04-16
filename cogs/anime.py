@@ -120,6 +120,9 @@ class Anime(commands.Cog):
                         elif await c.checkuser(ctx, usr.id) and (ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181):
                             await ctx.send(f'hold up {usr.mention}, you\'ve collected a character too recently, please wait a second to give other users a chance!')
                             await r.remove(usr)
+                        #elif await checkuserblacklist(usr.id):
+                        #    await ctx.send(f'hold up {usr.mention}, you\'ve been blacklisted from plant, please visit my server to appeal your ban')
+                        #    await r.remove(usr)
                         else:
                             break
                 if reroll:
@@ -364,6 +367,13 @@ async def retry(func, *args, retry_count=5, delay=5, **kwargs):
             pass
         await asyncio.sleep(delay)
     return response
+
+async def checkuserblacklist(userid):
+    with open(f'cogs/userblacklist.json', 'r') as file:
+        d = json.loads(file.read())
+    if d['id'].count(userid):
+        return True
+    return False
 
 def setup(bot):
     bot.add_cog(Anime(bot))

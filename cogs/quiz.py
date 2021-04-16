@@ -15,7 +15,7 @@ from random import shuffle
 
 class Quiz(commands.Cog):
 
-    version = "1.11"
+    version = "1.11.1"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -853,7 +853,7 @@ class Quiz(commands.Cog):
             await msg.edit(embed = embed)
 
             try:
-                answerEmoji, user = await self.bot.wait_for("reaction_add", timeout = 60, check = reaction_check)
+                answerEmoji, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
             except asyncio.TimeoutError:
                 return
             await msg.remove_reaction(answerEmoji, user)
@@ -867,7 +867,7 @@ class Quiz(commands.Cog):
                 await msg.edit(embed = embed)
 
                 try:
-                    reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = reaction_check)
+                    reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
                 except asyncio.TimeoutError:
                     return
                 await msg.remove_reaction(reaction, user)
@@ -906,7 +906,7 @@ class Quiz(commands.Cog):
         data = self.executeSQL("""
             SELECT questions.text, answers.text, answers.correct FROM answers
             INNER JOIN questions ON questions.question_id = answers.question_id
-            WHERE answers.answerid = ?
+            WHERE answers.answer_id = ?
         """, (answerId,))[0]
 
         embed = discord.Embed(
