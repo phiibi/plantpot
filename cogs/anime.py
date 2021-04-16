@@ -149,21 +149,27 @@ class Anime(commands.Cog):
 
     @anime.command(name='rarity', help='displays different rarities, their chances, and points given')
     async def rarity(self, ctx):
-        tempstr = ''
-        temp = ["Legendary popular **(100)** *(Top 5 anime on MAL)*: 0.5%",
-                "Mythic popular **(50)** *(Top 5-19 anime on MAL)*: 1.5%",
-                "Epic popular **(10)** *(Top 20-49 anime on MAL)*: 3.5%",
-                "Rare popular **(7)** *(Top 50-99 anime on MAL)*: 4.5%",
-                "Uncommon popular **(5)** *(Top 100- 249 anime on MAL)*: 12.5%",
-                "Common **(1)** *(Between the top 250th show and 25,000 watches on MAL)*: 62.5%",
-                "Uncommon obscure **(5)** *(Between 20,000 and 25,000 watches on MAL)*: 7.5%",
-                "Rare obscure **(7)** *(Between 15,000 and 20,000 watches on MAL)*: 5%",
-                "Epic obscure **(10)** *(Between 10,000 and 15,000 watches on MAL)*: 2.5%"]
-        for r in temp:
-            tempstr += r +'\n'
+        if ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181:
+            temp = ['Legendary **(300)** *(Top 50 characters on MAL)*: 0.5%',
+                    'Mythic **(150)** *(Top 51 - 150 characters on MAL)*: 0.75%',
+                    'Epic **(100)** *(Top 151 - 300 characters on MAL)*: 1.3%',
+                    'Ultra Rare **(25)** *(Top 300 - 550 characters on MAL)*: 3.5%',
+                    'Rare **(10)** *(Top 551 - 1050 characters on MAL)*: 7.5%',
+                    'Uncommon **(5)** *(Top 1051 - 2050 characters on MAL)*: 15%',
+                    'Common **(1)** *(Top 2051 - 5000 characters on MAL)*: 71.45%']
+        else:
+            temp = ["Legendary popular **(100)** *(Top 5 anime on MAL)*: 0.5%",
+                    "Mythic popular **(50)** *(Top 5-19 anime on MAL)*: 1.5%",
+                    "Epic popular **(10)** *(Top 20-49 anime on MAL)*: 3.5%",
+                    "Rare popular **(7)** *(Top 50-99 anime on MAL)*: 4.5%",
+                    "Uncommon popular **(5)** *(Top 100- 249 anime on MAL)*: 12.5%",
+                    "Common **(1)** *(Between the top 250th show and 25,000 watches on MAL)*: 62.5%",
+                    "Uncommon obscure **(5)** *(Between 20,000 and 25,000 watches on MAL)*: 7.5%",
+                    "Rare obscure **(7)** *(Between 15,000 and 20,000 watches on MAL)*: 5%",
+                    "Epic obscure **(10)** *(Between 10,000 and 15,000 watches on MAL)*: 2.5%"]
         embed = discord.Embed()
         embed.title = "Anime rarities"
-        embed.description = tempstr
+        embed.description = '\n'.join([i for i in temp])
         await ctx.send(embed=embed)
 
     @anime.command(name='blacklist', hidden=True)
