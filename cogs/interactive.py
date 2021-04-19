@@ -61,13 +61,13 @@ class Interactive(commands.Cog):
                     if f.count(item['name']) == 1:
                         count += 1
                     if item['name'] == 'Coneflower' or item['name'] == 'Amaryllis':
-                        count += 2
+                        count += 1
         embed = discord.Embed()
         embed.title = f'{user.display_name}\'s progression'
         if count == 0:
             embed.description = 'you haven\'t picked up anything yet!'
         else:
-            embed.description = f'you\'ve collected {count}/{len(f)} flowers, keep it up!'
+            embed.description = f'you\'ve collected {count}/{len(f) - 2} flowers, keep it up!'
         embed.set_thumbnail(url=user.avatar_url_as())
         return await ctx.send(embed=embed)
 
