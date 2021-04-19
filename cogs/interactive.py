@@ -58,7 +58,7 @@ class Interactive(commands.Cog):
         for u in d['users']:
             if u['userid'] == user.id:
                 for item in u['images']:
-                    if f.count(list(item.items())[0][0]) == 1:
+                    if f.count(item['name']) == 1:
                         count += 1
         embed = discord.Embed()
         embed.title = f'{user.display_name}\'s progression'
@@ -80,7 +80,10 @@ class Interactive(commands.Cog):
                 count = len(u['images'])
         embed = discord.Embed()
         embed.title = f'{user.display_name}\'s progression'
-        embed.description = f'you\'ve collected {count}/5000 characters, keep it up!'
+        if count == 0:
+            embed.description = 'you haven\'t picked up anything yet!'
+        else:
+            embed.description = f'you\'ve collected {count}/5000 characters, keep it up!'
         embed.set_thumbnail(url=user.avatar_url_as())
         return await ctx.send(embed=embed)
 
