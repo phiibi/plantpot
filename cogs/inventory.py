@@ -205,6 +205,8 @@ class Inventory(commands.Cog):
                                 if str(r.emoji) == '\U000027A1':
                                     await r.remove(ctx.message.author)
                                     break
+        if m is not None:
+            await m.delete()
         return await ctx.send(f"{ctx.message.author.mention}, you don't have anything in your inventory")
 
     async def sortinv(self, mode, inv):
@@ -333,6 +335,8 @@ class Inventory(commands.Cog):
                                 if str(r.emoji) == '\U000027A1':
                                     await r.remove(ctx.message.author)
                                     break
+        if m is not None:
+            await m.delete()
         return await ctx.send(f"{ctx.message.author.mention}, you don't have anything in your anime inventory")
 
     @commands.command(name='give', help='gives an item from your inventory to another user')
