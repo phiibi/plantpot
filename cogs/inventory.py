@@ -622,11 +622,6 @@ class Inventory(commands.Cog):
         if isinstance(error, commands.errors.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
             await ctx.send("please format as `.give [user] [item]`")
 
-    @animegive.error
-    async def animegiveerror(self, ctx, error):
-        if isinstance(error, commands.errors.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
-            await ctx.send("please format as `.animegive [user] [character]`")
-
     @trade.error
     async def eventerror(self, ctx, error):
         if isinstance(error, commands.MaxConcurrencyReached):
