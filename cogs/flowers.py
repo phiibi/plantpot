@@ -70,7 +70,7 @@ class Flower(commands.Cog):
                     try:
                         r, usr = await self.bot.wait_for('reaction_add', check=check, timeout=14400)
                     except asyncio.TimeoutError:
-                        return await ctx.send('Event timed out due to inactivity, please restart event using `.image event spring`')
+                        return await ctx.send('Event timed out due to inactivity, please ask a user with `manage server` permissions to restart the event using `.image event spring`')
                     if await c.checkuser(ctx, usr.id):
                         await ctx.send(f'hold up {usr.mention}, you\'ve collected a flower too recently, please wait a second to give other users a chance!')
                         await r.remove(usr)

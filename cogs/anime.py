@@ -110,7 +110,7 @@ class Anime(commands.Cog):
                     try:
                         r, usr = await self.bot.wait_for('reaction_add', check=check, timeout=14400)
                     except asyncio.TimeoutError:
-                        return await ctx.send('Event timed out due to inactivity, please restart event using `.anime event`')
+                        return await ctx.send('Event timed out due to inactivity, please ask a user with `manage server` permissions to restart the event using `.anime event`')
                     if str(r) == '\U0001F504':
                         reroll = True
                         break

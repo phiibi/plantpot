@@ -108,5 +108,41 @@ class Admin(commands.Cog):
         with open(f'cogs/userblacklist.json', 'w') as file:
             json.dump(d, file)
 
+    @commands.command(name='fixerupper', hidden=True)
+    @commands.is_owner()
+    async def fixinv(self, ctx):
+        files = [file for file in os.listdir('./cogs/leaderboards/') if file.startswith('lb')]
+        tempstr = ''
+        for file in files:
+            with open(f'cogs/leaderboards/{file}', 'r') as f:
+                d = json.loads(f.read())
+            for user in d['users']:
+                temp = []
+                for item in user['images']:
+                    for k, v in item.items():
+                        temp.append({"name": k,
+                                     "count": v})
+                user['images'] = temp
+            tempstr += f'{file[2:-5]}\n'
+            with open(f'cogs/leaderboards/{file}', 'w') as f:
+                json.dump(d, f)
+        await ctx.send(tempstr)
+        files = [file for file in os.listdir('./cogs/leaderboards/') if file.startswith('a')]
+        for file in files:
+            with open(f'cogs/leaderboards/{file}', 'r') as f:
+                d = json.loads(f.read())
+            for user in d['users']:
+                temp = []
+                for i in range(len(user['image_name'])):
+                    temp.append({"name": user['image_name'][i],
+                                 "url": user['image_url'][i]})
+                user.pop("image_name")
+                user.pop("image_url")
+                user.update({"images": temp})
+            with open(f'cogs/leaderboards/{file}', 'w') as f:
+                json.dump(d, f)
+        await ctx.send('anime done')
+
+
 def setup(bot):
     bot.add_cog(Admin(bot))

@@ -316,9 +316,9 @@ class Profile(commands.Cog):
                 a = json.loads(file.read())
             for user in a['users']:
                 if user['userid'] == u.id:
-                    for i in range(len(user['image_name'])):
-                        if user['image_name'][i].lower() == image.lower():
-                            temp = {"image": {"url": user['image_url'][i], "desc": user['image_name'][i]}}
+                    for im in user['images']:
+                        if im['name'].lower() == image.lower():
+                            temp = {"image": {"url": im['url'], "desc": im['name']}}
                             break
             for i, user in enumerate(p['users']):
                 if user['userid'] == u.id:
