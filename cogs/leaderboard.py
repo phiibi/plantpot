@@ -104,7 +104,7 @@ class Leaderboard(commands.Cog):
             embed.description = helpstr
             await ctx.send(embed=embed)
 
-    async def position(self, ctx, m, *, username: discord.Member=None):
+    async def position(self, ctx, m=None, *, username: discord.Member=None):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
@@ -118,6 +118,8 @@ class Leaderboard(commands.Cog):
                         embed.title = f'you are in #{i+1} place!'
                         embed.description = 'you have collected {0} items so far, totalling {1} points! keep it up!'.format(await calculateItems(lb[i]['images']), lb[i]['points'])
                         embed.set_thumbnail(url=ctx.message.author.avatar_url_as())
+                        if m is None:
+                            return await ctx.send(embed=embed)
                         return await m.edit(embed=embed)
             await ctx.send('you haven\'t collected anything this event!')
         else:
@@ -130,6 +132,8 @@ class Leaderboard(commands.Cog):
                         embed.title = f'{username.display_name} is #{i+1} place!'
                         embed.description = 'they have collected {0} items so far, totalling {1} points!'.format(await calculateItems(lb[i]['images']), lb[i]['points'])
                         embed.set_thumbnail(url=username.avatar_url_as())
+                        if m is None:
+                            return await ctx.send(embed=embed)
                         return await m.edit(embed=embed)
             await ctx.send(f'{username.display_name} has\'t collected anything this event!')
 
