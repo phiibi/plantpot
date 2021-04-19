@@ -529,7 +529,7 @@ class Inventory(commands.Cog):
         for u in d['users']:
             if u['userid'] == user_from.id:
                 for image in u['images']:
-                    remaininginv.append(image['name'])
+                    remaininginv.append(image['name'].lower())
 
         while True:
             if not remaininginv:
@@ -548,7 +548,7 @@ class Inventory(commands.Cog):
                             badcharacter = await ctx.send(f'{user_to.mention} already has this character! Please offer a different character')
                         else:
                             offer.append(m.content)
-                            remaininginv.remove(m.content)
+                            remaininginv.remove(m.content.lower())
                         if not offer:
                             temp = '\U0000200B'
                         else:
