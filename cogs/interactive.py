@@ -14,7 +14,7 @@ class Interactive(commands.Cog):
 
     @commands.command(name='avatar', help='returns my avatar')
     async def avatar(self, ctx):
-        embed = discord.Embed()
+        embed = discord.Embed(colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.title = 'here\'s my avatar!'
         embed.set_image(url='https://i.imgur.com/I9SPukW.jpg')
         embed.set_footer(text='art done by https://twitter.com/bunnabells')
@@ -62,7 +62,7 @@ class Interactive(commands.Cog):
                         count += 1
                     if item['name'] == 'Coneflower' or item['name'] == 'Amaryllis':
                         count += 1
-        embed = discord.Embed()
+        embed = discord.Embed(colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.title = f'{user.display_name}\'s progression'
         if count == 0:
             embed.description = 'you haven\'t picked up anything yet!'
@@ -80,7 +80,7 @@ class Interactive(commands.Cog):
         for u in d['users']:
             if u['userid'] == user.id:
                 count = len(u['images'])
-        embed = discord.Embed()
+        embed = discord.Embed(colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.title = f'{user.display_name}\'s progression'
         if count == 0:
             embed.description = 'you haven\'t picked up anything yet!'

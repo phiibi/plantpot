@@ -368,7 +368,6 @@ class Inventory(commands.Cog):
                     except asyncio.TimeoutError:
                         return await msg.edit(content=f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
-                    print('exit')
                     return await self.animegive(ctx, user=user, image=image)
         return await self.animegive(ctx, user, image)
 
