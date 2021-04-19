@@ -373,7 +373,6 @@ class Inventory(commands.Cog):
         return await self.animegive(ctx, user, image)
 
     async def animegive(self, ctx, user: discord.Member, *, image):
-        print('neato')
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/a{sid}.json', 'r') as file:
             d = json.loads(file.read())
@@ -529,7 +528,8 @@ class Inventory(commands.Cog):
 
         for u in d['users']:
             if u['userid'] == user_from.id:
-                remaininginv = u['image_name']
+                for image in u['images']:
+                    remaininginv.append(image['name'])
 
         while True:
             if not remaininginv:
@@ -537,8 +537,8 @@ class Inventory(commands.Cog):
                 return offer
 
             msg = await ctx.send(f'{user_from.mention}! Please offer a character to trade')
-            try:
-                while True:
+            while True:
+                try:
                     m = await self.bot.wait_for('message', check=check, timeout=90)
                     badcharacter = None
                     if leaderboard.AnimeLeaderboard.checkimage(self, user_from.id, ctx.guild.id, m.content):
@@ -562,14 +562,15 @@ class Inventory(commands.Cog):
                     else:
                         await m.delete()
                         await ctx.send('I couldn\'t find that character, please try again')
-            except asyncio.TimeoutError:
-                await menu.delete()
-                await ctx.send('uh oh, please try making an offer')
-                return offer
+                except asyncio.TimeoutError:
+                    await menu.delete()
+                    await ctx.send('uh oh, please try making an offer')
+                    return offer
 
             msg = await ctx.send(f'{user_from.mention}, would you like to offer another character? [(y)es/(n)o]')
-            try:
-                while True:
+            while True:
+                try:
+
                     m = await self.bot.wait_for('message', check=check, timeout=60)
                     if badcharacter:
                         await badcharacter.delete()
@@ -584,10 +585,10 @@ class Inventory(commands.Cog):
                         await menu.delete()
                         await ctx.send('I couldn\'t understand that, I will be using your current offer')
                         return offer
-            except asyncio.TimeoutError:
-                await menu.delete()
-                await ctx.send('uh oh, we ran out of time, I will be using your current offer')
-                return offer
+                except asyncio.TimeoutError:
+                    await menu.delete()
+                    await ctx.send('uh oh, we ran out of time, I will be using your current offer')
+                    return offer
 
     async def transferimage(self, id_from, id_to, image, sid):
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
