@@ -24,12 +24,7 @@ class Leaderboard(commands.Cog):
 
     @commands.command(name='myleaderboard', help='shows yours, or a given user\'s position on leaderboard', aliases=['mylb', 'position', 'pos', 'mypos'])
     async def mylb(self, ctx, *, username: discord.Member=None):
-        if ctx.guild.id == 689877729294024725:
-            return await self.position(ctx, username=username)
-        elif ctx.guild.id == 502944697225052181:
-            return await AnimeLeaderboard.position(self, ctx, username=username)
-        else:
-            return await self.mylbmenu(ctx, username)
+        return await self.mylbmenu(ctx, username)
 
     async def mylbmenu(self, ctx, username=None):
         embed = discord.Embed(title='Leaderboard Position Menu',
@@ -58,12 +53,7 @@ class Leaderboard(commands.Cog):
 
     @commands.command(name='top10', help='displays the current leaderboard', aliases=['lb', 'top'])
     async def lb(self, ctx):
-        if ctx.guild.id == 689877729294024725:
-            return await self.getlb(ctx)
-        elif ctx.guild.id == 502944697225052181:
-            return await AnimeLeaderboard.getlb(self, ctx)
-        else:
-            return await self.lbmenu(ctx)
+        return await self.lbmenu(ctx)
 
     async def lbmenu(self, ctx):
         embed = discord.Embed(title='Leaderboard Menu',
@@ -83,13 +73,12 @@ class Leaderboard(commands.Cog):
                 r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
                 if r.emoji == self.EMOJIS["0"]:
                     await m.clear_reactions()
-                    return await self.getlb(ctx)
+                    return await self.getlb(ctx, m)
                 elif r.emoji == self.EMOJIS["1"]:
                     await m.clear_reactions()
-                    return await AnimeLeaderboard.getlb(self, ctx)
+                    return await AnimeLeaderboard.getlb(self, ctx, m)
             except asyncio.TimeoutError:
                 return await m.delete()
-
 
     @leaderboard.command(name='help', help='full help for leaderboard commands')
     async def help(self, ctx, command):
@@ -137,13 +126,18 @@ class Leaderboard(commands.Cog):
                         return await m.edit(embed=embed)
             await ctx.send(f'{username.display_name} has\'t collected anything this event!')
 
-    async def getlb(self, ctx, m=None):
+    async def getlb(self, ctx, m):
         sid = ctx.guild.id
         with open(f'cogs/leaderboards/lb{sid}.json', 'r') as file:
             d = json.loads(file.read())
         lb = d['users']
         lb.sort(key=operator.itemgetter('points'), reverse=True)
         lbtxt = ''
+        if len(lb) == 0:
+            embed = discord.Embed(title='Leaderboard',
+                                  description='There are no users on this leaderboard',
+                                  colour=ctx.guild.get_member(self.bot.user.id).colour)
+            return await m.edit(embed=embed)
         if len(lb) < 10:
             x = len(lb)
         else:
@@ -155,8 +149,6 @@ class Leaderboard(commands.Cog):
         embed = discord.Embed(colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.title = f'The top {x} users'
         embed.description = lbtxt
-        if m is None:
-            return await ctx.send(embed=embed)
         return await m.edit(embed=embed)
 
 
@@ -167,6 +159,7 @@ class Leaderboard(commands.Cog):
         if updated is None:
             for i, user in enumerate(d['users']):
                 if user['userid'] == uid:
+                    user['points'] += points
                     c = await Leaderboard.checkimage(self, uid, sid, image)
                     if c:
                         for im in user['images']:
@@ -246,7 +239,12 @@ class AnimeLeaderboard(commands.Cog):
         lb = d['users']
         lb.sort(key=operator.itemgetter('points'), reverse=True)
         lbtxt = ''
-        if len(lb) < 10:
+        if len(lb) == 0:
+            embed = discord.Embed(title='Leaderboard',
+                                  description='There are no users on this leaderboard',
+                                  colour=ctx.guild.get_member(self.bot.user.id).colour)
+            return await m.edit(embed=embed)
+        elif len(lb) < 10:
             x = len(lb)
         else:
             x = 10
