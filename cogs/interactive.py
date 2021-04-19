@@ -101,7 +101,7 @@ class Interactive(commands.Cog):
             d = json.loads(file.read())
         for user in d['users']:
             if user['userid'] == uid:
-                return user['images'][0]["hoot hoot"]
+                return user['images'][0]["count"]
         return False
 
     @commands.command(name='hoot', help='hoot')
