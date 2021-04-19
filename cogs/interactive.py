@@ -60,6 +60,8 @@ class Interactive(commands.Cog):
                 for item in u['images']:
                     if f.count(item['name']) == 1:
                         count += 1
+                    if item['name'] == 'Coneflower' or item['name'] == 'Amaryllis':
+                        count += 2
         embed = discord.Embed()
         embed.title = f'{user.display_name}\'s progression'
         if count == 0:
@@ -94,7 +96,6 @@ class Interactive(commands.Cog):
         temp = []
         for cat in f:
             for flower in f[cat]:
-                t = list(flower.items())
                 temp.append(list(flower.items())[0][0])
 
         return temp
