@@ -15,7 +15,7 @@ from random import shuffle
 
 class Quiz(commands.Cog):
 
-    version = "1.11.2s"
+    version = "1.11.2"
 
     conn = connect("database.db")
     cursor = conn.cursor()
