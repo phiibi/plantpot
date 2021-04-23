@@ -312,7 +312,7 @@ class Profile(commands.Cog):
                 json.dump(p, file)
             return await ctx.send('image set')
         elif leaderboard.AnimeLeaderboard.checkimage(self, u.id, ctx.guild.id, image):
-            with open (f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
+            with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
                 a = json.loads(file.read())
             for user in a['users']:
                 if user['userid'] == u.id:

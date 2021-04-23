@@ -75,7 +75,7 @@ class Inventory(commands.Cog):
                     break
             await m.add_reaction(e)
 
-        basedesc = 'Please react with a number based on how you would like your inventory sorted\nReact with :zero: for pick up order: **oldest - newest**\n React with :one: for pick up order: **newest - oldest**\n React with :two: for by alphabetical: **A - Z**\n React with :three: for by alphabetical: **Z - A**\n'
+        basedesc = 'Please react with a number based on how you would like your inventory sorted\nReact with :zero: for pick up order: **oldest - newest**\n React with :one: for pick up order: **newest - oldest**\nReact with :two: for by alphabetical: **A - Z**\nReact with :three: for by alphabetical: **Z - A**\n'
         if mode is None:
             basedesc += 'React with :four: for quantity: **high - low**\nReact with :five: for quantity: **low - high**\nReact with :six: for rarity: **high - low**\nReact with :seven: for rarity: **low - high**\n'
         basedesc += 'Or wait 60s to cancel'

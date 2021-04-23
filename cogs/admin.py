@@ -73,9 +73,29 @@ class Admin(commands.Cog):
 
     @commands.command(name='teleports', hidden=True)
     @checkers.is_plant_owner()
-    async def teleports(self, ctx, user: discord.Member, url,  *, name):
-        await leaderboard.AnimeLeaderboard.addpoint(self, user.id, ctx.guild.id, url, name, 0)
+    async def teleports(self, ctx, user: discord.Member, points: int, url,  *, name):
+        await leaderboard.AnimeLeaderboard.addpoint(self, user.id, ctx.guild.id, url, name, points)
         await ctx.send('*teleports behind you* nothing personal kid')
+
+    @commands.command(name='remove', hidden=True)
+    @checkers.is_plant_owner()
+    async def remove(self, ctx, user: discord.Member, points: int, *, name):
+        with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
+            d = json.loads(file.read())
+        removed = False
+        for u in d['users']:
+            if u['userid'] == user.id:
+                for image in u['images']:
+                    if image['name'].lower() == name.lower():
+                        u['images'].remove(image)
+                        u['points'] -= points
+                        removed = True
+        if removed:
+            with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'w') as file:
+                json.dump(d, file)
+            await ctx.send(f'Removed {name} from {user.mention}\'s inventory')
+        else:
+            await ctx.send(f"Couldn't find {name} in {user.mention}'s inventory")
 
     @commands.command(name='hoots', hidden=True)
     @checkers.is_plant_owner()
