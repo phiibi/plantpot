@@ -268,7 +268,7 @@ async def findcharacter(lower, upper):
         temp = []
         while temp == []:
             r = random.randrange(lower, upper)
-            p = floor((r+1)/50)
+            p = floor((r+1)/50) + 1
             d = requests.get(f'https://api.jikan.moe/v3/top/characters/{p}')
             d = d.json()
             c = d['top'][r-(floor(r/50)*50)]
