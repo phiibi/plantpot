@@ -39,27 +39,19 @@ def mainloop(low, high):
         d = json.loads(file.read())
     temp = d
     for character in blacklist_character:
-        temp['id'].append(character)
+        if character in temp['id']:
+            pass
+        else:
+            temp['id'].append(character)
     with open('cogs/characters_blacklist.json', 'w') as file:
         json.dump(temp, file)
 
 
-print(checkanime(39392))
-mainloop(10, 19)
-print('10, 19')
-mainloop(20, 29)
-print('20, 29')
-mainloop(30, 39)
-print('30, 39')
-mainloop(40, 49)
-print('40, 49')
-mainloop(50, 59)
-print('50, 59')
-mainloop(60, 69)
-print('60, 69')
-mainloop(70, 79)
-print('70, 79')
-mainloop(80, 89)
-print('80, 89')
 mainloop(90, 99)
-print('90, 99')
+print('completed 90, 99')
+mainloop(100, 109)
+print('completed 100, 109')
+mainloop(110, 119)
+print('completed 110, 119')
+mainloop(120, 129)
+print('complete')
