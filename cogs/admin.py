@@ -97,6 +97,12 @@ class Admin(commands.Cog):
         else:
             await ctx.send(f"Couldn't find {name} in {user.mention}'s inventory")
 
+    @commands.command(name='stop', hidden=True)
+    @checkers.is_plant_owner()
+    async def delete(self, ctx, msgid):
+        msg = await ctx.channel.fetch_message(msgid)
+        await msg.delete()
+
     @commands.command(name='hoots', hidden=True)
     @checkers.is_plant_owner()
     async def gifting(self, ctx, user: discord.Member, *, name):
