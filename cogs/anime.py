@@ -37,7 +37,7 @@ class Anime(commands.Cog):
             await asyncio.sleep(5)
             if imageposting.Imageposting.checktime(self, start):
                 r = random.random()
-                if ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181:
+                if ctx.guild.id in [813532137050341407, 502944697225052181, 836267796219953242]:
                     if r <= 0.005:
                         p = 300
                         x = 1
@@ -118,7 +118,7 @@ class Anime(commands.Cog):
                         if leaderboard.AnimeLeaderboard.checkimage(self, usr.id, ctx.guild.id, name):
                             await ctx.send(f'{usr.mention}! You already have this character! If you and 2 other users react \U0001F504 then you will reroll this character')
                             await r.remove(usr)
-                        elif await c.checkuser(ctx, usr.id) and (ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181):
+                        elif await c.checkuser(ctx, usr.id) and (ctx.guild.id in [813532137050341407, 502944697225052181, 836267796219953242]):
                             await ctx.send(f'hold up {usr.mention}, you\'ve collected a character too recently, please wait a second to give other users a chance!')
                             await r.remove(usr)
                         #elif await checkuserblacklist(usr.id):
@@ -149,7 +149,7 @@ class Anime(commands.Cog):
 
     @anime.command(name='rarity', help='displays different rarities, their chances, and points given')
     async def rarity(self, ctx):
-        if ctx.guild.id == 813532137050341407 or ctx.guild.id == 502944697225052181:
+        if ctx.guild.id in [813532137050341407, 502944697225052181, 836267796219953242]:
             temp = ['Legendary **(300)** *(Top 50 characters on MAL)*: 0.5%',
                     'Mythic **(150)** *(Top 51 - 150 characters on MAL)*: 0.75%',
                     'Epic **(100)** *(Top 151 - 300 characters on MAL)*: 1.3%',
