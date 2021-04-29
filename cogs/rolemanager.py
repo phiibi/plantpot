@@ -566,7 +566,6 @@ class ReactionChecker():
 
     def __init__(self, bot):
         self.bot = bot
-        self.new_checker = temp.ReactionChecker(self.bot)
         self.executeSQL("PRAGMA foreign_keys = ON")
 
     def executeSQL(self, statement, data=()):
