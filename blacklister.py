@@ -22,7 +22,7 @@ def mainloop(low, high):
             if not character['animeography']:
                 blacklist_character.append(character['mal_id'])
             for show in character['animeography']:
-                time.sleep(6)
+                time.sleep(3)
                 if whitelist.count(show['mal_id']):
                     pass
                 elif blacklist_anime.count(show['mal_id']):
@@ -47,11 +47,5 @@ def mainloop(low, high):
         json.dump(temp, file)
 
 
-mainloop(90, 99)
-print('completed 90, 99')
-mainloop(100, 109)
-print('completed 100, 109')
-mainloop(110, 119)
-print('completed 110, 119')
-mainloop(120, 129)
-print('complete')
+mainloop(1, 10)
+

@@ -1,6 +1,6 @@
 # -----  Matthew Hammond, 2021  -----
 # ----  Plant Bot Quiz Commands  ----
-# -------------  v1.11.2  --------------
+# -------------  v1.11  --------------
 
 
 import discord
@@ -15,7 +15,7 @@ from random import shuffle
 
 class Quiz(commands.Cog):
 
-    version = "1.11.2"
+    version = "1.12"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -190,7 +190,7 @@ class Quiz(commands.Cog):
             return reaction.emoji == self.EMOJIS["eject"] and ctx.author.id == user.id
 
         if (len(self.executeSQL("""
-            SELECT server_id FROM premium_servers
+            SELECT server_id FROM premium_users
             WHERE server_id = ?
         """, (ctx.guild.id,))) or
             not len(self.executeSQL("""
@@ -403,7 +403,7 @@ class Quiz(commands.Cog):
             return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
 
         if (len(self.executeSQL("""
-            SELECT server_id FROM premium_servers
+            SELECT server_id FROM premium_users
             WHERE server_id = ?
         """, (ctx.guild.id,))) or
             len(self.executeSQL("""
@@ -527,7 +527,7 @@ class Quiz(commands.Cog):
                     """, (questionId,))
                     page = 0
 
-    async def changeQuestionText(self, ctx, msg, questionId):
+    async def changeQuestionName(self, ctx, msg, questionId):
 
         def check(msg):
             return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
@@ -602,7 +602,7 @@ class Quiz(commands.Cog):
             return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and msg.content.lower()[0] in ["y", "n"]
             
         if (len(self.executeSQL("""
-            SELECT server_id FROM premium_servers
+            SELECT server_id FROM premium_users
             WHERE server_id = ?
         """, (ctx.guild.id,))) or
             len(self.executeSQL("""
@@ -627,7 +627,7 @@ class Quiz(commands.Cog):
             answerText = answerText.content
 
             if (len(self.executeSQL("""
-                SELECT server_id FROM premium_servers
+                SELECT server_id FROM premium_users
                 WHERE server_id = ?
             """, (ctx.guild.id,)))):
 
@@ -831,7 +831,7 @@ class Quiz(commands.Cog):
             return ctx.author.id == user.id and msg.id == reaction.message.id
             
         if (len(self.executeSQL("""
-            SELECT server_id FROM premium_servers
+            SELECT server_id FROM premium_users
             WHERE server_id = ?
         """, (ctx.guild.id,)))):
 
@@ -1092,7 +1092,7 @@ class Quiz(commands.Cog):
                 # If the quiz doesn't exist or the quiz is not valid (at least 1 right and wrong answer for every question, and only valid emojis).
                 embed = discord.Embed(
                     title = "Quiz Error",
-                    description = "Invalid Quiz Name: \"{}\"\nUse \"quiz list\" to see a list of available quizzes in this server.\nIs this a global quiz? Please format this command as `.quiz [quiz name] -g [other modifiers]` if it is".format(args[0]),
+                    description = "Invalid Quiz Name: \"{}\"\nUse \"quiz list\" to see a list of available quizzes in this server.".format(args[0]),
                     colour = ctx.guild.get_member(self.bot.user.id).colour,
                     timestamp = datetime.now(),
                 )

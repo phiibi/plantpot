@@ -3,19 +3,21 @@
 import os
 import discord
 import random
+
 from re import fullmatch, search
-from cogs import quiz, premium, serversettings, misc
+from cogs import serversettings, rolemanager
 
 from dotenv import load_dotenv
 from discord.ext import commands
 
-intents = discord.Intents.default()
-intents.members = True
+intents = discord.Intents.all()
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='.', intents=intents)
+
+rolecheck = rolemanager.ReactionChecker(bot)
 
 @bot.event
 async def on_ready():
@@ -38,26 +40,16 @@ async def on_guild_join(guild):
 @bot.event
 async def on_message(message):
     mcl = message.content.lower
-    replies = ['hello', 'hey', 'heyy', 'hi', 'wagwan', 'what\'s poppin', 'what\'s poppin\'', 'hola', 'buenos dias', 'konnichiwa', 'ohayo',
-               'bonjour', 'salut', 'buongiorno', 'buon giorno', 'good morning', 'gm', 'good night', 'goodnight', 'ohayo gozaimasu',
-               'gn','guten tag', 'guten morgen', 'privet', 'zdravstvuyte', 'ciao', 'ni hao', 'annyeong', 'anyeong haseyo', 'hallo',
-               'shalom', 'hej', 'sup', 'wassup', 'namaste', 'czesc', 'ayo', 'yo', 'g\'day', 'good day', 'aloha', 'y\'alright', 'what ho',
-               'god dag',  'howdy', 'what\'s up', 'hai', 'gday', 'yassou', 'o/', 'salutations', 'greetings', 'whats gwaning', 'howzit',
-               'what\'s gwaning', 'wazzup', 'wazup', 'whats up', 'henlo', 'heyo', 'salam', 'salaam', 'hey~', 'namaskaram', 'how\'s it hanging', 'how\'s it hangin',
-               'hoi', 'oi', 'hei', 'dap me up', 'ola', 'whats good', 'what\'s good', 'good evening', 'good afternoon', 'god morgen',
-               'what it be', 'good morrow', 'what\'s crackalackin', 'morning', 'afternoon', 'evening', 'night', 'coucou', 'hewwo', 'how\'s it going', 'sweet dreams',
-               'sleep tight', 'heya', 'g\'morning', 'g,night', 'night night', 'what\'s crackalackin\'', 'what\'s crackalacking', 'haii', 'oyasumi', 'hiya']
-    plantreplies = ['it\'s one of rose days...', 'i\'m well, you asking me has made my daisy', 'sorting out my weed issue once and floral',
-                    'i\'m feeling clover the moon!', 'i\'m well, how\'s it growing?', 'i was hoping some-bud-y would ask me that',
-                    'lilac that you asked me that', 'i\'m doing bouquet', 'i\'m feeling dandy, i\'m not lion!', 'feeling a lily better now that you\'ve asked me',
-                    'a pot better now you\'re here!', 'i really seed a break...', 'feeling a sense of impending bloom...',
-                    'i\'m gladiola you asked', 'i\'m well, thistle be a great day', 'aloe, i\'m doing great', 'i be-leaf this\'ll be a great day!',
-                    'iris-ed you']
+    f = open('data/greetings.txt', 'r').readlines()
+    greetings = [g.strip() for g in f]
+
+    f = open('data/replies.txt', 'r').readlines()
+    replies = [r.strip() for r in f]
 
     if message.author == bot.user:
         return
 
-    for word in replies:
+    for word in greetings:
         if word + ' plant' in mcl():
             await message.channel.send('{0} {1}'.format(word, message.author.mention))
             break
@@ -82,13 +74,13 @@ async def on_message(message):
             await message.channel.send('i want big mummy milkers')
 
     if 'how are you plant' in mcl():
-        await message.channel.send(random.choice(plantreplies))
+        await message.channel.send(random.choice(replies))
 
     if 'gang gang' in mcl():
         await message.channel.send('gang shit')
 
     if 'how many greetings do you have' in mcl():
-        await message.channel.send(f'i can greet you in {len(replies)} different ways, can you find them all?')
+        await message.channel.send(f'i can greet you in {len(greetings)} different ways, can you find them all?')
 
     if fullmatch('.*(((love you|ily)\s+(plant))|((plant)\s+(love you|ily))).*', mcl()):
         await message.channel.send(f'i love you too {message.author.mention}')
@@ -107,10 +99,10 @@ async def on_message(message):
             await message.channel.send('**pog**')
         elif 'poggers' in mcl():
             await message.channel.send('poggers')
-        elif search('\s*(pog)(\s+|ging|$)', mcl()):
+        elif search('\s*(pog)(ging|[^\w])', mcl()):
             await message.channel.send('pog')
 
-    if mcl == 'good bot':
+    if mcl() == 'good bot':
         await message.channel.send('good user')
 
     if fullmatch('(thank you|ty)\s(plant)', mcl()):
@@ -130,6 +122,18 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+@bot.event
+async def on_raw_reaction_add(payload):
+    if payload.member == bot.user:
+        return
+    await rolecheck.addreactions(payload)
+
+@bot.event
+async def on_raw_reaction_remove(payload):
+    if payload.member == bot.user:
+        return
+    await rolecheck.removereactions(payload)
+
 bot.load_extension('cogs.interactive')
 bot.load_extension('cogs.imageposting')
 bot.load_extension('cogs.leaderboard')
@@ -143,4 +147,6 @@ bot.load_extension('cogs.flowers')
 bot.load_extension('cogs.quiz')
 bot.load_extension('cogs.premium')
 bot.load_extension('cogs.misc')
+bot.load_extension('cogs.reminder')
+bot.load_extension('cogs.rolemanager')
 bot.run(TOKEN)

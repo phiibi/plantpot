@@ -25,6 +25,8 @@ class Misc(commands.Cog):
 
         self.updateLeaderboardRoles.start()
 
+        self.sendreminders.start()
+
         self.executeSQL("PRAGMA foreign_keys = ON")
         
     def executeSQL(self, statement, data = ()):
@@ -103,6 +105,17 @@ class Misc(commands.Cog):
             except AttributeError:
                 embed.add_field(name = name, value = "Unspecified")
         await ctx.send(embed = embed)
+
+    @tasks.loop(minutes=1)
+    async def sendreminders(self):
+        t = datetime.now()
+        t = f'{t.hour}:{t.minute}'
+
+        reminderlist = self.executeSQL('SELECT user_id, body FROM reminders WHERE time = ?', (t,))
+
+        for reminder in reminderlist:
+            user = self.bot.get_user(reminder[0])
+            await user.send(reminder[1])
 
 def setup(bot):
     bot.add_cog(Misc(bot))

@@ -9,7 +9,7 @@ from discord.ext import commands, tasks
 
 class Reminder(commands.Cog):
 
-    version = "0.1"
+    version = "1.0"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -28,7 +28,6 @@ class Reminder(commands.Cog):
         "left_arrow":     "⬅️",
         "right_arrow":    "➡️",
         "new":            "🆕",
-        "record_button":  "⏺️",
         "asterisk":       "*️⃣",
         "eject":          "⏏️",
     }
@@ -53,10 +52,7 @@ class Reminder(commands.Cog):
             )
         """)
 
-        self.sendreminders.start()
-
-    def executesql(self, statement, data = ()):
-
+    def executesql(self, statement, data=()):
         self.cursor.execute(statement, data)
         self.conn.commit()
         return self.cursor.fetchall()
@@ -83,10 +79,10 @@ class Reminder(commands.Cog):
         embed = discord.Embed(title='Select a Reminder',
                               description='React a number to select a reminder \nReact :arrow_left: to go backwards a page \nReact :arrow_right: to go forward a page \nReact :new: to create a new reminder \nReact :eject: to quit')
         if len(reminderlist):
-            embed.add_field(name=f'Available events ({page * 10 + 1}-{min(page * 10 + 10, len(reminderlist))}/{len(reminderlist)})',
+            embed.add_field(name=f'Available reminders ({page * 10 + 1}-{min(page * 10 + 10, len(reminderlist))}/{len(reminderlist)})',
                             value="\n".join(f'{self.EMOJIS[str(i)]} {reminderlist[page*10 + i][1]}' for i in range(0, len(reminderlist[page*10:page*10+10]))))
         else:
-            embed.add_field(name='Your reminders (0-0/0)',
+            embed.add_field(name='Your reminders (0/0)',
                             value='None')
         await m.edit(embed=embed)
 
@@ -120,6 +116,23 @@ class Reminder(commands.Cog):
                     await self.editreminder(ctx, reminderlist[page*10 + int(r.emoji[0])][0])
 
     async def makereminder(self, ctx):
+        def check(r, u):
+            return u == ctx.author and r.emoji == self.EMOJIS["eject"]
+
+        if (not len(self.executesql("""SELECT user_id
+                                       FROM premium_users 
+                                       WHERE user_id = ?""", (ctx.author.id,))) and len(self.executesql("""SELECT reminder_id 
+                                                                                                           FROM reminders 
+                                                                                                           WHERE user_id = ?""", (ctx.author.id,))) >= 3):
+            embed = discord.Embed(title='Reminder - New Reminder',
+                                  description='You need to purchase premium to have more than 3 reminders!\nReact :eject: or wait 60s to go back')
+            m = await ctx.send(embed=embed)
+            try:
+                r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
+            except asyncio.TimeoutError:
+                pass
+            await m.delete()
+            return await self.reminder(ctx)
 
         body = await self.makebody(ctx)
 
@@ -173,7 +186,7 @@ class Reminder(commands.Cog):
         for e in self.HOUR_EMOJIS:
             await m.add_reaction(e)
 
-        embed.description = 'React the hour you would like your reminder at (UTC+0), or wait 60s to go back'
+        embed.description = 'React the hour you would like your reminder at (UTC+1), or wait 60s to go back'
         await m.edit(embed=embed)
 
         while True:
@@ -272,7 +285,7 @@ class Reminder(commands.Cog):
             await self.deletereminder(ctx, reminderid)
             return await self.reminder(ctx)
         elif str(r.emoji) == emojis[3]:
-            return
+            return await self.reminder(ctx)
 
     async def deletereminder(self, ctx, reminderid):
         def check(m):
@@ -300,17 +313,6 @@ class Reminder(commands.Cog):
             return
         else:
             return
-
-    @tasks.loop(minutes=1)
-    async def sendreminders(self):
-        t = datetime.now()
-        t = f'{t.hour}:{t.minute}'
-
-        reminderlist = self.executesql('SELECT user_id, body FROM reminders WHERE time = ?', (t,))
-
-        for reminder in reminderlist:
-            user = self.bot.get_user(reminder[0])
-            await user.send(reminder[1])
 
 
 def setup(bot):

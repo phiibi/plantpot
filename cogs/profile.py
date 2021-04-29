@@ -91,13 +91,13 @@ class Profile(commands.Cog):
     async def marry(self, ctx, user: discord.Member):
         if ctx.guild.id == 502944697225052181:
             return await ctx.send('This feature is disabled on this server')
-        if await self.checkblacklist(ctx.message.author.id):
+        elif await self.checkblacklist(ctx.message.author.id):
             return await ctx.send('You are currently blacklisted from using this command')
-        if await self.checkblacklist(user.id):
+        elif await self.checkblacklist(user.id):
             return await ctx.send(f'{user.mention} is currently blacklisted from using this command')
-        if user == self.bot.user:
+        elif user == self.bot.user:
             return await ctx.send('thank you but the law doesn\'t recognise me as somebody you could marry...')
-        if user == ctx.message.author:
+        elif user == ctx.message.author:
             return await ctx.send('you can\'t marry yourself!')
         usr = ctx.message.author
         p0 = Profile.addprofile(self, usr.id)
@@ -106,9 +106,9 @@ class Profile(commands.Cog):
         with open('cogs/profiles.json', 'r') as file:
             d = json.loads(file.read())
 
-        if len(p0['married']['users']) >= 5:
+        if len(p0['married']['users']) >= 5 and p0['userid'] != 579785620612972581:
             return await ctx.send('you\'ve already married 5 people! i hope you signed a pre-nup...')
-        elif len(p1['married']['users']) >= 5:
+        elif len(p1['married']['users']) >= 5 and p1['userid'] != 579785620612972581:
             return await ctx.send(f'{user.display_name} already married 5 people!')
         elif p0['married']['users'].count(user.id) == 1:
             return await ctx.send(f'you\'re already married to {user.display_name}!')
