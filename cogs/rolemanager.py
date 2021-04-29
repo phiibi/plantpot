@@ -3,8 +3,6 @@ from discord.ext import commands
 import sqlite3
 import asyncio
 
-from cogs import temp
-
 
 class RoleManager(commands.Cog):
 
