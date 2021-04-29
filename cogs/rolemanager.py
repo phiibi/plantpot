@@ -3,6 +3,8 @@ from discord.ext import commands
 import sqlite3
 import asyncio
 
+from cogs import temp
+
 
 class RoleManager(commands.Cog):
 
@@ -207,9 +209,8 @@ class RoleManager(commands.Cog):
                 page %= ((len(rolelist) - 1) // 10 + 1)
             elif r.emoji == self.EMOJIS["new"]:
                 role = await self.newrole(ctx, m, managerid)
-                if role:
-                    await self.updateactive(ctx, managerid)
-                    rolelist = self.executeSQL('SELECT id, role_id FROM roles WHERE manager_id = ?', (managerid,))
+                await self.updateactive(ctx, managerid)
+                rolelist = self.executeSQL('SELECT id, role_id FROM roles WHERE manager_id = ?', (managerid,))
                 page = 0
             elif r.emoji == self.EMOJIS["record_button"]:
                 title = await self.makename(ctx, m)
@@ -567,6 +568,7 @@ class ReactionChecker():
 
     def __init__(self, bot):
         self.bot = bot
+        self.new_checker = temp.ReactionChecker(self.bot)
         self.executeSQL("PRAGMA foreign_keys = ON")
 
     def executeSQL(self, statement, data=()):
@@ -584,14 +586,5 @@ class ReactionChecker():
             role = self.bot.get_guild(payload.guild_id).get_role(role[0][0])
             if role not in payload.member.roles:
                 await payload.member.add_roles(role)
-
-    async def removereactions(self, payload):
-        manager = self.executeSQL('SELECT manager_id FROM activemanagers WHERE (message_id = ? AND channel_id = ?)', (payload.message_id, payload.channel_id))
-        if not len(manager):
-            return
-        rolelist = self.executeSQL('SELECT role_id, emoji FROM roles WHERE manager_id = ?', (manager[0][0],))
-        role = [role for role in rolelist if str(role[1]) == str(payload.emoji)]
-        if len(role[0]):
-            role = self.bot.get_guild(payload.guild_id).get_role(role[0][0])
             if role in payload.member.roles:
                 await payload.member.remove_roles(role)

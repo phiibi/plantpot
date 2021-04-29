@@ -128,12 +128,6 @@ async def on_raw_reaction_add(payload):
         return
     await rolecheck.addreactions(payload)
 
-@bot.event
-async def on_raw_reaction_remove(payload):
-    if payload.member == bot.user:
-        return
-    await rolecheck.removereactions(payload)
-
 bot.load_extension('cogs.interactive')
 bot.load_extension('cogs.imageposting')
 bot.load_extension('cogs.leaderboard')
