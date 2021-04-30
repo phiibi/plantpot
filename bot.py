@@ -99,7 +99,7 @@ async def on_message(message):
             await message.channel.send('**pog**')
         elif 'poggers' in mcl():
             await message.channel.send('poggers')
-        elif search('\s*(pog)(ging|[^\w])', mcl()):
+        elif search('\s*(pog)(ging|[^\w]|$)', mcl()):
             await message.channel.send('pog')
 
     if mcl() == 'good bot':
