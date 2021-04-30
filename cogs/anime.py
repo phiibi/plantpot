@@ -189,6 +189,7 @@ async def pickcharacter(r):
     url = await getanime(r)
     return url
 
+
 async def checkblacklist(id):
     with open(f'cogs/characters_blacklist.json', 'r') as file:
         d = json.loads(file.read())
@@ -196,6 +197,7 @@ async def checkblacklist(id):
         return True
     else:
         return False
+
 
 async def getanime(rarity):
     c = {'characters': []}
@@ -235,6 +237,7 @@ async def getanime(rarity):
     else:
         return await getanime(rarity)
 
+
 async def getcharacterbyrarity(rarity):
     rarities = {1: {"upper": 49,
                     "lower": 0},
@@ -263,6 +266,7 @@ async def getcharacterbyrarity(rarity):
 
     return r
 
+
 async def findcharacter(lower, upper):
     try:
         temp = []
@@ -285,6 +289,7 @@ async def findcharacter(lower, upper):
     except requests.exceptions.RequestException as e:
         raise SystemExit(e)
     return c
+
 
 async def parseshow(c):
     shows = c['animeography']
@@ -353,6 +358,7 @@ async def getcharacter(data):
             return r
     return False
 
+
 def sanitisename(name):
     sp = split(",", name)
     if len(sp) == 2:
@@ -375,12 +381,14 @@ async def retry(func, *args, retry_count=5, delay=5, **kwargs):
         await asyncio.sleep(delay)
     return response
 
+
 async def checkuserblacklist(userid):
     with open(f'cogs/userblacklist.json', 'r') as file:
         d = json.loads(file.read())
     if d['id'].count(userid):
         return True
     return False
+
 
 def setup(bot):
     bot.add_cog(Anime(bot))
