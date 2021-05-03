@@ -14,7 +14,7 @@ from operator import itemgetter
 
 class Misc(commands.Cog):
 
-    version = "1.4"
+    version = "1.5"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -23,7 +23,7 @@ class Misc(commands.Cog):
 
         self.bot = bot
 
-        self.updateLeaderboardRoles.start()
+        #self.updateLeaderboardRoles.start()
 
         self.sendreminders.start()
 
@@ -109,13 +109,18 @@ class Misc(commands.Cog):
     @tasks.loop(minutes=1)
     async def sendreminders(self):
         t = datetime.now()
-        t = f'{t.hour}:{t.minute}'
+        t = f'{t.hour - 2}:{t.minute}'
 
-        reminderlist = self.executeSQL('SELECT user_id, body FROM reminders WHERE time = ?', (t,))
+        reminderlist = self.executeSQL('SELECT user_id, body FROM dm_reminders WHERE time = ?', (t,))
 
         for reminder in reminderlist:
             user = self.bot.get_user(reminder[0])
             await user.send(reminder[1])
 
+        reminderlist = self.executeSQL('SELECT channel_id, body FROM guild_reminders WHERE time = ?', (t,))
+
+        for reminder in reminderlist:
+            channel = self.bot.get_channel(reminder[0])
+            await channel.send(reminder[1])
 def setup(bot):
     bot.add_cog(Misc(bot))

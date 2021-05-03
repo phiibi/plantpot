@@ -60,7 +60,6 @@ class Inventory(commands.Cog):
                 return await m.delete()
 
     async def inventorymenu(self, ctx, m=None, mode=None):
-
         embed = discord.Embed(title='Inventory Menu',
                               description='Loading...',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)

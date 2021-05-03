@@ -86,7 +86,7 @@ class RoleManager(commands.Cog):
         # Return the data recieved.
 
     async def roleManagerCheck(ctx):
-        return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles] or ctx.author.id == 579785620612972581
+        return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles]
 
 #
 #
@@ -272,8 +272,6 @@ class RoleManager(commands.Cog):
                 return
             elif r.emoji == self.EMOJIS['eject']:
                 return
-            else:
-                await m.remove_reaction(r, u)
 
     async def postmenu(self, ctx, m):
         def check(r, u):
@@ -357,11 +355,13 @@ class RoleManager(commands.Cog):
         except discord.errors.NotFound:
             return
         await self.convertmenu(ctx, m, managerid)
+
 #
 #
 # ------------------- SETTERS ------------------- #
 #
 #
+
     async def newrolemanager(self, ctx, m):
         def check(r, u):
             return u == ctx.author and r.emoji == self.EMOJIS["eject"]
@@ -414,13 +414,13 @@ class RoleManager(commands.Cog):
         await m.edit(embed=embed)
 
         try:
-            m = await self.bot.wait_for("message", check=check, timeout=60)
+            msg = await self.bot.wait_for("message", check=check, timeout=60)
         except asyncio.TimeoutError:
             return
 
-        await m.delete()
+        await msg.delete()
 
-        return m.content
+        return msg.content
 
     async def makerole(self, ctx, m, managerid):
         def check(msg):
@@ -435,19 +435,19 @@ class RoleManager(commands.Cog):
 
         while True:
             try:
-                m = await self.bot.wait_for("message", check=check, timeout=60)
+                msg = await self.bot.wait_for("message", check=check, timeout=60)
             except asyncio.TimeoutError:
                 return
 
-            await m.delete()
+            await msg.delete()
 
-            if not len(m.role_mentions):
+            if not len(msg.role_mentions):
                 embed.description = 'Please @ mention the new role\nWait 60s to go back'
                 await m.edit(embed=embed)
-            elif len(m.role_mentions) > 1:
+            elif len(msg.role_mentions) > 1:
                 embed.description = 'Please only mention one role\nWait 60s to go back'
                 await m.edit(embed=embed)
-            elif m.role_mentions[0].id in addedroles:
+            elif msg.role_mentions[0].id in addedroles:
                 embed.description = 'This role is already added, please mention a new role\nWait 60s to go back'
                 await m.edit(embed=embed)
             else:
@@ -586,10 +586,12 @@ class RoleManager(commands.Cog):
         if (self.conn):
             self.conn.close()
 
+
 def setup(bot):
     bot.add_cog(RoleManager(bot))
 
-class ReactionChecker():
+
+class ReactionChecker:
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
