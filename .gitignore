@@ -16,3 +16,4 @@ testbot.py
 profilefixscript.py
 cogs/newinv.py
 blacklister.py
+cogs/new_reminder.py

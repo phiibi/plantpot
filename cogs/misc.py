@@ -109,7 +109,7 @@ class Misc(commands.Cog):
     @tasks.loop(minutes=1)
     async def sendreminders(self):
         t = datetime.now()
-        t = f'{t.hour - 2}:{t.minute}'
+        t = f'{t.hour - 6}:{t.minute}'
 
         reminderlist = self.executeSQL('SELECT user_id, body FROM dm_reminders WHERE time = ?', (t,))
 

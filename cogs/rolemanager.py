@@ -429,7 +429,7 @@ class RoleManager(commands.Cog):
         addedroles = [role[0] for role in self.executeSQL('SELECT role_id FROM roles WHERE manager_id = ?', (managerid,))]
 
         embed = discord.Embed(title='Role Manager Menu - Role',
-                              description='Please mention the new role\n**Please make sure my roles are higher than this role otherwise I cannot assign it users\nWait 60s to go back',
+                              description='Please mention the new role\n**Please make sure my roles are higher than this role otherwise I cannot assign it users**\nWait 60s to go back',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         await m.edit(embed=embed)
 
@@ -451,7 +451,7 @@ class RoleManager(commands.Cog):
                 embed.description = 'This role is already added, please mention a new role\nWait 60s to go back'
                 await m.edit(embed=embed)
             else:
-                return m.role_mentions[0].id
+                return msg.role_mentions[0].id
 
     async def make_emoji(self, ctx, m, managerid):
         def check(r, u):
