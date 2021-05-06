@@ -142,10 +142,10 @@ class Misc(commands.Cog):
                     m = perm[1]
                     break
 
-            if t[3] == 8 and not m[1]:
+            if t[3] == 8 and not m:
                 await channel.set_permissions(role, send_messages=True)
                 await channel.edit(name='discussion topic open')
-            elif t[3] == 22 and m[1]:
+            elif t[3] == 22 and m:
                 await channel.set_permissions(role, send_messages=False)
                 await channel.edit(name='discussion topic closed')
 
