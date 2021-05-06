@@ -147,7 +147,7 @@ class Misc(commands.Cog):
                 await channel.edit(name='discussion topic open')
             elif t[3] == 22 and m:
                 perms.send_messages = False
-                await channel.set_permissions(role, send_messages=False)
+                await channel.set_permissions(role, perms)
                 await channel.edit(name='discussion topic closed')
 
 
