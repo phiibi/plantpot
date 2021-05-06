@@ -26,7 +26,7 @@ class Anime(commands.Cog):
 
     @anime.command(name='event', help='starts an event using anime characters')
     @commands.max_concurrency(1, commands.BucketType.guild)
-    @checkers.is_plant_owner()
+    @checkers.is_guild_owner()
     async def anime_event(self, ctx):
         await ctx.message.delete()
         cd = 60
@@ -37,7 +37,7 @@ class Anime(commands.Cog):
             await asyncio.sleep(5)
             if imageposting.Imageposting.checktime(self, start):
                 r = random.random()
-                if ctx.guild.id in [813532137050341407, 502944697225052181, 836267796219953242]:
+                if ctx.guild.id in [813532137050341407, 502944697225052181, 836267796219953242, 817563329747877909]:
                     if r <= 0.005:
                         p = 300
                         x = 1
@@ -282,6 +282,7 @@ async def findcharacter(lower, upper):
                 print('bad character')
                 temp = []
     except requests.exceptions.Timeout:
+        print('test')
         if not retry(findcharacter(lower, upper)):
             print('timed out')
     except requests.exceptions.HTTPError as e:

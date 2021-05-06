@@ -29,7 +29,7 @@ class Misc(commands.Cog):
 
         self.sendreminders.start()
 
-        self.lockdiscussion.start()
+        #self.lockdiscussion.start()
 
         self.executeSQL("PRAGMA foreign_keys = ON")
         
