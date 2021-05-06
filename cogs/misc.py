@@ -4,6 +4,8 @@
 
 
 import discord
+import time
+import asyncio
 from discord.ext import commands, tasks
 
 from sqlite3 import connect
@@ -26,6 +28,8 @@ class Misc(commands.Cog):
         #self.updateLeaderboardRoles.start()
 
         self.sendreminders.start()
+
+        self.lockdiscussion.start()
 
         self.executeSQL("PRAGMA foreign_keys = ON")
         
@@ -122,5 +126,29 @@ class Misc(commands.Cog):
         for reminder in reminderlist:
             channel = self.bot.get_channel(reminder[0])
             await channel.send(reminder[1])
+
+    @tasks.loop(seconds=60)
+    async def lockdiscussion(self):
+        t = time.gmtime(time.time())
+        if self.bot.is_ready():
+            if not (t[3] == 8 or t[3] == 22):
+                pass
+
+            channel = self.bot.get_channel(834839193724649492)
+            role = channel.guild.get_role(750099685191974992)
+
+            for perm in channel.overwrites_for(role):
+                if perm[0] == 'send_messages':
+                    m = perm[1]
+                    break
+
+            if t[3] == 8 and not m[1]:
+                await channel.set_permissions(role, send_messages=True)
+                await channel.edit(name='discussion topic open')
+            elif t[3] == 22 and m[1]:
+                await channel.set_permissions(role, send_messages=False)
+                await channel.edit(name='discussion topic closed')
+
+
 def setup(bot):
     bot.add_cog(Misc(bot))

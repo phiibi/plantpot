@@ -17,3 +17,6 @@ profilefixscript.py
 cogs/newinv.py
 blacklister.py
 cogs/new_reminder.py
+*.txt
+data/replies.txt
+data/greetings.txt
