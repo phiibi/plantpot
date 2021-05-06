@@ -137,15 +137,16 @@ class Misc(commands.Cog):
             channel = self.bot.get_channel(834839193724649492)
             role = channel.guild.get_role(750099685191974992)
 
-            for perm in channel.overwrites_for(role):
-                if perm[0] == 'send_messages':
-                    m = perm[1]
-                    break
+            perms = channel.overwrites_for(role)
+            m = perms.send_messages
+            perms.read_messages = True
 
             if t[3] == 8 and not m:
-                await channel.set_permissions(role, send_messages=True)
+                perms.send_messages = True
+                await channel.set_permissions(role, perms)
                 await channel.edit(name='discussion topic open')
             elif t[3] == 22 and m:
+                perms.send_messages = False
                 await channel.set_permissions(role, send_messages=False)
                 await channel.edit(name='discussion topic closed')
 
