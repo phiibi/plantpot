@@ -281,6 +281,7 @@ async def findcharacter(lower, upper):
                 print(c['title'])
                 print('bad character')
                 temp = []
+            await asyncio.sleep(5)
     except requests.exceptions.Timeout:
         print('test')
         if not retry(findcharacter(lower, upper)):
