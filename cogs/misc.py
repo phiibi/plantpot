@@ -150,6 +150,17 @@ class Misc(commands.Cog):
                 await channel.set_permissions(role, perms)
                 await channel.edit(name='discussion topic closed')
 
+    @commands.command(name='manualoverwrite')
+    @commands.is_owner()
+    async def overwrtie(self):
+        channel = self.bot.get_channel(834839193724649492)
+        role = channel.guild.get_role(750099685191974992)
+
+        perms = channel.overwrites_for(role)
+        perms.read_messages = True
+        perms.send_messages = False
+        await channel.set_permissions(role, perms)
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))
