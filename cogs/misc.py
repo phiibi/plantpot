@@ -25,7 +25,7 @@ class Misc(commands.Cog):
 
         self.bot = bot
 
-        #self.updateLeaderboardRoles.start()
+        self.updateLeaderboardRoles.start()
 
         self.sendreminders.start()
 
