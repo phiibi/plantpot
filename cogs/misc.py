@@ -152,7 +152,7 @@ class Misc(commands.Cog):
 
     @commands.command(name='manualoverwrite')
     @commands.is_owner()
-    async def overwrtie(self):
+    async def overwrtie(self, ctx):
         channel = self.bot.get_channel(834839193724649492)
         role = channel.guild.get_role(750099685191974992)
 
