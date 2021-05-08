@@ -143,11 +143,11 @@ class Misc(commands.Cog):
 
             if t[3] == 8 and not m:
                 perms.send_messages = True
-                await channel.set_permissions(role, perms)
+                await channel.set_permissions(role, overwrite=perms)
                 await channel.edit(name='discussion topic open')
             elif t[3] == 22 and m:
                 perms.send_messages = False
-                await channel.set_permissions(role, perms)
+                await channel.set_permissions(role, overwrite=perms)
                 await channel.edit(name='discussion topic closed')
 
     @commands.command(name='manualoverwrite')
@@ -159,7 +159,7 @@ class Misc(commands.Cog):
         perms = channel.overwrites_for(role)
         perms.read_messages = True
         perms.send_messages = False
-        await channel.set_permissions(role, perms)
+        await channel.set_permissions(role, overwrite=perms)
 
 
 def setup(bot):
