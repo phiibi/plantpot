@@ -103,7 +103,7 @@ class Admin(commands.Cog):
         msg = await ctx.channel.fetch_message(msgid)
         await msg.delete()
 
-    @commands.command(name='hoots', hidden=True)
+    @commands.command(name='gift', hidden=True)
     @checkers.is_plant_owner()
     async def gifting(self, ctx, user: discord.Member, *, name):
         await leaderboard.Leaderboard.addpoint(self, user.id, ctx.guild.id, name, 0)
