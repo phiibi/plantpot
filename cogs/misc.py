@@ -161,6 +161,13 @@ class Misc(commands.Cog):
         perms.send_messages = False
         await channel.set_permissions(role, overwrite=perms)
 
+    def cog_unload(self):
+        self.updateLeaderboardRoles.stop()
+
+        self.sendreminders.stop()
+
+        self.lockdiscussion.stop()
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))

@@ -44,8 +44,11 @@ class Imageposting(commands.Cog):
     async def post(self, ctx, *, desc=None):
         with open(f'cogs/{self.store}.json', 'r') as file:
             d = json.loads(file.read())
+
         if desc is None:
-            image = random.choice(d['images'])
+            image = {'desc': 'AniSoc 2021'}
+            while image['desc'] == 'AniSoc 2021':
+                image = random.choice(d['images'])
         else:
             for i in d['images']:
                 if i['desc'] == desc:
