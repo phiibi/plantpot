@@ -26,7 +26,7 @@ class Anime(commands.Cog):
 
     @anime.command(name='event', help='starts an event using anime characters')
     @commands.max_concurrency(1, commands.BucketType.guild)
-    @checkers.is_guild_owner()
+    @checkers.is_plant_owner()
     async def anime_event(self, ctx):
         await ctx.message.delete()
         cd = 60
@@ -303,6 +303,7 @@ async def findshow(lower, upper):
     rating = 'Rx'
     try:
         while rating == 'Rx':
+            await asyncio.sleep(5)
             r = random.randrange(lower, upper)
             p = ceil((r+1)/50)
             d = requests.get(f'https://api.jikan.moe/v3/search/anime?q=&order_by=members&sort=desc&page={p}')

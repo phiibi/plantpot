@@ -63,27 +63,9 @@ class RoleManager(commands.Cog):
             CONSTRAINT fk_manager FOREIGN KEY (manager_id) REFERENCES rolemanagers(manager_id) ON DELETE CASCADE)""")
 
     def executeSQL(self, statement, data=()):
-        # Executes a given statement with given data.
-        # statement - String - The statement to be executed.
-        # data      - Tuple  - The data to be used.
-
-        while (self.locked):
-            pass
-        # Wait for the database to be unlocked.
-
-        self.locked = True
-        # Lock the database to delay other queries.
-
         self.cursor.execute(statement, data)
         self.conn.commit()
-        rows = self.cursor.fetchall()
-        # Execute the statement and fetch all available data.
-
-        self.locked = False
-        # Unlock the database to allow other queries.
-
-        return rows
-        # Return the data recieved.
+        return self.cursor.fetchall()
 
     async def roleManagerCheck(ctx):
         return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles]
@@ -278,7 +260,7 @@ class RoleManager(commands.Cog):
             return u == ctx.author and r.message == m
 
         rolemanagerlist = self.executeSQL("""SELECT rolemanagers.manager_id, rolemanagers.title FROM rolemanagers 
-                                             LEFT JOIN activemanagers USING(manager_id)
+                                             LEFT JOIN activemanagers USING (manager_id)
                                              WHERE (rolemanagers.server_id = ? AND activemanagers.manager_id IS NULL)""", (ctx.guild.id,))
         page = 0
 
