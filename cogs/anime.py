@@ -26,7 +26,7 @@ class Anime(commands.Cog):
 
     @anime.command(name='event', help='starts an event using anime characters')
     @commands.max_concurrency(1, commands.BucketType.guild)
-    @checkers.is_plant_owner()
+    @checkers.is_guild_owner()
     async def anime_event(self, ctx):
         await ctx.message.delete()
         cd = 60
