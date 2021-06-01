@@ -63,7 +63,7 @@ class PrideInventory(commands.Cog):
         await db.close()
         return list(rows)
 
-    @commands.command(name='prideinventory', help='displays your inventory', aliases=['inv'])
+    @commands.command(name='prideinventory', help='displays your inventory', aliases=['pinv'])
     async def inventoryselect(self, ctx, *, eventname=None):
         def check(r, u):
             return u == ctx.author and r.message == m

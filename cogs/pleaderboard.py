@@ -60,7 +60,7 @@ class PrideLeaderboard(commands.Cog):
         #returns a list of Row objects which can be indexed like an array
         return list(rows)
 
-    @commands.command(name='prideleaderboard', help='displays leaderboard', aliases=['top10', 'top', 'lb'])
+    @commands.command(name='prideleaderboard', help='displays leaderboard', aliases=['ptop10', 'pridetop10', 'pridetop', 'pridelb', 'ptop', 'plb'])
     async def leaderboardmenu(self, ctx, *, name=None):
         def check(r, u):
             return u == ctx.author and r.message == m
@@ -114,7 +114,7 @@ class PrideLeaderboard(commands.Cog):
                 if page*10 + int(r.emoji[0]) < len(leaderboards):
                     return await self.displayleaderboard(ctx, m, leaderboards[page*10 + int(r.emoji[0])][0], leaderboards[page*10 + int(r.emoji[0])][1])
 
-    @commands.command(name='myleaderboard', help='displays leaderboard position', aliases=['mylb', 'mytop10', 'mypos'])
+    @commands.command(name='myprideleaderboard', help='displays leaderboard position', aliases=['mypridelb', 'mypridetop10', 'mypridepos'])
     async def myleaderboardmenu(self, ctx, *, eventname=None):
         def check(r, u):
             return u == ctx.author and r.message == m
