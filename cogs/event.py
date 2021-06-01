@@ -45,6 +45,8 @@ class Event(commands.Cog):
 
         self.setup.start()
 
+        self.defaultevent = 1
+
     @tasks.loop(count=1)
     async def setup(self):
         await self.executesql("PRAGMA foreign_keys = ON")
@@ -1088,31 +1090,6 @@ class Event(commands.Cog):
                 if r.status == 200:
                     r = r.json()
 
-    @commands.command(name='reload', hidden=True)
-    async def _reload(self, ctx, *, module: str):
-        try:
-            self.bot.unload_extension(f'cogs.{module}')
-            self.bot.load_extension(f'cogs.{module}')
-        except Exception as e:
-            await ctx.send('{}: {}'.format(type(e).__name__, e))
-        else:
-            await ctx.send(f'{module} reloaded')
-
-    @commands.command(name='load', hidden=True)
-    async def _load(self, ctx, *, module: str):
-        try:
-            self.bot.load_extension(f'cogs.{module}')
-        except Exception as e:
-            await ctx.send('{}: {}'.format(type(e).__name__, e))
-        else:
-            await ctx.send(f'{module} loaded')
-
-    @commands.command(name='kill', help='wrong lever!', hidden=True)
-    @commands.is_owner()
-    async def kill(self, ctx):
-        await ctx.send('shutting down seed')
-        await ctx.bot.close()
-
     @commands.command(name='addlgbtq', hidden=True)
     @commands.is_owner()
     async def addlgbtq(self, ctx):
@@ -1151,6 +1128,7 @@ class Event(commands.Cog):
                     await self.executesql('INSERT INTO images (event_id, text, url, rarity_id, imgur_id) VALUES (?, ?, ?, ?, ?)', (1, f[:-4] + 'stripe', imgurinfo['data']['link'], 12, imgurinfo['data']['deletehash']))
                     await asyncio.sleep(5)
         await ctx.send('done')
+
 
 
 def setup(bot):

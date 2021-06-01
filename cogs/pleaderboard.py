@@ -61,7 +61,7 @@ class PrideLeaderboard(commands.Cog):
         return list(rows)
 
     @commands.command(name='prideleaderboard', help='displays leaderboard', aliases=['top10', 'top', 'lb'])
-    async def leaderboardmenu(self, ctx, *, eventname=None):
+    async def leaderboardmenu(self, ctx, *, name=None):
         def check(r, u):
             return u == ctx.author and r.message == m
 
@@ -70,10 +70,10 @@ class PrideLeaderboard(commands.Cog):
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
-        eventname = 'pride'
+        name = 'pride'
 
-        if eventname is not None:
-            checklb = await self.executesql('SELECT DISTINCT lb.event_id, e.name FROM leaderboards lb INNER JOIN events e USING (event_id) WHERE lb.server_id = ? AND lower(e.name) = ?', (ctx.guild.id, eventname.lower()))
+        if name is not None:
+            checklb = await self.executesql('SELECT DISTINCT lb.event_id, e.name FROM leaderboards lb INNER JOIN events e USING (event_id) WHERE lb.server_id = ? AND lower(e.name) = ?', (ctx.guild.id, name.lower()))
             if len(checklb):
                 return await self.displayleaderboard(ctx, m, checklb[0][0], checklb[0][1])
 
