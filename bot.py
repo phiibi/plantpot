@@ -7,6 +7,8 @@ import random
 from re import fullmatch, search
 from cogs import serversettings, rolemanager
 
+import helpers
+
 from dotenv import load_dotenv
 from discord.ext import commands
 
@@ -17,7 +19,8 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='.', intents=intents)
 
-rolecheck = rolemanager.ReactionChecker(bot)
+rolecheck = helpers.ReactionChecker(bot)
+eventcheck = helpers.EventChecker(bot)
 
 @bot.event
 async def on_ready():
@@ -127,11 +130,16 @@ async def on_raw_reaction_add(payload):
     if payload.member == bot.user:
         return
     await rolecheck.addreactions(payload)
+    await eventcheck.eventcollect(payload)
 
 bot.load_extension('cogs.interactive')
+bot.load_extension('cogs.event')
+bot.load_extension('cogs.crafting')
 bot.load_extension('cogs.imageposting')
 bot.load_extension('cogs.leaderboard')
+bot.load_extension('cogs.pleaderboard')
 bot.load_extension('cogs.inventory')
+bot.load_extension('cogs.pinventory')
 bot.load_extension('cogs.profile')
 bot.load_extension('cogs.serversettings')
 bot.load_extension('cogs.admin')
