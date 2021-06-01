@@ -104,3 +104,6 @@ class Crafting(commands.Cog):
         for stripe in userstripes:
             await PrideInventory.removeitem(self, ctx.author.id, ctx.guild.id, stripe[1], 1)
         await PrideInventory.additem(self, ctx.author.id, ctx.guild.id, eventid, flagid, 1)
+
+def setup(bot):
+    bot.add_cog(Crafting(bot))
