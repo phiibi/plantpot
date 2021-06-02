@@ -56,6 +56,9 @@ class Inventory(commands.Cog):
                 elif r.emoji == self.EMOJIS["1"]:
                     await m.clear_reactions()
                     return await self.inventorymenu(ctx, m, 'anime')
+                elif r.emoji == self.EMOJIS['2']:
+                    await m.clear_reactions()
+                    return await self.pridesortmenu(ctx, m, 1)
             except asyncio.TimeoutError:
                 return await m.delete()
 
@@ -227,15 +230,15 @@ class Inventory(commands.Cog):
             inv.sort(key=operator.itemgetter('count'))
             return inv
         elif mode == "rarity h":
-            inv = await self.sortrarity(inv, False)
+            inv = await self.sortbyrarity(inv, False)
             return inv
         elif mode == "rarity l":
-            inv = await self.sortrarity(inv, True)
+            inv = await self.sortbyrarity(inv, True)
             return inv
         else:
             return inv
 
-    async def sortrarity(self, inv, reverse):
+    async def sortbyrarity(self, inv, reverse):
         with open(f'cogs/flowers.json', 'r') as file:
             f = json.loads(file.read())
         f = await self.reversedict(f)
@@ -402,8 +405,8 @@ class Inventory(commands.Cog):
                     except asyncio.TimeoutError as e:
                         return await msg.edit(content=f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
                 else:
-                    return await ctx.send(f'you don\'t have any {image}s to give out!')
-        return await ctx.send('you don\'t have anything to give out! please try collecting some items first')
+                    return await self.pridegive(ctx, user, image)
+        return await self.pridegive(ctx, user, image)
 
     @commands.command(name='trade')
     @commands.max_concurrency(1, commands.BucketType.channel)
@@ -621,6 +624,108 @@ class Inventory(commands.Cog):
         with open(f'cogs/leaderboards/a{sid}.json', 'w') as file:
             json.dump(d, file)
         await leaderboard.AnimeLeaderboard.addpoint(self, id_to, sid, temp['url'], temp['name'], 0)
+
+    async def pridegive(self, ctx, user: discord.Member, item):
+        def check(m):
+            return m.author == user and m.channel == ctx.channel
+
+        iteminfo = await self.executesql('SELECT image_id, event_id FROM images WHERE lower(text) = ?', (item.lower(),))
+
+        if not len(iteminfo):
+            return await ctx.send(f'couldn\'t find {item}')
+        elif await self.removeitem(ctx.author.id, ctx.guild.id, iteminfo[0][0], 1):
+            msg = await ctx.send(f'{user.mention}! {ctx.author.mention} wants to give you {item}, do you accept? [(y)es/(n)o]')
+
+            while True:
+                try:
+                    m = await self.bot.wait_for('message', check=check, tiumeout=60)
+                    if m.content.lower() in ['y', 'yes']:
+                        await self.additem(user.id, ctx.guild.id, iteminfo[0][1], iteminfo[0][0], 1)
+                        return await msg.edit(content=f'congratulations {user.mention}, you\'re the proud new owner of {item}')
+                    elif m.content.lower() in ['n', 'no']:
+                        await self.additem(ctx.author.id, ctx.guild.id, iteminfo[0][1], iteminfo[0][0], 1)
+                        return await msg.edit(content=f'uh oh, {user.mention} doesn\'t want {ctx.author.mention}\'s {item}')
+                except asyncio.TimeoutError:
+                    return await msg.edit(content=f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
+        else:
+            return await ctx.send(f'you don\'t have any {item}s to give out!')
+
+    async def pridesortmenu(self, ctx, m, eventid):
+        def check(r, u):
+            return r.message == m and u == ctx.author
+
+        embed = discord.Embed(title='Inventory Menu',
+                              description= 'Please react with a number based on how you would like your inventory sorted\nReact with :zero: for pick up order: **oldest - newest**\nReact with :one: for pick up order: **newest - oldest**\nReact with :two: for by alphabetical: **A - Z**\nReact with :three: for by alphabetical: **Z - A**\nReact with :four: for quantity: **high - low**\nReact with :five: for quantity: **low - high**\nReact with :six: for rarity: **high - low**\nReact with :seven: for rarity: **low - high**\n',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+        await m.edit(embed=embed)
+
+        while True:
+            try:
+                r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
+                await m.remove_reaction(r, u)
+
+                if r.emoji == self.EMOJIS["0"]:
+                    return await self.inventory(ctx, m, await self.sortpickup(ctx.author.id, eventid, ctx.guild.id))
+                elif r.emoji == self.EMOJIS["1"]:
+                    return await self.inventory(ctx, m, await self.sortpickup(ctx.author.id, eventid, ctx.guild.id, True))
+                elif r.emoji == self.EMOJIS["2"]:
+                    return await self.inventory(ctx, m, await self.sortalphabetical(ctx.author.id, eventid, ctx.guild.id))
+                elif r.emoji == self.EMOJIS["3"]:
+                    return await self.inventory(ctx, m, await self.sortalphabetical(ctx.author.id, eventid, ctx.guild.id, True))
+                elif r.emoji == self.EMOJIS["4"]:
+                    return await self.inventory(ctx, m, await self.sortquantity(ctx.author.id, eventid, ctx.guild.id))
+                elif r.emoji == self.EMOJIS["5"]:
+                    return await self.inventory(ctx, m, await self.sortquantity(ctx.author.id, eventid, ctx.guild.id, True))
+                elif r.emoji == self.EMOJIS["6"]:
+                    return await self.inventory(ctx, m, await self.sortrarity(ctx.author.id, eventid, ctx.guild.id))
+                elif r.emoji == self.EMOJIS["7"]:
+                    return await self.inventory(ctx, m, await self.sortrarity(ctx.author.id, eventid, ctx.guild.id, True))
+            except asyncio.TimeoutError:
+                return await m.delete()
+
+    async def sortalphabetical(self, userid, eventid, serverid, reverse=False):
+        items = await self.executesql('SELECT im.text, inv.count FROM inventories inv INNER JOIN images im USING (image_id) WHERE (im.event_id = ? AND inv.user_id = ? AND inv.server_id = ?)', (eventid, userid, serverid))
+        items.sort(key=operator.itemgetter(0), reverse=reverse)
+        return items
+
+    async def sortquantity(self, userid, eventid, serverid, reverse=False):
+        items = await self.executesql('SELECT im.text, inv.count FROM inventories inv INNER JOIN images im USING (image_id) WHERE (im.event_id = ? AND inv.user_id = ? AND inv.server_id = ?)', (eventid, userid, serverid))
+        items.sort(key=operator.itemgetter(1), reverse=reverse)
+        return items
+
+    async def sortpickup(self, userid, eventid, serverid, reverse=False):
+        items = await self.executesql('SELECT im.text, inv.count FROM inventories inv INNER JOIN images im USING (image_id) WHERE (im.event_id = ? AND inv.user_id = ? AND inv.server_id = ?)', (eventid, userid, serverid))
+        if reverse:
+            items.reverse()
+        return items
+
+    async def sortrarity(self, userid, eventid, serverid, reverse=False):
+        items = await self.executesql('SELECT im.text, inv.count, r.chance FROM inventories inv INNER JOIN images im USING (image_id) INNER JOIN rarities r ON (im.rarity_id = r.rarity_id) WHERE (im.event_id = ? AND inv.user_id = ? AND inv.server_id = ?) ORDER BY r.chance ASC', (eventid, userid, serverid))
+        if reverse:
+            items.reverse()
+        return items
+
+    async def additem(self, userid, serverid, eventid, imageid, count):
+        item = await self.executesql('SELECT unique_item_id, count FROM inventories WHERE (user_id = ? AND image_id = ? AND server_id = ?)', (userid, imageid, serverid))
+        if len(item):
+            await self.executesql('UPDATE inventories SET count = ? WHERE unique_item_id = ?', (item[0][1] + count, item[0][0]))
+        else:
+            await self.executesql('INSERT INTO inventories (user_id, server_id, event_id, image_id, count) VALUES (?, ?, ?, ?, ?)', (userid, serverid, eventid, imageid, count))
+
+    async def removeitem(self, userid, serverid, imageid, count):
+        item = await self.executesql('SELECT unique_item_id, count FROM inventories WHERE (user_id = ? AND server_id = ? AND image_id = ?)', (userid, serverid, imageid))
+        if len(item):
+            item = item[0]
+            if not (item[1] - count):
+                await self.executesql('DELETE FROM inventories WHERE unique_item_id = ?', (item[0],))
+                return True
+            elif item[1] > count:
+                await self.executesql('UPDATE inventories SET count = ? WHERE unique_item_id = ?', (item[1] - count, item[0]))
+                return True
+            else:
+                return False
+        else:
+            return False
 
     @give.error
     async def giveerror(self, ctx, error):

@@ -5,7 +5,8 @@ import discord
 
 from discord.ext import commands, tasks
 from aiosqlite import connect
-from cogs.pinventory import PrideInventory
+from cogs.inventory import Inventory
+from cogs.leaderboard import Leaderboard
 
 class Crafting(commands.Cog):
     version = '1.0'
@@ -55,10 +56,10 @@ class Crafting(commands.Cog):
         def check(r, u):
             return u == ctx.author and r.message == m
 
-        if type.lower() not in ['flags']:
+        if type.lower() not in ['flag']:
             return
 
-        flags = await self.executesql("SELECT image_id, text, event_id FROM images WHERE text LIKE '%flag'", ())
+        flags = await self.executesql("SELECT image_id, text, event_id, url FROM images WHERE text LIKE '%flag'", ())
         page = 0
         userstripes = await self.executesql("SELECT inv.unique_item_id, inv.image_id FROM inventories inv INNER JOIN images i USING(image_id) WHERE inv.user_id = ? AND inv.server_id = ? AND (i.name LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
 
@@ -98,12 +99,23 @@ class Crafting(commands.Cog):
                 return await m.delete()
             elif r.emoji in self.EMOJIS.values():
                 if page*10 + int(r.emoji[0]) < len(flags):
-                    await self.craftflag(ctx, userstripes, flags[page*10 + int(r.emoji[0])][0], flags[page*10 + int(r.emoji[0])][2])
+                    await m.delete()
+                    await self.craftflag(ctx, userstripes, flags[page*10 + int(r.emoji[0])])
 
-    async def craftflag(self, ctx, userstripes, flagid, eventid):
+    async def craftflag(self, ctx, userstripes, flaginfo):
         for stripe in userstripes:
-            await PrideInventory.removeitem(self, ctx.author.id, ctx.guild.id, stripe[1], 1)
-        await PrideInventory.additem(self, ctx.author.id, ctx.guild.id, eventid, flagid, 1)
+            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, stripe[1], 1)
+        await Inventory.additem(self, ctx.author.id, ctx.guild.id, flaginfo[2], flaginfo[0], 1)
+        await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 1, 100)
+
+        craftstring = 'a'
+        if flaginfo[1][:1] in ['a', 'e', 'i', 'o', 'u']:
+            craftstring += 'n'
+        embed = discord.Embed(title=f'You crafted {craftstring} {flaginfo[1]}!',
+                              description="You've earned 100 points!")
+        embed.set_image(url=flaginfo[3])
+
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Crafting(bot))

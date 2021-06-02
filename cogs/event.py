@@ -919,7 +919,7 @@ class Event(commands.Cog):
 
             if len(await self.executesql('SELECT active_id FROM active_events WHERE channel_id = ?', (ctx.channel.id,))):
                 return await ctx.send('Event already active in this channel!')
-            elif 'start' in args[0]:
+            elif 'start' in args[0] and len(args) > 1:
                 localevent = await self.executesql('SELECT event_id FROM events e WHERE (server_id = ? AND lower(name) = ?) AND e.event_id NOT IN (SELECT active_id FROM active_events WHERE server_id = ?)', (ctx.guild.id, args[1].lower(), ctx.guild.id))
                 globalevent = await self.executesql('SELECT event_id FROM events e WHERE (server_id = 813532137050341407 AND lower(name) = ?) AND e.event_id NOT IN (SELECT active_id FROM active_events WHERE server_id = ?)', (args[1].lower(), ctx.guild.id))
                 if not (len(localevent) or len(globalevent)):
@@ -942,11 +942,13 @@ class Event(commands.Cog):
                                 await self.executesql('INSERT INTO active_events (event_id, server_id, channel_id) VALUES (?, ?, ?)', (localevent[0][0], ctx.guild.id, ctx.channel.id))
                                 await m.delete()
                                 newid = await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND channel_id = ?', (ctx.guild.id, ctx.channel.id))
+                                await ctx.send('Starting event...')
                                 return await self.eventpost(newid[0][0])
                             else:
                                 await self.executesql('INSERT INTO active_events (event_id, server_id, channel_id) VALUES (?, ?, ?)', (globalevent[0][0], ctx.guild.id, ctx.channel.id))
                                 await m.delete()
                                 newid = await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND channel_id = ?', (ctx.guild.id, ctx.channel.id))
+                                await ctx.send('Starting event...')
                                 return await self.eventpost(newid[0][0])
                         except asyncio.TimeoutError:
                             await m.delete()
@@ -954,11 +956,22 @@ class Event(commands.Cog):
                 elif len(localevent):
                     await self.executesql('INSERT INTO active_events (event_id, server_id, channel_id) VALUES (?, ?, ?)', (localevent[0][0], ctx.guild.id, ctx.channel.id))
                     newid = await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND channel_id = ?', (ctx.guild.id, ctx.channel.id))
+                    await ctx.send('Starting event...')
                     return await self.eventpost(newid[0][0])
                 elif len(globalevent):
                     await self.executesql('INSERT INTO active_events (event_id, server_id, channel_id) VALUES (?, ?, ?)', (globalevent[0][0], ctx.guild.id, ctx.channel.id))
                     newid = await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND channel_id = ?', (ctx.guild.id, ctx.channel.id))
+                    await ctx.send('Starting event...')
                     return await self.eventpost(newid[0][0])
+            else:
+                if not len(await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND event_id = ?', (ctx.guild.id, self.defaultevent))):
+                    await self.executesql('INSERT INTO active_events (event_id, server_id, channel_id) VALUES (?, ?, ?)', (self.defaultevent, ctx.guild.id, ctx.channel.id))
+                    newid = await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND channel_id = ?', (ctx.guild.id, ctx.channel.id))
+                    await ctx.send('Starting event...')
+                    return await self.eventpost(newid[0][0])
+                else:
+                    await ctx.send('You already have an event running!')
+                    return
         else:
             #if premium server, allow them to choose an event from their made events
             if len(await self.executesql('SELECT server_id FROM premium_users WHERE server_id = ?', (ctx.guild.id,))):
@@ -1003,6 +1016,7 @@ class Event(commands.Cog):
                                 await m.delete()
                                 await self.executesql('INSERT INTO active_events (event_id, server_id, channel_id) VALUES (?, ?, ?)', (events[page*10 + int(r.emoji[0])][0], ctx.guild.id, ctx.channel.id))
                                 newid = await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND channel_id = ?', (ctx.guild.id, ctx.channel.id))
+                                await ctx.send('Starting event...')
                                 return await self.eventpost(newid[0][0])
                     except asyncio.TimeoutError:
                         await m.delete()
@@ -1013,6 +1027,7 @@ class Event(commands.Cog):
             elif not len(await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND event_id = ?', (ctx.guild.id, self.defaultevent))):
                 await self.executesql('INSERT INTO active_events (event_id, server_id, channel_id) VALUES (?, ?, ?)', (self.defaultevent, ctx.guild.id, ctx.channel.id))
                 newid = await self.executesql('SELECT active_id FROM active_events WHERE server_id = ? AND channel_id = ?', (ctx.guild.id, ctx.channel.id))
+                await ctx.send('Starting event...')
                 return await self.eventpost(newid[0][0])
             else:
                 await ctx.send('You already have an event running!')

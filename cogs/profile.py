@@ -7,6 +7,7 @@ import asyncio
 from discord.ext import commands
 from datetime import date
 from cogs import leaderboard, badges
+from aiosqlite import connect
 
 
 class Profile(commands.Cog):
@@ -14,6 +15,16 @@ class Profile(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.store = 'randomImages'
+
+    async def executesql(self, statement, data=()):
+        db = await connect('database.db')
+        cursor = await db.execute(statement, data)
+        await db.commit()
+        rows = await cursor.fetchall()
+        await cursor.close()
+        await db.close()
+        return list(rows)
+
 
     @commands.group(help='please use .profile help for more help!')
     async def profile(self, ctx):
@@ -327,6 +338,15 @@ class Profile(commands.Cog):
             with open('cogs/profiles.json', 'w') as file:
                 json.dump(p, file)
             return await ctx.send('image set')
+        dbcheck = await self.executesql('SELECT im.text, im.url FROM inventories inv INNER JOIN images im USING (image_id) WHERE (im.event_id = ? AND inv.user_id = ? AND inv.server_id = ? AND lower(im.text) = ?)', (1, ctx.author.id, ctx.guild.id, image))
+        if len(dbcheck):
+            temp = {"image": {"url": dbcheck[0][1], "desc": dbcheck[0][0]}}
+            for i, user in enumerate(p['users']):
+                if user['userid'] == u.id:
+                    p['users'][i].update(temp)
+                    break
+            with open('cogs/profiles.json', 'w') as file:
+                json.dump(p, file)
         else:
             return await ctx.send('you don\'t have that item yet!')
 

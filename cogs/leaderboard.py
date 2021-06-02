@@ -5,16 +5,48 @@ import operator
 import discord
 import asyncio
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from cogs import checkers
+from aiosqlite import connect
 
 class Leaderboard(commands.Cog):
     version = '0.1'
     EMOJIS = {
         "0":              "0️⃣",
-        "1":              "1️⃣"}
+        "1":              "1️⃣",
+        "2":              "2️⃣"}
     def __init__(self, bot):
         self.bot = bot
+
+        self.setup.start()
+
+    @tasks.loop(count=1)
+    async def setup(self):
+        await self.executesql("PRAGMA foreign_keys = ON")
+
+        await self.executesql("""CREATE TABLE IF NOT EXISTS leaderboards (
+                        lb_id INTEGER PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        event_id INTEGER NOT NULL,
+                        server_id INTEGER NOT NULL,
+                        score INTEGER NOT NULL,
+                        CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(event_id))""")
+
+    @setup.before_loop
+    async def before_setup(self):
+        await self.bot.wait_until_ready()
+
+    #executesql is now asynchronous to prevent blocking
+    async def executesql(self, statement, data=()):
+        db = await connect('database.db')
+        cursor = await db.execute(statement, data)
+        await db.commit()
+        rows = await cursor.fetchall()
+        await cursor.close()
+        await db.close()
+
+        #returns a list of Row objects which can be indexed like an array
+        return list(rows)
 
     @commands.group(help='please use .leaderboard help for more help')
     async def leaderboard(self, ctx):
@@ -28,7 +60,7 @@ class Leaderboard(commands.Cog):
 
     async def mylbmenu(self, ctx, username=None):
         embed = discord.Embed(title='Leaderboard Position Menu',
-                              description='Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nOr wait 60s to cancel',
+                              description='Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
@@ -48,8 +80,20 @@ class Leaderboard(commands.Cog):
                 elif r.emoji == self.EMOJIS["1"]:
                     await m.clear_reactions()
                     return await AnimeLeaderboard.position(self, ctx, m, username=username)
+                elif r.emoji == self.EMOJIS['2']:
+                    await m.clear_reactions()
+                    p = await self.executesql('SELECT score FROM leaderboards WHERE user_id = ? AND event_id = ? AND server_id = ?', (ctx.author.id, 1, ctx.guild.id))
+                    return await self.displayposition(ctx, m, 1, p[0][0])
             except asyncio.TimeoutError:
                 return await m.delete()
+
+    async def addpoints(self, userid, serverid, eventid, points):
+        userpoints = await self.executesql('SELECT lb_id, score FROM leaderboards WHERE user_id = ? AND server_id = ? AND event_id = ?', (userid, serverid, eventid))
+
+        if len(userpoints):
+            await self.executesql('UPDATE leaderboards SET score = ? WHERE lb_id = ?', (userpoints[0][1] + points, userpoints[0][0]))
+        else:
+            await self.executesql('INSERT INTO leaderboards (user_id, event_id, server_id, score) VALUES (?, ?, ?, ?)', (userid, eventid, serverid, points))
 
     @commands.command(name='top10', help='displays the current leaderboard', aliases=['lb', 'top'])
     async def lb(self, ctx):
@@ -57,12 +101,13 @@ class Leaderboard(commands.Cog):
 
     async def lbmenu(self, ctx):
         embed = discord.Embed(title='Leaderboard Menu',
-                              description='Please react with a number based on which leaderboard you would like to see\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nOr wait 60s to cancel',
+                              description='Please react with a number based on which leaderboard you would like to see\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
+        await m.add_reaction(self.EMOJIS['2'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:
@@ -77,8 +122,38 @@ class Leaderboard(commands.Cog):
                 elif r.emoji == self.EMOJIS["1"]:
                     await m.clear_reactions()
                     return await AnimeLeaderboard.getlb(self, ctx, m)
+                elif r.emoji == self.EMOJIS['2']:
+                    await m.clear_reactions()
+                    return await self.displayleaderboard(ctx, m, 1, 'pride')
+
             except asyncio.TimeoutError:
                 return await m.delete()
+
+    async def displayleaderboard(self, ctx, m, eventid, eventname):
+        await m.clear_reactions()
+
+        users = await self.executesql('SELECT user_id, score FROM leaderboards WHERE event_id = ? AND server_id = ? ORDER BY score DESC LIMIT 10', (eventid, ctx.guild.id))
+
+        embed = discord.Embed(title=f'{eventname} top {len(users)}',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+        lbtxt = ''
+        for i in range(0, len(users)):
+            user = await self.bot.fetch_user(users[i][0])
+            lbtxt += f'{i+1}. **{user.display_name}** - {users[i][1]}\n'
+        embed.description = lbtxt
+        await m.edit(embed=embed)
+
+    async def displayposition(self, ctx, m, eventid, score):
+        await m.clear_reactions()
+
+        users = await self.executesql('SELECT COUNT(*) FROM leaderboards WHERE score > ? AND event_id = ? AND sever_id = ?', (score, 1, ctx.guild.id))
+        items = await self.executesql('SELECT SUM(count) FROM inventories WHERE event_id = ? AND server_id = ? AND user_id = ?', (eventid, ctx.guild.id, ctx.author.id))
+
+        embed = discord.Embed(title=f'You are in #{users[0][0] + 1} place!',
+                              description=f'You have collected {items[0][0]} items so far, totalling {score} points! Keep it up!',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+        embed.set_thumbnail(url=ctx.author.avatar_url_as())
+        await m.edit(embed=embed)
 
     @leaderboard.command(name='help', help='full help for leaderboard commands')
     async def help(self, ctx, command):
