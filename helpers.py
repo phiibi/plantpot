@@ -48,7 +48,7 @@ class EventChecker:
         cd = await self.executesql('SELECT last_pickup FROM cooldowns WHERE (active_id = ? AND user_id = ?)', (activeinfo[0][0], payload.user_id))
 
         if len(cd):
-            if cd[0][0] - 150 < time.time():
+            if time.time() - cd[0][0] < 150:
                 return await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).send(f"hold up {payload.member.mention}, you've collected an item too recently, please wait a second to give other users a chance!")
 
         pickupstring = 'a'
