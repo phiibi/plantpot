@@ -24,6 +24,7 @@ class Inventory(commands.Cog):
         "7":              "7️⃣"}
 
     def __init__(self, bot):
+        self.bot = bot
         self.setup.start()
 
     @tasks.loop(count=1)
