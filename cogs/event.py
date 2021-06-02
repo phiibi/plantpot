@@ -125,7 +125,7 @@ class Event(commands.Cog):
 #
 #
 
-    @commands.command(name='eventwizard', aliases=['ewiz', 'ew'], usage='eventwizard', help='create or edit your own events')
+    @commands.command(name='eventwizard', aliases=['ewiz', 'ew'], usage='eventwizard', help='create or edit your own events', hidden=True)
     @commands.check(eventWizardCheck)
     async def eventwizard(self, ctx):
         embed = discord.Embed(title='Event Wizard',
