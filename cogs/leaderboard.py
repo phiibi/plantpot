@@ -66,6 +66,7 @@ class Leaderboard(commands.Cog):
 
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
+        await m.add_reaction(self.EMOJIS['2'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:
