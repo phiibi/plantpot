@@ -4,7 +4,7 @@ import json
 import discord
 import asyncio
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from datetime import date
 from cogs import leaderboard, badges
 from aiosqlite import connect
@@ -15,6 +15,11 @@ class Profile(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.store = 'randomImages'
+        self.setup.start()
+
+    @tasks.loop(count=1)
+    async def setup(self):
+        await self.executesql("PRAGMA foreign_keys = ON")
 
     async def executesql(self, statement, data=()):
         db = await connect('database.db')

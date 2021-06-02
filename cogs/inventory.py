@@ -6,8 +6,9 @@ import asyncio
 import operator
 from math import ceil
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from cogs import leaderboard
+from aiosqlite import connect
 
 
 class Inventory(commands.Cog):
@@ -23,7 +24,34 @@ class Inventory(commands.Cog):
         "7":              "7️⃣"}
 
     def __init__(self, bot):
-        self.bot = bot
+        self.setup.start()
+
+    @tasks.loop(count=1)
+    async def setup(self):
+        await self.executesql("PRAGMA foreign_keys = ON")
+
+        await self.executesql("""CREATE TABLE IF NOT EXISTS inventories (
+                    unique_item_id INTEGER PRIMARY KEY,
+                    user_id INTEGER NOT NULL,
+                    image_id INTEGER NOT NULL,
+                    event_id INTEGER NOT NULL,
+                    server_id INTEGER NOT NULL,
+                    count INTEGER NOT NULL,
+                    CONSTRAINT fk_image FOREIGN KEY (image_id) REFERENCES images(image_id),
+                    CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(event_id))""")
+
+    @setup.before_loop
+    async def before_setup(self):
+        await self.bot.wait_until_ready()
+
+    async def executesql(self, statement, data=()):
+        db = await connect('database.db')
+        cursor = await db.execute(statement, data)
+        await db.commit()
+        rows = await cursor.fetchall()
+        await cursor.close()
+        await db.close()
+        return list(rows)
 
     @commands.command(name='inventory', help='displays your inventory', aliases=["inv"])
     async def inv(self, ctx):
