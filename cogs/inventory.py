@@ -689,29 +689,73 @@ class Inventory(commands.Cog):
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         await m.edit(embed=embed)
 
+        for e in self.EMOJIS.values():
+            await m.add_reaction(e)
+
         while True:
             try:
                 r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
                 await m.remove_reaction(r, u)
 
                 if r.emoji == self.EMOJIS["0"]:
-                    return await self.inventory(ctx, m, await self.sortpickup(ctx.author.id, eventid, ctx.guild.id))
+                    return await self.prideinventory(ctx, m, await self.sortpickup(ctx.author.id, eventid, ctx.guild.id))
                 elif r.emoji == self.EMOJIS["1"]:
-                    return await self.inventory(ctx, m, await self.sortpickup(ctx.author.id, eventid, ctx.guild.id, True))
+                    return await self.prideinventory(ctx, m, await self.sortpickup(ctx.author.id, eventid, ctx.guild.id, True))
                 elif r.emoji == self.EMOJIS["2"]:
-                    return await self.inventory(ctx, m, await self.sortalphabetical(ctx.author.id, eventid, ctx.guild.id))
+                    return await self.prideinventory(ctx, m, await self.sortalphabetical(ctx.author.id, eventid, ctx.guild.id))
                 elif r.emoji == self.EMOJIS["3"]:
-                    return await self.inventory(ctx, m, await self.sortalphabetical(ctx.author.id, eventid, ctx.guild.id, True))
+                    return await self.prideinventory(ctx, m, await self.sortalphabetical(ctx.author.id, eventid, ctx.guild.id, True))
                 elif r.emoji == self.EMOJIS["4"]:
-                    return await self.inventory(ctx, m, await self.sortquantity(ctx.author.id, eventid, ctx.guild.id))
+                    return await self.prideinventory(ctx, m, await self.sortquantity(ctx.author.id, eventid, ctx.guild.id))
                 elif r.emoji == self.EMOJIS["5"]:
-                    return await self.inventory(ctx, m, await self.sortquantity(ctx.author.id, eventid, ctx.guild.id, True))
+                    return await self.prideinventory(ctx, m, await self.sortquantity(ctx.author.id, eventid, ctx.guild.id, True))
                 elif r.emoji == self.EMOJIS["6"]:
-                    return await self.inventory(ctx, m, await self.sortrarity(ctx.author.id, eventid, ctx.guild.id))
+                    return await self.prideinventory(ctx, m, await self.sortrarity(ctx.author.id, eventid, ctx.guild.id))
                 elif r.emoji == self.EMOJIS["7"]:
-                    return await self.inventory(ctx, m, await self.sortrarity(ctx.author.id, eventid, ctx.guild.id, True))
+                    return await self.prideinventory(ctx, m, await self.sortrarity(ctx.author.id, eventid, ctx.guild.id, True))
             except asyncio.TimeoutError:
                 return await m.delete()
+
+    async def prideinventory(self, ctx, m, items):
+        def check(r, u):
+            return r.message == m and r.emoji in self.CONTROL_EMOJIS and u == ctx.author
+
+        await m.clear_reactions()
+
+        embed = discord.Embed(title='Your Inventory',
+                              description='Loading...',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+        await m.edit(embed=embed)
+
+        await m.add_reaction(self.CONTROL_EMOJIS[0])
+        await m.add_reaction(self.CONTROL_EMOJIS[1])
+
+        page = 0
+        if len(items) >= 200:
+            perpage = 25
+        else:
+            perpage = 10
+
+        embed.set_thumbnail(url=ctx.author.avatar_url_as())
+        while True:
+            embed.description = '\n'.join(f'{i + 1}.\U00002800 {items[i][1]}x **{items[page * perpage + i][0]}**' for i in range(0, len(items[page * perpage:page * perpage + perpage])))
+            embed.set_footer(text=f'Page {page + 1}/{ceil(len(items)/perpage)}')
+
+            await m.edit(embed=embed)
+
+            try:
+                r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
+            except asyncio.TimeoutError:
+                await m.delete()
+                return
+            await m.remove_reaction(r, u)
+
+            if r.emoji == self.CONTROL_EMOJIS[0]:
+                page -= 1
+                page %= ((len(items) - 1) // perpage + 1)
+            elif r.emoji == self.CONTROL_EMOJIS[1]:
+                page += 1
+                page %= ((len(items) - 1) // perpage + 1)
 
     async def sortalphabetical(self, userid, eventid, serverid, reverse=False):
         items = await self.executesql('SELECT im.text, inv.count FROM inventories inv INNER JOIN images im USING (image_id) WHERE (im.event_id = ? AND inv.user_id = ? AND inv.server_id = ?)', (eventid, userid, serverid))
