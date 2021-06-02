@@ -62,7 +62,7 @@ class Crafting(commands.Cog):
         page = 0
         userstripes = await self.executesql("SELECT inv.unique_item_id, inv.image_id FROM inventories inv INNER JOIN images i USING(image_id) WHERE inv.user_id = ? AND inv.server_id = ? AND (i.text LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
 
-        if len(userstripes) > 11:
+        if len(userstripes) < 11:
             return await ctx.send(f"You don't have enough stripes to craft a flag, please try again when you have a flag's worth\nRemaining stripes: {11-len(userstripes)}")
 
         embed = discord.Embed(title='Crafting Menu',
