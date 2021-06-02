@@ -719,7 +719,7 @@ class Inventory(commands.Cog):
     async def prideinventory(self, ctx, m, items):
         def check(r, u):
             return r.message == m and r.emoji in self.CONTROL_EMOJIS and u == ctx.author
-
+        CONTROL_EMOJIS = ['\U00002B05', '\U000027A1']
         await m.clear_reactions()
 
         embed = discord.Embed(title='Your Inventory',
@@ -727,8 +727,8 @@ class Inventory(commands.Cog):
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         await m.edit(embed=embed)
 
-        await m.add_reaction(self.CONTROL_EMOJIS[0])
-        await m.add_reaction(self.CONTROL_EMOJIS[1])
+        await m.add_reaction(CONTROL_EMOJIS[0])
+        await m.add_reaction(CONTROL_EMOJIS[1])
 
         page = 0
         if len(items) >= 200:
