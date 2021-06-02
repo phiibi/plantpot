@@ -748,10 +748,10 @@ class Inventory(commands.Cog):
                 return
             await m.remove_reaction(r, u)
 
-            if r.emoji == self.CONTROL_EMOJIS[0]:
+            if r.emoji == CONTROL_EMOJIS[0]:
                 page -= 1
                 page %= ((len(items) - 1) // perpage + 1)
-            elif r.emoji == self.CONTROL_EMOJIS[1]:
+            elif r.emoji == CONTROL_EMOJIS[1]:
                 page += 1
                 page %= ((len(items) - 1) // perpage + 1)
 
