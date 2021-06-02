@@ -352,6 +352,7 @@ class Profile(commands.Cog):
                     break
             with open('cogs/profiles.json', 'w') as file:
                 json.dump(p, file)
+            return await ctx.send('image set')
         else:
             return await ctx.send('you don\'t have that item yet!')
 

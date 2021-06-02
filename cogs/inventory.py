@@ -666,7 +666,7 @@ class Inventory(commands.Cog):
 
             while True:
                 try:
-                    m = await self.bot.wait_for('message', check=check, tiumeout=60)
+                    m = await self.bot.wait_for('message', check=check, timeout=60)
                     if m.content.lower() in ['y', 'yes']:
                         await self.additem(user.id, ctx.guild.id, iteminfo[0][1], iteminfo[0][0], 1)
                         return await msg.edit(content=f'congratulations {user.mention}, you\'re the proud new owner of {item}')
