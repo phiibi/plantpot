@@ -718,7 +718,7 @@ class Inventory(commands.Cog):
 
     async def prideinventory(self, ctx, m, items):
         def check(r, u):
-            return r.message == m and r.emoji in self.CONTROL_EMOJIS and u == ctx.author
+            return r.message == m and r.emoji in CONTROL_EMOJIS and u == ctx.author
         CONTROL_EMOJIS = ['\U00002B05', '\U000027A1']
         await m.clear_reactions()
 
