@@ -36,7 +36,6 @@ class Crafting(commands.Cog):
     @tasks.loop(count=1)
     async def setup(self):
         await self.executesql("PRAGMA foreign_keys = ON")
-        await self.executesql("PRAGMA foreign_keys = ON")
 
     @setup.before_loop
     async def before_setup(self):

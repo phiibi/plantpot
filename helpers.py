@@ -65,7 +65,7 @@ class EventChecker:
             await Leaderboard.addpoints(self, payload.user_id, payload.guild_id, activeinfo[0][1], imageinfo[0][1])
 
         await Inventory.additem(self, payload.user_id, payload.guild_id, activeinfo[0][1], activeinfo[0][2], 1)
-        await self.executesql('REPLACE INTO cooldowns (user_id, last_pickup) VALUES (?, ?)' (payload.user_id, time.time()))
+        await self.executesql('REPLACE INTO cooldowns (user_id, last_pickup) VALUES (?, ?)', (payload.user_id, time.time()))
         await Event.eventpost(self, activeinfo[0][0])
 
 class ReactionChecker:
