@@ -60,7 +60,7 @@ class Crafting(commands.Cog):
 
         flags = await self.executesql("SELECT image_id, text, event_id, url FROM images WHERE text LIKE '%flag'", ())
         page = 0
-        userstripes = await self.executesql("SELECT inv.unique_item_id, inv.image_id FROM inventories inv INNER JOIN images i USING(image_id) WHERE inv.user_id = ? AND inv.server_id = ? AND (i.name LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
+        userstripes = await self.executesql("SELECT inv.unique_item_id, inv.image_id FROM inventories inv INNER JOIN images i USING(image_id) WHERE inv.user_id = ? AND inv.server_id = ? AND (i.text LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
 
         if len(userstripes) > 11:
             return await ctx.send(f"You don't have enough stripes to craft a flag, please try again when you have a flag's worth\nRemaining stripes: {11-len(userstripes)}")
