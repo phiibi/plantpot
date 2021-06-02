@@ -42,6 +42,7 @@ class EventChecker:
         if not len(activeinfo):
             return
 
+        msg_id = await self.executesql('SELECT message_id FROM active_posts WHERE active_id = ?', (activeinfo[0][0],))
         await self.executesql('UPDATE active_posts SET message_id = ? WHERE active_id = ?', (0, activeinfo[0][0]))
         imageinfo = await self.executesql('SELECT r.rarity_name, r.points_first, r.points_second FROM rarities r INNER JOIN images i USING (rarity_id) WHERE i.image_id = ?', (activeinfo[0][2],))
         previouspickup = await self.executesql('SELECT count FROM inventories WHERE (user_id = ? AND server_id = ? AND image_id = ?)', (payload.user_id, payload.guild_id, activeinfo[0][2]))
@@ -49,6 +50,8 @@ class EventChecker:
 
         if len(cd):
             if time.time() - cd[0][0] < 150:
+                await self.executesql('UPDATE active_posts SET message_id = ? WHERE active_id = ?', (msg_id[0][0], activeinfo[0][0]))
+                #await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).fetch_message(payload.message_id).remove_reaction(payload.emoji, payload.member)
                 return await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).send(f"hold up {payload.member.mention}, you've collected an item too recently, please wait a second to give other users a chance!")
 
         pickupstring = 'a'
