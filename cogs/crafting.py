@@ -67,7 +67,7 @@ class Crafting(commands.Cog):
         else:
             remainingstripes = remainingstripes[0][0]
         if len(userstripes) < 11:
-            return await ctx.send(f"You don't have enough stripes to craft a flag, please try again when you have a flag's worth\nRemaining stripes: {22 - remainingstripes]}")
+            return await ctx.send(f"You don't have enough stripes to craft a flag, please try again when you have a flag's worth\nRemaining stripes: {22 - remainingstripes}")
 
         embed = discord.Embed(title='Crafting Menu',
                               description='Loading...',
