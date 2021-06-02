@@ -146,7 +146,7 @@ class Leaderboard(commands.Cog):
     async def displayposition(self, ctx, m, eventid, score):
         await m.clear_reactions()
 
-        users = await self.executesql('SELECT COUNT(*) FROM leaderboards WHERE score > ? AND event_id = ? AND sever_id = ?', (score, 1, ctx.guild.id))
+        users = await self.executesql('SELECT COUNT(*) FROM leaderboards WHERE score > ? AND event_id = ? AND server_id = ?', (score, 1, ctx.guild.id))
         items = await self.executesql('SELECT SUM(count) FROM inventories WHERE event_id = ? AND server_id = ? AND user_id = ?', (eventid, ctx.guild.id, ctx.author.id))
 
         embed = discord.Embed(title=f'You are in #{users[0][0] + 1} place!',
