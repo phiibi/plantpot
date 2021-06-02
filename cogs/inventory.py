@@ -56,9 +56,7 @@ class Inventory(commands.Cog):
 
     @commands.command(name='inventory', help='displays your inventory', aliases=["inv"])
     async def inv(self, ctx):
-        if ctx.guild.id == 689877729294024725:
-            return await self.inventorymenu(ctx)
-        elif ctx.guild.id == 502944697225052181:
+        if ctx.guild.id == 502944697225052181:
             return await self.inventorymenu(ctx, mode='anime')
         else:
             return await self.inventorymainmenu(ctx)
