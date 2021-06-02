@@ -65,7 +65,7 @@ class Inventory(commands.Cog):
 
     async def inventorymainmenu(self, ctx):
         embed = discord.Embed(title='Inventory Menu',
-                              description='Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact :two: for your pride inventory\nOr wait 60s to cancel',
+                              description='Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nOr wait 60s to cancel',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
