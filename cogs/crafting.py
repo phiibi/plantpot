@@ -110,7 +110,7 @@ class Crafting(commands.Cog):
 
     async def craftflag(self, ctx, userstripes, flaginfo):
         for stripe in userstripes:
-            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, stripe[0], 1)
+            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, stripe[0], 2)
         await Inventory.additem(self, ctx.author.id, ctx.guild.id, flaginfo[2], flaginfo[0], 1)
         await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 1, 100)
 
