@@ -8,6 +8,7 @@ from math import ceil
 
 from discord.ext import commands, tasks
 from cogs import leaderboard
+from cogs import checkers
 from aiosqlite import connect
 
 
@@ -799,6 +800,11 @@ class Inventory(commands.Cog):
         else:
             return False
 
+    @commands.command(name='addreact', hidden=True)
+    @checkers.is_plant_owner()
+    async def addreaction(self, ctx, channelid, messageid, emoji):
+        m = await self.bot.get_channel(channelid).fetch_message(messageid)
+        await m.add_reaction(emoji)
     @give.error
     async def giveerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
