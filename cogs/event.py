@@ -1105,43 +1105,13 @@ class Event(commands.Cog):
                 if r.status == 200:
                     r = r.json()
 
-    @commands.command(name='addlgbtq', hidden=True)
+    @commands.command(name='fixflags', hidden=True)
     @commands.is_owner()
-    async def addlgbtq(self, ctx):
-        await self.executesql('INSERT INTO rarity_systems (system_name) VALUES (?)', ('regular',))
-        await self.executesql('INSERT INTO rarities (system_id, rarity_name, chance, points_first, points_second) VALUES (?, ?, ?, ?, ?)', (1, 'common', '99.75', 1, 1))
-        await self.executesql('INSERT INTO rarities (system_id, rarity_name, chance, points_first, points_second) VALUES (?, ?, ?, ?, ?)', (1, 'legendary', '0.25', 300, 100))
-        await self.executesql('INSERT INTO events (server_id, emoji, cooldown, system_id, name) VALUES (?, ?, ?, ?, ?)', (ctx.guild.id, '<:gay_sparkle_heart:689911970560082056>', 60, 1, 'pride'))
-        for f in os.listdir('./cogs/flags/'):
-            if f.endswith('.png'):
-                with open(f'./cogs/flags/{f}', 'rb') as file:
-                    imgurinfo = await self.imgurupload(b64encode(file.read()).decode('utf-8'), f'{f[:-4]} flag')
-                    imgurstatus = imgurinfo['status']
-
-                    if imgurstatus != 200:
-                        if imgurstatus == 400:
-                            print(imgurinfo)
-                            await ctx.send('Image not accepted, please make sure you linked a valid image')
-                        elif imgurstatus == 500:
-                            await ctx.send('Unexpected Imgur Error - please try again later')
-
-                    await self.executesql('INSERT INTO images (event_id, text, url, rarity_id, imgur_id) VALUES (?, ?, ?, ?, ?)', (1, f[:-4] + 'flag', imgurinfo['data']['link'], 2, imgurinfo['data']['deletehash']))
-                    await asyncio.sleep(5)
-        for f in os.listdir('./cogs/flags/'):
-            if f.endswith('.png'):
-                with open(f'./cogs/flags/{f}', 'rb') as file:
-                    imgurinfo = await self.imgurupload(b64encode(file.read()).decode('utf-8'), f'{f[:-4]} stripe')
-                    imgurstatus = imgurinfo['status']
-
-                    if imgurstatus != 200:
-                        if imgurstatus == 400:
-                            print(imgurinfo)
-                            await ctx.send('Image not accepted, please make sure you linked a valid image')
-                        elif imgurstatus == 500:
-                            await ctx.send('Unexpected Imgur Error - please try again later')
-
-                    await self.executesql('INSERT INTO images (event_id, text, url, rarity_id, imgur_id) VALUES (?, ?, ?, ?, ?)', (1, f[:-4] + 'stripe', imgurinfo['data']['link'], 12, imgurinfo['data']['deletehash']))
-                    await asyncio.sleep(5)
+    async def fixflags(self, ctx):
+        flags = await self.executesql("SELECT image_id, text FROM images WHERE text LIKE '%flag'")
+        for flag in flags:
+            newstr = f'{flag[1][:-4]} {flag[1][-4:]}'
+            await self.executesql('UPDATE images SET text = ? WHERE image_id = ?', (newstr, flag[0]))
         await ctx.send('done')
 
 
