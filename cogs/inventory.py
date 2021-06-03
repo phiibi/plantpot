@@ -803,7 +803,7 @@ class Inventory(commands.Cog):
     @commands.command(name='addreact', hidden=True)
     @checkers.is_plant_owner()
     async def addreaction(self, ctx, channelid, messageid, emoji):
-        m = (await self.bot.fetch_channel(channelid)).fetch_message(messageid)
+        m = await (await self.bot.fetch_channel(channelid)).fetch_message(messageid)
         await m.add_reaction(emoji)
     @give.error
     async def giveerror(self, ctx, error):
