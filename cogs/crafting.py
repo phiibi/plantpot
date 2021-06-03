@@ -60,16 +60,14 @@ class Crafting(commands.Cog):
 
         flags = await self.executesql("SELECT image_id, text, event_id, url FROM images WHERE text LIKE '%flag'", ())
         page = 0
-        userstripes = await self.executesql("SELECT inv.unique_item_id, inv.image_id, inv.count FROM inventories inv INNER JOIN images i USING(image_id) WHERE inv.user_id = ? AND inv.server_id = ? AND inv.count > 1 AND (i.text LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
-        remainingstripes = await self.executesql("SELECT inv.count FROM inventories inv INNER JOIN images i USING(image_id) WHERE inv.user_id = ? AND inv.server_id = ? AND (i.text LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
+        userstripes = await self.executesql("SELECT i.image_id, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND i.text LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
 
         temp = 22
-        for stripe in remainingstripes:
-            if stripe[0] >= 2:
+        for stripe in userstripes:
+            if stripe[1] >= 2:
                 temp -= 2
-            elif stripe[0] == 1:
-                temp -= 1
-        if len(userstripes) < 11:
+
+        if len(temp):
             return await ctx.send(f"You don't have enough stripes to craft a flag, please try again when you have a flag's worth\nRemaining stripes: {22 - temp}")
 
         embed = discord.Embed(title='Crafting Menu',
@@ -110,7 +108,7 @@ class Crafting(commands.Cog):
 
     async def craftflag(self, ctx, userstripes, flaginfo):
         for stripe in userstripes:
-            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, stripe[1], 1)
+            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, stripe[0], 1)
         await Inventory.additem(self, ctx.author.id, ctx.guild.id, flaginfo[2], flaginfo[0], 1)
         await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 1, 100)
 
