@@ -66,6 +66,8 @@ class Crafting(commands.Cog):
         for stripe in userstripes:
             if stripe[1] >= 2:
                 temp -= 2
+            else:
+                temp -= stripe[1]
 
         if temp:
             return await ctx.send(f"You don't have enough stripes to craft a flag, please try again when you have a flag's worth\nRemaining stripes: {temp}")
