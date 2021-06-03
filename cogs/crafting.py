@@ -67,7 +67,7 @@ class Crafting(commands.Cog):
             if stripe[1] >= 2:
                 temp -= 2
 
-        if len(temp):
+        if temp:
             return await ctx.send(f"You don't have enough stripes to craft a flag, please try again when you have a flag's worth\nRemaining stripes: {22 - temp}")
 
         embed = discord.Embed(title='Crafting Menu',
