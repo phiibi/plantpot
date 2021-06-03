@@ -52,7 +52,8 @@ class EventChecker:
             if time.time() - cd[0][0] < 150:
                 await self.executesql('UPDATE active_posts SET message_id = ? WHERE active_id = ?', (msg_id[0][0], activeinfo[0][0]))
                 await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).fetch_message(payload.message_id).remove_reaction(payload.emoji, payload.member)
-                return await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).send(f"hold up {payload.member.mention}, you've collected an item too recently, please wait a second to give other users a chance!")
+                temp = '{:.0f}'.format(time.time() - cd[0][0])
+                return await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).send(f"hold up {payload.member.mention}, you've collected an item too recently, please wait a second to give other users a chance!\nTime remaining: {time}s")
 
         pickupstring = 'a'
         if imageinfo[0][0][:1] in ['a', 'e', 'i', 'o', 'u']:

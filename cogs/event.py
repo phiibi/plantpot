@@ -1105,15 +1105,6 @@ class Event(commands.Cog):
                 if r.status == 200:
                     r = r.json()
 
-    @commands.command(name='fixflags', hidden=True)
-    @commands.is_owner()
-    async def fixflags(self, ctx):
-        flags = await self.executesql("SELECT image_id, text FROM images WHERE text LIKE '%flag'")
-        for flag in flags:
-            newstr = f'{flag[1][:-4]} {flag[1][-4:]}'
-            await self.executesql('UPDATE images SET text = ? WHERE image_id = ?', (newstr, flag[0]))
-        await ctx.send('done')
-
 
 
 def setup(bot):
