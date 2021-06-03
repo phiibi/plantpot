@@ -736,7 +736,7 @@ class Inventory(commands.Cog):
 
         embed.set_thumbnail(url=ctx.author.avatar_url_as())
         while True:
-            embed.description = '\n'.join(f'{i + 1}.\U00002800 {items[i][1]}x **{items[page * perpage + i][0]}**' for i in range(0, len(items[page * perpage:page * perpage + perpage])))
+            embed.description = '\n'.join(f'{i + 1}.\U00002800 {items[page * perpage + i][1]}x **{items[page * perpage + i][0]}**' for i in range(0, len(items[page * perpage:page * perpage + perpage])))
             embed.set_footer(text=f'Page {page + 1}/{ceil(len(items)/perpage)}')
 
             await m.edit(embed=embed)
