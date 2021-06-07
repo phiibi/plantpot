@@ -805,6 +805,7 @@ class Inventory(commands.Cog):
     async def addreaction(self, ctx, channelid, messageid, emoji):
         m = await (await self.bot.fetch_channel(channelid)).fetch_message(messageid)
         await m.add_reaction(emoji)
+
     @give.error
     async def giveerror(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument) or isinstance(error, commands.BadArgument):

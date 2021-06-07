@@ -58,7 +58,7 @@ class Crafting(commands.Cog):
         if type.lower() not in ['flag']:
             return
 
-        flags = await self.executesql("SELECT image_id, text, event_id, url FROM images WHERE text LIKE '%flag'", ())
+        flags = await self.executesql("SELECT image_id, text, event_id, url FROM images WHERE text LIKE '%flag' ORDER BY lower(text)", ())
         page = 0
         userstripes = await self.executesql("SELECT i.image_id, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND i.text LIKE '%stripe')", (ctx.author.id, ctx.guild.id))
 
