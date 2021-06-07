@@ -4,14 +4,34 @@ import discord
 import os
 import json
 
-from discord.ext import commands
+from discord.ext import commands, tasks
+from aiosqlite import connect
 from cogs import checkers, leaderboard
-
+from cogs.inventory import Inventory
 
 class Admin(commands.Cog):
     version = '0.1'
     def __init__(self, bot):
         self.bot = bot
+
+        self.setup.start()
+
+    @tasks.loop(count=1)
+    async def setup(self):
+        await self.executesql("PRAGMA foreign_keys = ON")
+
+    @setup.before_loop
+    async def before_setup(self):
+        await self.bot.wait_until_ready()
+
+    async def executesql(self, statement, data=()):
+        db = await connect('database.db')
+        cursor = await db.execute(statement, data)
+        await db.commit()
+        rows = await cursor.fetchall()
+        await cursor.close()
+        await db.close()
+        return list(rows)
 
     @commands.command(name='load', hidden=True)
     @checkers.is_plant_owner()
@@ -77,6 +97,20 @@ class Admin(commands.Cog):
         await leaderboard.AnimeLeaderboard.addpoint(self, user.id, ctx.guild.id, url, name, points)
         await ctx.send('*teleports behind you* nothing personal kid')
 
+    @commands.command(name='tp', hiddemn=True)
+    @checkers.is_plant_owner()
+    async def tp(self, ctx, user:discord.Member, quantity:int, *, name):
+        if name.lower() in ['batch']:
+            items = await self.executesql("SELECT image_id, event_id FROM images WHERE text LIKE '%stripe' AND event_id = ?", (1,))
+            for stripe in items:
+                await Inventory.additem(self, user.id, ctx.guild.id, stripe[1], stripe[0], quantity)
+            return
+        item = await self.executesql('SELECT image_id, event_id FROM images WHERE lower(text) = ?', (name.lower(),))
+        if len(item):
+            await Inventory.additem(self, user.id, ctx.guild.id, item[0][1], item[0][0], quantity)
+        else:
+            await ctx.send('Item not found')
+            
     @commands.command(name='remove', hidden=True)
     @checkers.is_plant_owner()
     async def remove(self, ctx, user: discord.Member, points: int, *, name):
