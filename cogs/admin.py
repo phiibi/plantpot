@@ -104,13 +104,15 @@ class Admin(commands.Cog):
             items = await self.executesql("SELECT image_id, event_id FROM images WHERE text LIKE '%stripe' AND event_id = ?", (1,))
             for stripe in items:
                 await Inventory.additem(self, user.id, ctx.guild.id, stripe[1], stripe[0], quantity)
+            await ctx.send('*teleports behind you* nothing personal kid')
             return
         item = await self.executesql('SELECT image_id, event_id FROM images WHERE lower(text) = ?', (name.lower(),))
         if len(item):
             await Inventory.additem(self, user.id, ctx.guild.id, item[0][1], item[0][0], quantity)
+            await ctx.send('*teleports behind you* nothing personal kid')
         else:
             await ctx.send('Item not found')
-            
+
     @commands.command(name='remove', hidden=True)
     @checkers.is_plant_owner()
     async def remove(self, ctx, user: discord.Member, points: int, *, name):
