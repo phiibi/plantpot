@@ -675,6 +675,7 @@ class Inventory(commands.Cog):
                         await self.additem(ctx.author.id, ctx.guild.id, iteminfo[0][1], iteminfo[0][0], 1)
                         return await msg.edit(content=f'uh oh, {user.mention} doesn\'t want {ctx.author.mention}\'s {item}')
                 except asyncio.TimeoutError:
+                    await self.additem(ctx.author.id, ctx.guild.id, iteminfo[0][1], iteminfo[0][0], 1)
                     return await msg.edit(content=f'uh oh, {user.mention} didn\'t respond in time, please try again when they\'re not busy')
         else:
             return await ctx.send(f'you don\'t have any {item}s to give out!')
