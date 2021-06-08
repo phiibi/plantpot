@@ -89,7 +89,7 @@ class Crafting(commands.Cog):
             elif r.emoji == self.EMOJIS['1']:
                 return await self.craftcutout(ctx, m)
             elif r.emoji == self.EMOJIS['2']:
-                return await self.crafthelp()
+                return await self.crafthelp(ctx, m)
 
     async def craftflag(self, ctx, m=None):
         def check(r, u):
