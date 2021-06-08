@@ -271,11 +271,14 @@ class Crafting(commands.Cog):
                               description='Use `.craft` to open the crafting menu, or add a modifier to go to the menu you would like',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.add_field(name='Flags',
-                        value='Collect a pair of each colour from the LGBTQIAP+ flag to craft a flag\nUse `.craft flag` to access the menu immediately')
+                        value='Collect a pair of each colour from the LGBTQIAP+ flag to craft a flag\nUse `.craft flag` to access the menu immediately',
+                        inline=False)
         embed.add_field(name='Cutouts',
-                        value='Collect a cutout and combine with a flag to create a flag cutout\nUse `.craft cutout` to access the menu immediately')
+                        value='Collect a cutout and combine with a flag to create a flag cutout\nUse `.craft cutout` to access the menu immediately',
+                        inline=False)
         embed.add_field(name='Help',
-                        value='View help for crafting (this screen)\nUse `.craft help` to access the menu immediately')
+                        value='View help for crafting (this screen)\nUse `.craft help` to access the menu immediately',
+                        inline=False)
         if m is not None:
             await m.edit(embed=embed)
         else:
