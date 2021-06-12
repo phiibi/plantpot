@@ -132,6 +132,12 @@ async def on_raw_reaction_add(payload):
     await rolecheck.addreactions(payload)
     await eventcheck.eventcollect(payload)
 
+@bot.event
+async def on_raw_reaction_remove(payload):
+    if payload.member == bot.user:
+        return
+    await rolecheck.removereactions(payload)
+
 bot.load_extension('cogs.interactive')
 bot.load_extension('cogs.event')
 bot.load_extension('cogs.crafting')
