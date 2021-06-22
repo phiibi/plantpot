@@ -8,7 +8,7 @@ import asyncio
 from discord.ext import commands, tasks
 from datetime import date
 from cogs import leaderboard, badges
-from aiosqlite import connect
+from aiosqlite import connect as c
 
 from json import loads
 from re import search, findall
@@ -18,12 +18,30 @@ from datetime import datetime
 
 class Profile(commands.Cog):
     version = '0.1'
+
+    conn = connect("database.db")
+    cursor = conn.cursor()
+
+    WIZARD_EMOJIS = {
+        "0":                    "0️⃣",
+        "1":                    "1️⃣",
+        "2":                    "2️⃣",
+        "3":                    "3️⃣",
+        "4":                    "4️⃣",
+        "5":                    "5️⃣",
+        "new":                  "🆕",
+        "record_button":        "⏺️",
+        "asterisk":             "*️⃣",
+        "regional_indicator_p": "🇵",
+        "eject":                "⏏️",
+    }
+
+    COLOUR_REGEX = "(#([0-9A-Fa-f]{3}){1,2})"
+
     def __init__(self, bot):
         self.bot = bot
         self.store = 'randomImages'
         self.setup.start()
-
-        self.executeSQL("PRAGMA foreign_keys = ON")
 
         self.executeSQL("""
                     CREATE TABLE IF NOT EXISTS fields (
@@ -52,25 +70,6 @@ class Profile(commands.Cog):
                     )
                 """)
 
-    conn = connect("database.db")
-    cursor = conn.cursor()
-
-    WIZARD_EMOJIS = {
-        "0":                    "0️⃣",
-        "1":                    "1️⃣",
-        "2":                    "2️⃣",
-        "3":                    "3️⃣",
-        "4":                    "4️⃣",
-        "5":                    "5️⃣",
-        "new":                  "🆕",
-        "record_button":        "⏺️",
-        "asterisk":             "*️⃣",
-        "regional_indicator_p": "🇵",
-        "eject":                "⏏️",
-    }
-
-    COLOUR_REGEX = "(#([0-9A-Fa-f]{3}){1,2})"
-
     def executeSQL(self, statement, data = ()):
 
         self.cursor.execute(statement, data)
@@ -82,8 +81,12 @@ class Profile(commands.Cog):
     async def setup(self):
         await self.executesql("PRAGMA foreign_keys = ON")
 
+    @setup.before_loop
+    async def before_setup(self):
+        await self.bot.wait_until_ready()
+
     async def executesql(self, statement, data=()):
-        db = await connect('database.db')
+        db = await c('database.db')
         cursor = await db.execute(statement, data)
         await db.commit()
         rows = await cursor.fetchall()
@@ -1636,7 +1639,7 @@ class Profile(commands.Cog):
         brief = "View someone's profile!",
         description = "View all about a user!",
     )
-    async def profile(self, ctx):
+    async def testprofile(self, ctx):
 
         if (len(ctx.message.mentions) == 0):
             userId = ctx.author.id
