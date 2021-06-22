@@ -49,10 +49,11 @@ class EventChecker:
         cd = await self.executesql('SELECT last_pickup FROM cooldowns WHERE (active_id = ? AND user_id = ?)', (activeinfo[0][0], payload.user_id))
 
         if len(cd):
-            if time.time() - cd[0][0] < 150:
+            remaining = 150 - (time.time() - cd[0][0])
+            if remaining > 0:
                 await self.executesql('UPDATE active_posts SET message_id = ? WHERE active_id = ?', (msg_id[0][0], activeinfo[0][0]))
                 await (await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).fetch_message(payload.message_id)).remove_reaction(payload.emoji, payload.member)
-                temp = '{:.0f}'.format(float(150) - (time.time() - cd[0][0]))
+                temp = '{:.0f}'.format(remaining)
                 return await self.bot.get_guild(payload.guild_id).get_channel(payload.channel_id).send(f"hold up {payload.member.mention}, you've collected an item too recently, please wait a second to give other users a chance!\nTime remaining: {temp}s")
 
         pickupstring = 'a'
@@ -100,7 +101,7 @@ class ReactionChecker:
             return
         rolelist = await self.executesql('SELECT role_id, emoji FROM roles WHERE manager_id = ?', (manager[0][0],))
         role = [role for role in rolelist if str(role[1]) == str(payload.emoji)]
-        if len(role[0]):
+        if len(role):
             role = self.bot.get_guild(payload.guild_id).get_role(role[0][0])
             try:
                 if role not in payload.member.roles:
@@ -113,9 +114,9 @@ class ReactionChecker:
         if not len(manager):
             return
         rolelist = await self.executesql('SELECT role_id, emoji FROM roles WHERE manager_id = ?', (manager[0][0],))
-        role = [role for role in rolelist if str(role[1]) == payload.emoji]
+        role = [role for role in rolelist if str(role[1]) == str(payload.emoji)]
         member = await self.bot.get_guild(payload.guild_id).fetch_member(payload.user_id)
-        if len(role[0]):
+        if len(role):
             role = self.bot.get_guild(payload.guild_id).get_role(role[0][0])
             if role in member.roles:
                 await member.remove_roles(role)

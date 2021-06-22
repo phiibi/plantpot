@@ -1,6 +1,6 @@
 # -------  Matthew Hammond, 2021  ------
 # ----  Plant Bot Premium Commands  ----
-# ---------------  v1.2  ---------------
+# ---------------  v2.1  ---------------
 
 
 import discord
@@ -12,7 +12,7 @@ from datetime import datetime
 
 class Premium(commands.Cog):
 
-    version = "2.0"
+    version = "2.1"
 
     conn = connect("database.db")
     cursor = conn.cursor()
@@ -171,7 +171,7 @@ class Premium(commands.Cog):
 
         embed = discord.Embed(
             title = "The Perks of Premium",
-            description = "Premium costs $5",
+            description = "Premium costs XXX.",
             colour = ctx.guild.get_member(self.bot.user.id).colour,
             timestamp = datetime.now(),
         )
@@ -184,16 +184,11 @@ class Premium(commands.Cog):
             value = "Unlimited quizzes/questions/answers!\nCustom emojis!",
         )
         embed.add_field(
-            name='Reminders',
-            value='Unlimited reminders!'
+            name = "Profiles",
+            value = "More fields and a custom colour!",
         )
-        embed.add_field(
-            name='Role Managers',
-            value='Unlimited role managers!'
-        )
-        embed.set_footer(text='https://www.patreon.com/plantbot')
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed = embed)
     
     @commands.command(
         name = "givePremium",
@@ -254,7 +249,4 @@ class Premium(commands.Cog):
                 timestamp = datetime.now(),
             )
             await ctx.send(embed = embed)
-
-def setup(bot):
-    bot.add_cog(Premium(bot))
 

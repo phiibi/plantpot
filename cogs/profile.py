@@ -1,6 +1,7 @@
 #profile.py
 
 import json
+
 import discord
 import asyncio
 
@@ -9,6 +10,11 @@ from datetime import date
 from cogs import leaderboard, badges
 from aiosqlite import connect
 
+from json import loads
+from re import search, findall
+from sqlite3 import connect
+from datetime import datetime
+
 
 class Profile(commands.Cog):
     version = '0.1'
@@ -16,6 +22,61 @@ class Profile(commands.Cog):
         self.bot = bot
         self.store = 'randomImages'
         self.setup.start()
+
+        self.executeSQL("PRAGMA foreign_keys = ON")
+
+        self.executeSQL("""
+                    CREATE TABLE IF NOT EXISTS fields (
+                        field_id INTEGER PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        type INTEGER NOT NULL,
+                        name TEXT,
+                        data TEXT NOT NULL
+                    )
+                """)
+
+        self.executeSQL("""
+                    CREATE TABLE IF NOT EXISTS relationships (
+                        relationship_id INTEGER PRIMARY KEY,
+                        user_a_id INTEGER NOT NULL,
+                        user_b_id INTEGER NOT NULL,
+                        type INTEGER NOT NULL
+                    )
+                """)
+
+        self.executeSQL("""
+                    CREATE TABLE IF NOT EXISTS marriages (
+                        marriage_id INTEGER PRIMARY KEY,
+                        user_a_id INTEGER NOT NULL,
+                        user_b_id INTEGER NOT NULL
+                    )
+                """)
+
+    conn = connect("database.db")
+    cursor = conn.cursor()
+
+    WIZARD_EMOJIS = {
+        "0":                    "0️⃣",
+        "1":                    "1️⃣",
+        "2":                    "2️⃣",
+        "3":                    "3️⃣",
+        "4":                    "4️⃣",
+        "5":                    "5️⃣",
+        "new":                  "🆕",
+        "record_button":        "⏺️",
+        "asterisk":             "*️⃣",
+        "regional_indicator_p": "🇵",
+        "eject":                "⏏️",
+    }
+
+    COLOUR_REGEX = "(#([0-9A-Fa-f]{3}){1,2})"
+
+    def executeSQL(self, statement, data = ()):
+
+        self.cursor.execute(statement, data)
+        self.conn.commit()
+        return self.cursor.fetchall()
+
 
     @tasks.loop(count=1)
     async def setup(self):
@@ -486,6 +547,1363 @@ class Profile(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send('please format as `.rep [mention]`')
             ctx.command.reset_cooldown(ctx)
+
+# -------------- New Profiles -------------- #
+
+# -------  Matthew Hammond, 2021  ------
+# ----  Profile Plant Bot Commands  ----
+# ---------------  v1.0  ---------------
+
+
+    @commands.command(
+        name = "profilewizard",
+        aliases = ["pwiz", "pw"],
+
+        brief = "Create and edit your profile.",
+        description = "Create and edit your profile! Add fields and showcase badges!",
+    )
+    async def profileWizard(self, ctx):
+
+        embed = discord.Embed(
+            title = "Profile Wizard",
+            description = "Loading...",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        msg = await ctx.send(embed = embed)
+
+        for emoji in self.WIZARD_EMOJIS.values():
+            await msg.add_reaction(emoji)
+
+        await self.mainMenu(ctx, msg)
+
+        embed = discord.Embed(
+            title = "Profile Wizard",
+            description = "Finished.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+    async def mainMenu(self, ctx, msg):
+
+        def check(reaction, user):
+            return ctx.author.id == user.id and msg.id == reaction.message.id
+
+        availableFields = self.executeSQL("""
+            SELECT field_id, type, name FROM fields
+            WHERE user_id = ? AND type <> 0
+        """, (ctx.author.id,))
+
+        while True:
+
+            embed = discord.Embed(
+                title = "Profile Wizard - Edit your profile.",
+                description = "React with a number to select a field.\nReact with :new: to create a new field.\nReact with :record_button: to edit your bio.\nReact with :asterisk: to reset your profile.\nReact with :regional_indicator_p: to preview your profile.\nReact with :eject: to quit.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            if (len(availableFields)):
+                embed.add_field(
+                    name = "Available Fields ({}/{})".format(len(availableFields), "5"),
+                    value = "\n".join(self.WIZARD_EMOJIS[str(i)] + " " + str(availableFields[i][2]) for i in range(0, len(availableFields)))
+                )
+            else:
+                embed.add_field(
+                    name = "Available Fields (0/{})".format("5"),
+                    value = "None",
+                )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+            if (reaction.emoji == self.WIZARD_EMOJIS["new"]):
+                await self.newField(ctx, msg)
+
+                availableFields = self.executeSQL("""
+                    SELECT field_id, type, name FROM fields
+                    WHERE user_id = ? AND type <> 0
+                """, (ctx.author.id,))
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["record_button"]):
+                await self.editBio(ctx, msg)
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["asterisk"]):
+                await self.resetProfile(ctx, msg)
+
+                availableFields = self.executeSQL("""
+                    SELECT field_id, type, name FROM fields
+                    WHERE user_id = ? AND type <> 0
+                """, (ctx.author.id,))
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["regional_indicator_p"]):
+                await self.previewProfile(ctx, msg)
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["eject"]):
+                return
+
+            elif (reaction.emoji in self.WIZARD_EMOJIS.values()):
+                if (int(reaction.emoji[0]) < len(availableFields)):
+                    field = availableFields[int(reaction.emoji[0])]
+
+                    if (field[1] == 1):
+                        await self.textFieldMenu(ctx, msg, field[0])
+                    elif (field[1] == 2):
+                        await self.badgeFieldMenu(ctx, msg, field[0])
+                    elif (field[1] == 3):
+                        await self.imageFieldMenu(ctx, msg, field[0])
+                    elif (field[1] == 4):
+                        await self.colourFieldMenu(ctx, msg, field[0])
+
+                    availableFields = self.executeSQL("""
+                        SELECT field_id, type, name FROM fields
+                        WHERE user_id = ? AND type <> 0
+                    """, (ctx.author.id,))
+
+    async def newField(self, ctx, msg):
+
+        def check(reaction, user):
+            return ctx.author.id == user.id and msg.id == reaction.message.id
+
+        fieldCount = self.executeSQL("""
+            SELECT COUNT(*) FROM fields
+            WHERE user_id = ?
+        """, (ctx.author.id,))[0][0]
+
+        premiumUser = len(self.executeSQL("""
+            SELECT premium_user_id FROM premium_users
+            WHERE user_id = ?
+        """, (ctx.author.id,)))
+
+        if (fieldCount >= 2 and not premiumUser):
+            embed = discord.Embed(
+                title = "Profile Wizard - Add a field.",
+                description = "You need premium to have more than 2 fields!\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+            return
+
+        elif (fieldCount >= 5 and premiumUser):
+            embed = discord.Embed(
+                title = "Profile Wizard - Add a field.",
+                description = "You cannot have more than 5 fields!\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+            return
+
+        else:
+            embed = discord.Embed(
+                title = "Profile Wizard - Add a field.",
+                description = "React with :zero: to create a text field.\nReact with :one: to create a badge showcase.\nReact with :two: to create an image showcase.\nReact with :three: to create a custom colour field.\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            while True:
+
+                try:
+                    reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+                except asyncio.TimeoutError:
+                    return
+                await msg.remove_reaction(reaction, user)
+
+                if (reaction.emoji == self.WIZARD_EMOJIS["eject"]):
+                    return
+
+                elif (reaction.emoji == self.WIZARD_EMOJIS["0"]):
+                    await self.newTextField(ctx, msg)
+                    return
+
+                elif (reaction.emoji == self.WIZARD_EMOJIS["1"]):
+                    await self.newBadgeField(ctx, msg)
+                    return
+
+                elif (reaction.emoji == self.WIZARD_EMOJIS["2"]):
+                    fieldId = await self.newImageField(ctx, msg)
+                    if (fieldId):
+                        await self.imageFieldMenu(ctx, msg, fieldId)
+                    return
+
+                elif (reaction.emoji == self.WIZARD_EMOJIS["3"]):
+                    fieldId = await self.newColourField(ctx, msg)
+                    if (fieldId):
+                        await self.colourFieldMenu(ctx, msg, fieldId)
+                    return
+
+    async def newTextField(self, ctx, msg):
+
+        def heading_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and len(msg.content) <= 32
+
+        def content_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and len(msg.content) <= 512
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Add a text field.",
+            description = "Reply with the heading of the text field. (Max 32 characters)\nWait 60s to cancel.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            heading = await self.bot.wait_for("message", timeout = 60, check = heading_check)
+        except asyncio.TimeoutError:
+            return
+        await heading.delete()
+        heading = heading.content
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Add a text field.",
+            description = "Reply with the content of the text field. (Max 512 characters)\nWait 300s to cancel.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            content = await self.bot.wait_for("message", timeout = 300, check = content_check)
+        except asyncio.TimeoutError:
+            return
+        await content.delete()
+        content = content.content
+
+        self.executeSQL("""
+            INSERT INTO fields (user_id, type, name, data)
+            VALUES (?, 1, ?, ?)
+        """, (ctx.author.id, heading, content))
+
+    async def textFieldMenu(self, ctx, msg, fieldId):
+
+        def check(reaction, user):
+            return user.id == ctx.author.id and reaction.emoji in self.WIZARD_EMOJIS.values()
+
+        textField = self.executeSQL("""
+            SELECT name, data FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))[0]
+
+        while True:
+
+            embed = discord.Embed(
+                title = "Profile Wizard - Edit a text field.",
+                description = "React with :zero: to change the heading.\nReact with :one: to change the content.\nReact with :asterisk: to delete the field.\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            embed.add_field(name = textField[0], value = textField[1])
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+            if (reaction.emoji == self.WIZARD_EMOJIS["eject"]):
+                return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["asterisk"]):
+                if (await self.deleteTextField(ctx, msg, fieldId)): return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["0"]):
+                await self.editTextFieldHeading(ctx, msg, fieldId)
+                textField = self.executeSQL("""
+                    SELECT name, data FROM fields
+                    WHERE field_id = ?
+                """, (fieldId,))[0]
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["1"]):
+                await self.editTextFieldContent(ctx, msg, fieldId)
+                textField = self.executeSQL("""
+                    SELECT name, data FROM fields
+                    WHERE field_id = ?
+                """, (fieldId,))[0]
+
+    async def editTextFieldHeading(self, ctx, msg, fieldId):
+
+        def heading_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and len(msg.content) <= 32
+
+        currentHeading = self.executeSQL("""
+            SELECT name FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))[0][0]
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Edit a text field.",
+            description = "Reply with the new heading of the text field. (Max 32 characters)\nWait 60s to cancel.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        embed.add_field(name = "Current Heading", value = currentHeading)
+        await msg.edit(embed = embed)
+
+        try:
+            heading = await self.bot.wait_for("message", timeout = 60, check = heading_check)
+        except asyncio.TimeoutError:
+            return
+        await heading.delete()
+        heading = heading.content
+
+        self.executeSQL("""
+            UPDATE fields
+            SET name = ?
+            WHERE field_id = ?
+        """, (fieldId,))
+
+    async def editTextFieldContent(self, ctx, msg, fieldId):
+
+        def content_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and len(msg.content) <= 512
+
+        currentContent = self.executeSQL("""
+            SELECT data FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))[0][0]
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Edit a text field.",
+            description = "Reply with the new content of the text field. (Max 512 characters)\nWait 60s to cancel.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        embed.add_field(name = "Current Content", value = currentContent)
+        await msg.edit(embed = embed)
+
+        try:
+            content = await self.bot.wait_for("message", timeout = 60, check = content_check)
+        except asyncio.TimeoutError:
+            return
+        await content.delete()
+        content = content.content
+
+        self.executeSQL("""
+            UPDATE fields
+            SET data = ?
+            WHERE field_id = ?
+        """, (fieldId,))
+
+    async def deleteTextField(self, ctx, msg, fieldId):
+
+        def check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Delete a text field.",
+            description = "Are you sure? (Y/N)\n",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            confirmation = await self.bot.wait_for("message", timeout = 60, check = check)
+        except asyncio.TimeoutError:
+            return False
+        await confirmation.delete()
+
+        if (confirmation.content.lower()[0] != "y"):
+            return
+
+        self.executeSQL("""
+            DELETE FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))
+
+        return True
+
+    async def newBadgeField(self, ctx, msg):
+
+        def badge_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        def check(r, u):
+            return r.message == msg and u == ctx.author and r.emoji == self.WIZARD_EMOJIS['eject']
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Add a badge showcase.",
+            description = "Reply with the name of the badge you want to showcase.\nWait 60s to go back.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            badge = await self.bot.wait_for("message", timeout = 300, check = badge_check)
+        except asyncio.TimeoutError:
+            return False
+        await badge.delete()
+        badge = badge.content
+
+        with open('cogs/badges.json', 'r') as file:
+            data = loads(file.read())
+
+        if (await badges.Badge.checkbadge(self, ctx.author.id, badge, data)):
+
+            badge = data['badges'].get(badge)
+
+            self.executeSQL("""
+                INSERT INTO fields (user_id, type, name, data)
+                VALUES (?, 2, "Badge Showcase", ?)
+            """, (ctx.author.id, badge))
+
+            self.badgeFieldMenu(ctx, msg, await self.badgeFieldMenu(ctx, msg, self.executeSQL("""
+                SELECT field_id FROM fields
+                WHERE user_id = ? AND type = 2
+            """, (ctx.author.id,))[0][0]))
+
+        else:
+            embed = discord.Embed(
+                title = "Profile Wizard - Add a badge showcase.",
+                description = "You don't have that badge!\nReact with :eject: or wait 60s to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return False
+            await msg.remove_reaction(reaction, user)
+            return False
+
+    async def badgeFieldMenu(self, ctx, msg, fieldId):
+
+        def check(reaction, user):
+            return user.id == ctx.author.id and reaction.emoji in self.WIZARD_EMOJIS.values()
+
+        badge = self.executeSQL("""
+            SELECT data FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))[0][0]
+
+        while True:
+
+            embed = discord.Embed(
+                title = "Profile Wizard - Edit a badge showcase.",
+                description = "React with :zero: to change the badge.\nReact with :asterisk: to delete the showcase.\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            embed.add_field(name = "Badge", value = badge)
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+            if (reaction.emoji == self.WIZARD_EMOJIS["eject"]):
+                return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["asterisk"]):
+                if (await self.deleteBadgeField(ctx, msg, fieldId)): return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["0"]):
+                await self.editBadgeFieldBadge(ctx, msg, fieldId)
+                badge = self.executeSQL("""
+                    SELECT data FROM fields
+                    WHERE field_id = ?
+                """, (fieldId,))[0][0]
+
+    async def editBadgeFieldBadge(self, ctx, msg, fieldId):
+
+        def check(reaction, user):
+            return user.id == ctx.author.id and reaction.emoji in self.WIZARD_EMOJIS.values()
+
+        def badge_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        badge = self.executeSQL("""
+            SELECT data FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))[0][0]
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Edit a badge showcase.",
+            description = "Reply with the name of the badge you want to showcase.\nWait 60s to go back.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        embed.add_field(name = "currentBadge", value = badge)
+        await msg.edit(embed = embed)
+
+        try:
+            badge = await self.bot.wait_for("message", timeout = 300, check = badge_check)
+        except asyncio.TimeoutError:
+            return False
+        await badge.delete()
+        badge = badge.content
+
+        with open('cogs/badges.json', 'r') as file:
+            data = loads(file.read())
+
+        if (await badges.Badge.checkbadge(self, ctx.author.id, badge, data)):
+
+            badge = data['badges'].get(badge)
+
+            self.executeSQL("""
+                UPDATE fields
+                SET data = ?
+                WHERE field_id = ?
+            """, (badge, fieldId))
+
+        else:
+            embed = discord.Embed(
+                title = "Profile Wizard - Add a badge showcase.",
+                description = "You don't have that badge!\nReact with :eject: or wait 60s to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+    async def deleteBadgeField(self, ctx, msg, fieldId):
+
+        def check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Delete a badge showcase.",
+            description = "Are you sure? (Y/N)\n",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            confirmation = await self.bot.wait_for("message", timeout = 60, check = check)
+        except asyncio.TimeoutError:
+            return False
+        await confirmation.delete()
+
+        if (confirmation.content.lower()[0] != "y"):
+            return
+
+        self.executeSQL("""
+            DELETE FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))
+
+        return True
+
+    async def newImageField(self, ctx, msg, fieldId = 0):
+
+        def check(reaction, user):
+            return ctx.author.id == user.id and msg.id == reaction.message.id
+
+        def image_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        hasField = len(self.executeSQL("""
+            SELECT field_id FROM fields
+            WHERE user_id = ? AND type = 3 AND field_id <> ?
+        """, (ctx.author.id, fieldId)))
+
+        if (hasField):
+            embed = discord.Embed(
+                title = "Profile Wizard - Add an image showcase.",
+                description = "You can't have more than 1 image!\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+            return
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Add an image showcase.",
+            description = "Reply with the name of the image you want to showcase.\nWait 60s to go back.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            image = await self.bot.wait_for("message", timeout = 300, check = image_check)
+        except asyncio.TimeoutError:
+            return False
+        await image.delete()
+        image = image.content
+
+        if (await leaderboard.Leaderboard.checkimage(self, ctx.author.id, ctx.guild.id, image)):
+            with open(f'cogs/randomImages.json', 'r') as file:
+                d = json.loads(file.read())
+
+            for im in d['images']:
+                if im['desc'].lower() == image.lower():
+                    temp = {"image": {"url": im['url'], "desc": image}}
+                    break
+
+            if temp is None:
+                with open(f'cogs/flowers.json', 'r') as file:
+                    f = json.loads(file.read())
+                for cat in f:
+                    for flower in f[cat]:
+                        t = list(flower.items())
+                        if t[0][0].lower() == image.lower():
+                            temp = {"image": {"url": t[0][1], "desc": t[0][0]}}
+                            break
+
+            image = temp["image"]["url"]
+
+        elif (leaderboard.AnimeLeaderboard.checkimage(self, ctx.author.id, ctx.guild.id, image)):
+            with open(f'cogs/leaderboards/a{ctx.guild.id}.json', 'r') as file:
+                a = json.loads(file.read())
+
+            for user in a['users']:
+                if user['userid'] == ctx.author.id:
+                    for im in user['images']:
+                        if im['name'].lower() == image.lower():
+                            temp = {"image": {"url": im['url'], "desc": im['name']}}
+                            break
+
+            image = temp["image"]["url"]
+
+        if (image == "hoot hoot"):
+            image = "https://i.imgur.com/QSEH0xT.jpg"
+
+        else:
+            embed = discord.Embed(
+                title = "Profile Wizard - Add an image showcase.",
+                description = "You don't have that image!\nReact with :eject: or wait 60s to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return False
+            await msg.remove_reaction(reaction, user)
+            return False
+
+        if (fieldId):
+            self.executeSQL("""
+                UPDATE fields
+                SET data = ?
+                WHERE field_id = ?
+            """, (image, fieldId))
+
+        else:
+            self.executeSQL("""
+                INSERT INTO fields (user_id, type, name, data)
+                VALUES (?, 3, "Image Showcase", ?)
+            """, (ctx.author.id, image))
+
+        return self.executeSQL("""
+            SELECT field_id FROM fields
+            WHERE user_id = ? AND type = 3
+        """, (ctx.author.id,))[0][0]
+
+    async def imageFieldMenu(self, ctx, msg, fieldId):
+
+        def check(reaction, user):
+            return user.id == ctx.author.id and reaction.emoji in self.WIZARD_EMOJIS.values()
+
+        image = self.executeSQL("""
+            SELECT data FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))[0][0]
+
+        while True:
+
+            embed = discord.Embed(
+                title = "Profile Wizard - Edit an image showcase.",
+                description = "React with :zero: to change the image.\nReact with :asterisk: to delete the showcase.\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            embed.set_image(url = image)
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+            if (reaction.emoji == self.WIZARD_EMOJIS["eject"]):
+                return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["asterisk"]):
+                if (await self.deleteImageField(ctx, msg, fieldId)): return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["0"]):
+                await self.newImageField(ctx, msg, fieldId)
+                image = self.executeSQL("""
+                    SELECT data FROM fields
+                    WHERE field_id = ?
+                """, (fieldId,))[0][0]
+
+    async def deleteImageField(self, ctx, msg, fieldId):
+
+        def check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Delete an image showcase.",
+            description = "Are you sure? (Y/N)\n",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            confirmation = await self.bot.wait_for("message", timeout = 60, check = check)
+        except asyncio.TimeoutError:
+            return False
+        await confirmation.delete()
+
+        if (confirmation.content.lower()[0] != "y"):
+            return
+
+        self.executeSQL("""
+            DELETE FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))
+
+        return True
+
+    async def newColourField(self, ctx, msg, fieldId = 0):
+
+        def check(reaction, user):
+            return ctx.author.id == user.id and msg.id == reaction.message.id
+
+        def colour_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and search(self.COLOUR_REGEX, msg.content)
+
+        hasField = len(self.executeSQL("""
+            SELECT field_id FROM fields
+            WHERE user_id = ? AND type == 4 AND field_id <> ?
+        """, (ctx.author.id, fieldId)))
+
+        hasPremium = len(self.executeSQL("""
+            SELECT premium_user_id FROM premium_users
+            WHERE user_id = ?
+        """, (ctx.author.id,)))
+
+        if (hasField):
+            embed = discord.Embed(
+                title = "Profile Wizard - Add a custom colour.",
+                description = "You can't have more than 1 custom colour!\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+            return
+
+        elif (hasPremium):
+            embed = discord.Embed(
+                title = "Profile Wizard - Add a custom colour.",
+                description = "You need premium to set a custom colour!\nReact with :eject: to go back.",
+                colour = ctx.guild.get_member(self.bot.user.id).colour,
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+            return
+
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Add a custom colour.",
+            description = "Reply with the RGB code of the colour. (e.g #FFF or #FFFFFF)\nWait 60s to go back.",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            colour = await self.bot.wait_for("message", timeout = 300, check = colour_check)
+        except asyncio.TimeoutError:
+            return False
+        await colour.delete()
+        colour = findall(self.COLOUR_REGEX, colour.content)[0][0]
+
+        colour = colour[1:]
+        if (len(colour) == 3):
+            colour = colour[0] * 2 + colour[1] * 2 + colour[2] * 2
+
+        if (fieldId):
+            self.executeSQL("""
+                UPDATE fields
+                SET data = ?
+                WHERE field_id = ?
+            """, (colour, fieldId))
+
+        else:
+            self.executeSQL("""
+                INSERT INTO fields (user_id, type, name, data)
+                VALUES (?, 4, "Custom Colour", ?)
+            """, (ctx.author.id, colour))
+
+        return self.executeSQL("""
+            SELECT field_id FROM fields
+            WHERE user_id = ? AND type = 4
+        """, (ctx.author.id,))[0][0]
+
+    async def colourFieldMenu(self, ctx, msg, fieldId):
+
+        def check(reaction, user):
+            return user.id == ctx.author.id and reaction.emoji in self.WIZARD_EMOJIS.values()
+
+        colour = self.executeSQL("""
+            SELECT data FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))[0][0]
+
+        while True:
+
+            embed = discord.Embed(
+                title = "Profile Wizard - Edit a custom colour.",
+                description = "React with :zero: to change the image.\nReact with :asterisk: to delete this field.\nReact with :eject: to go back.",
+                colour = discord.Colour(int(colour, 16)),
+                timestamp = datetime.now(),
+            )
+            await msg.edit(embed = embed)
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+            if (reaction.emoji == self.WIZARD_EMOJIS["eject"]):
+                return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["asterisk"]):
+                if (await self.deleteColourField(ctx, msg, fieldId)): return
+
+            elif (reaction.emoji == self.WIZARD_EMOJIS["0"]):
+                await self.newColourField(ctx, msg, fieldId)
+                colour = self.executeSQL("""
+                    SELECT data FROM fields
+                    WHERE field_id = ?
+                """, (fieldId,))[0][0]
+
+    async def deleteColourField(self, ctx, msg, fieldId):
+
+        def check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Delete a custom colour.",
+            description = "Are you sure? (Y/N)\n",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            confirmation = await self.bot.wait_for("message", timeout = 60, check = check)
+        except asyncio.TimeoutError:
+            return False
+        await confirmation.delete()
+
+        if (confirmation.content.lower()[0] != "y"):
+            return
+
+        self.executeSQL("""
+            DELETE FROM fields
+            WHERE field_id = ?
+        """, (fieldId,))
+
+        return True
+
+    async def editBio(self, ctx, msg):
+
+        def bio_check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id and len(msg.content) <= 512
+
+        bio = self.executeSQL("""
+            SELECT field_id, data FROM fields
+            WHERE user_id = ? AND type == 0
+        """, (ctx.author.id,))
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Edit your bio.",
+            description = "Reply with the{} content of the bio. (Max 512 characters)\nWait 300 to cancel.".format(" new" if len(bio) else ""),
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        if (len(bio)):
+            embed.add_field(
+                name = "Current Bio",
+                value = bio[0][1]
+            )
+        await msg.edit(embed = embed)
+
+        try:
+            content = await self.bot.wait_for("message", timeout = 300, check = bio_check)
+        except asyncio.TimeoutError:
+            return
+        await content.delete()
+        content = content.content
+
+        if (len(bio)):
+            self.executeSQL("""
+                UPDATE fields
+                SET data = ?
+                WHERE field_id = ?
+            """, (content, bio[0][0]))
+
+        else:
+            self.executeSQL("""
+                INSERT INTO fields (user_id, type, name, data)
+                VALUES (?, 0, "Bio", ?)
+            """, (ctx.author.id, content))
+
+    async def resetProfile(self, ctx, msg):
+
+        def check(msg):
+            return ctx.author.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        embed = discord.Embed(
+            title = "Profile Wizard - Reset your profile.",
+            description = "Are you sure? (Y/N)\n",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        await msg.edit(embed = embed)
+
+        try:
+            confirmation = await self.bot.wait_for("message", timeout = 60, check = check)
+        except asyncio.TimeoutError:
+            return False
+        await confirmation.delete()
+
+        if (confirmation.content.lower()[0] != "y"):
+            return
+
+        self.executeSQL("""
+            DELETE FROM fields
+            WHERE user_id = ?
+        """, (ctx.author.id,))
+
+    async def previewProfile(self, ctx, msg):
+
+        def preview_check(reaction, user):
+            return ctx.author.id == user.id and msg.id == reaction.message.id and reaction.emoji == self.WIZARD_EMOJIS["eject"]
+
+        await msg.edit(embed = await self.generateProfileEmbed(ctx, ctx.author.id, preview = True))
+        try:
+            reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = preview_check)
+            await msg.remove_reaction(reaction, user)
+        except asyncio.TimeoutError:
+            pass
+
+    async def generateProfileEmbed(self, ctx, userId, preview = False):
+
+        fields = self.executeSQL("""
+            SELECT type, name, data FROM fields
+            WHERE user_id = ?
+            ORDER BY field_id
+        """, (userId,))
+
+        marriages = self.executeSQL("""
+            SELECT user_b_id FROM marriages
+            WHERE user_a_id = ?
+        """, (userId,))
+
+        description = ""
+        colour = ctx.guild.get_member(self.bot.user.id).colour
+        for field in fields:
+            if (field[0] == 0):
+                description = field[2]
+            elif (field[0] == 4):
+                colour = discord.Colour(int(field[2], 16))
+
+        embed = discord.Embed(
+            title = "{}'s Profile{}".format((await self.bot.fetch_user(userId)).name, " Preview (React with :eject: to go back)" if preview else "!"),
+            description = ":regional_indicator_f: to see friends.\n\n" + description,
+            colour = colour,
+            timestamp = datetime.now(),
+        )
+
+        with open('cogs/profiles.json', 'r') as file:
+            d = json.loads(file.read())
+
+        userData = None
+        for user in d['users']:
+            if user['userid'] == userId:
+                userData = user
+
+        embed.add_field(name = "Points", value = "0" if userData == None else userData["points"])
+        embed.add_field(name = "Rep", value = "0" if userData == None else userData["rep"])
+
+        if (len(marriages)):
+            embed.add_field(name = "Married To", value = "\n".join([(await self.bot.fetch_user(userBID[0])).mention for userBID in marriages]))
+
+        for field in fields:
+            if (field[0] == 1 or field[0] == 2):
+                embed.add_field(
+                    name = field[1],
+                    value = field[2],
+                    inline = False,
+                )
+            elif (field[0] == 3):
+                embed.set_image(url = field[2])
+
+        return embed
+
+    async def generateFriendsEmbed(self, ctx, userId):
+        hasColourField = self.executeSQL("""
+            SELECT data FROM fields
+            WHERE user_id = ? AND type == 4
+        """, (userId,))
+
+        colour = ctx.guild.get_member(self.bot.user.id).colour
+        if (len(hasColourField)):
+            colour = discord.Colour(int(hasColourField[0][0], 16))
+
+        embed = discord.Embed(
+            title = "{}'s Friends!".format((await self.bot.fetch_user(userId)).name),
+            description = ":regional_indicator_f: to go back to the profile.",
+            colour = colour,
+            timestamp = datetime.now(),
+        )
+
+        relationships = self.executeSQL("""
+            SELECT user_b_id, type FROM relationships
+            WHERE user_a_id = ?
+            ORDER BY relationship_id
+        """, (userId,))
+
+        f = ""
+        bf = ""
+        for relationship in relationships:
+            if (relationship[1] == 0):
+                f += (await self.bot.fetch_user(relationship[0])).mention + "\n"
+            elif (relationship[1] == 1):
+                bf += (await self.bot.fetch_user(relationship[0])).mention + "\n"
+
+        embed.add_field(name = "Best Friends", value = bf if bf else "None", inline = False)
+        embed.add_field(name = "Friends", value = f if f else "None", inline = False)
+
+        return embed
+
+    @commands.command(
+        name = "testprofile",
+
+        usage = "@User",
+
+        brief = "View someone's profile!",
+        description = "View all about a user!",
+    )
+    async def profile(self, ctx):
+
+        if (len(ctx.message.mentions) == 0):
+            userId = ctx.author.id
+        else:
+            userId = ctx.message.mentions[0].id
+
+        embed = discord.Embed(
+            title = "Profile Wizard",
+            description = "Loading...",
+            colour = ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp = datetime.now(),
+        )
+        msg = await ctx.send(embed = embed)
+        await msg.add_reaction("🇫")
+
+        def check(reaction, user):
+            return ctx.author.id == user.id and msg.id == reaction.message.id and reaction.emoji == "🇫"
+
+        while True:
+
+            await msg.edit(embed = await self.generateProfileEmbed(ctx, userId))
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 300, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+            await msg.edit(embed = await self.generateFriendsEmbed(ctx, userId))
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout = 60, check = check)
+            except asyncio.TimeoutError:
+                return
+            await msg.remove_reaction(reaction, user)
+
+    @commands.command(
+        name = "friend",
+
+        brief = "Friend another user!",
+        description = "Friend someone! (Use it again to best friend them!)",
+    )
+    async def friend(self, ctx):
+
+        def check(msg):
+            return member.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        for member in ctx.message.mentions:
+
+            if (ctx.author.id == member.id):
+                await ctx.send("You can't friend yourself!")
+                continue
+
+            relationship = self.executeSQL("""
+                SELECT relationship_id, type FROM relationships
+                WHERE user_a_id = ? AND user_b_id = ?
+            """, (ctx.author.id, member.id))
+
+            if (len(relationship) and relationship[0][1] == 0):
+
+                if (self.executeSQL("""
+                    SELECT COUNT(*) FROM relationships
+                    WHERE user_a_id = ? AND type = 1
+                """, (ctx.author.id,))[0][0] >= 5):
+                    await ctx.send("You can't have more than 5 best friends!")
+
+                elif (self.executeSQL("""
+                    SELECT COUNT(*) FROM relationships
+                    WHERE user_b_id = ? AND type = 1
+                """, (member.id,))[0][0] >= 5):
+                    await ctx.send("They already have 5 best friends!")
+
+                else:
+                    msg = await ctx.send("{} do you want to be best friends with {}? (Y/N)".format(member.mention, ctx.author.mention))
+
+                    try:
+                        accept = await self.bot.wait_for("message", timeout = 60, check = check)
+                    except asyncio.TimeoutError:
+                        await msg.edit(content = "I guess {} didn't want to be best friends with you. <:sadplant:828679930450673714>".format(member.mention))
+                        continue
+
+                    if (accept.content.lower()[0] == "y"):
+                        self.executeSQL("""
+                            UPDATE relationships
+                            SET type = 1
+                            WHERE relationship_id = ?
+                        """, (relationship[0][0],))
+
+                        relationship2 = self.executeSQL("""
+                            SELECT relationship_id FROM relationships
+                            WHERE user_a_id = ? AND user_b_id = ?
+                        """, (member.id, ctx.author.id))
+
+                        if (len(relationship2)):
+                            self.executeSQL("""
+                                UPDATE relationships
+                                SET type = 1
+                                WHERE relationship_id = ?
+                            """, (relationship2[0][0],))
+
+                        else:
+                            self.executeSQL("""
+                                INSERT INTO relationships (user_a_id, user_b_id, type)
+                                VALUES (?, ?, 1)
+                            """, (member.id, ctx.author.id))
+
+                        await msg.edit(content = "{} and {} are now best friends! <:plantlove:829795421369925681>".format(ctx.author.mention, member.mention))
+
+                    else:
+                        await msg.edit(content = "{} didn't want to be best friends with you. <:sadplant:828679930450673714>".format(member.mention))
+
+
+            elif (len(relationship) and relationship[0][1] == 1):
+                await ctx.send(content = "You are already best friends with {}! <:plantlove:829795421369925681>".format(member.mention))
+
+            elif (not len(relationship)):
+                self.executeSQL("""
+                    INSERT INTO relationships (user_a_id, user_b_id, type)
+                    VALUES (?, ?, 0)
+                """, (ctx.author.id, member.id))
+
+                await ctx.send("You are now friends with {}! <:plantlove:829795421369925681>".format(member.mention))
+
+    @commands.command(
+        name = "unfriend",
+
+        brief = "Unfriend another user.",
+        description = "Unfriend someone!",
+    )
+    async def unfriend(self, ctx):
+
+        for member in ctx.message.mentions:
+
+            if (ctx.author.id == member.id):
+                await ctx.send("You can't unfriend yourself!")
+                continue
+
+            relationship = self.executeSQL("""
+                SELECT relationship_id, type FROM relationships
+                WHERE user_a_id = ? AND user_b_id = ?
+            """, (ctx.author.id, member.id))
+
+            if (len(relationship) and relationship[0][1] == 1):
+                relationship2 = self.executeSQL("""
+                    SELECT relationship_id FROM relationships
+                    WHERE user_a_id = ? AND user_b_id = ?
+                """, (member.id, ctx.author.id))
+
+                self.executeSQL("""
+                    UPDATE relationships
+                    SET type = 0
+                    WHERE relationship_id = ? OR relationship_id = ?
+                """, (relationship[0][0], relationship2[0][0]))
+
+                await ctx.send("{} and {} are now only friends. <:sadplant:828679930450673714>".format(ctx.author.mention, member.mention))
+
+            elif (len(relationship) and relationship[0][1] == 0):
+                self.executeSQL("""
+                    DELETE FROM relationships
+                    WHERE relationship_id = ?
+                """, (relationship[0][0],))
+
+                await ctx.send("You are no longer friends with {}. <:sadplant:828679930450673714>".format(member.mention))
+
+            else:
+                await ctx.send("You don't have a friendship with {}. <:sadplant:828679930450673714>".format(member.mention))
+
+    @commands.command(
+        name = "testmarry",
+
+        brief = "Marry another user!",
+        description = "Marry someone!",
+    )
+    async def marry(self, ctx):
+
+        def check(msg):
+            return member.id == msg.author.id and ctx.channel.id == msg.channel.id
+
+        for member in ctx.message.mentions:
+
+            if (ctx.author.id == member.id):
+                await ctx.send("You can't marry yourself!")
+                continue
+
+            marriage = self.executeSQL("""
+                SELECT marriage_id FROM marriages
+                WHERE user_a_id = ? AND user_b_id = ?
+            """, (ctx.author.id, member.id))
+
+            if (not len(marriage)):
+
+                if (self.executeSQL("""
+                    SELECT COUNT(*) FROM marriages
+                    WHERE user_a_id = ?
+                """, (ctx.author.id,))[0][0] >= 3):
+                    await ctx.send("You can't have more than 3 marriages!")
+
+                elif (self.executeSQL("""
+                    SELECT COUNT(*) FROM marriages
+                    WHERE user_b_id = ?
+                """, (member.id,))[0][0] >= 3):
+                    await ctx.send("They already have 3 marriages!")
+
+                else:
+                    msg = await ctx.send("{} do you want to marry {}? (Y/N)".format(member.mention, ctx.author.mention))
+
+                    try:
+                        accept = await self.bot.wait_for("message", timeout = 60, check = check)
+                    except asyncio.TimeoutError:
+                        await msg.edit(content = "I guess {} didn't want to marry you. <:sadplant:828679930450673714>".format(member.mention))
+                        continue
+
+                    if (accept.content.lower()[0] == "y"):
+
+                        self.executeSQL("""
+                            INSERT INTO relationships (user_a_id, user_b_id, type)
+                            VALUES (?, ?, 1)
+                        """, (ctx.author.id, member.id))
+
+                        self.executeSQL("""
+                            INSERT INTO relationships (user_a_id, user_b_id, type)
+                            VALUES (?, ?, 1)
+                        """, (member.id, ctx.author.id))
+
+                        await msg.edit(content = "{} and {} are now married! <:plantlove:829795421369925681>".format(ctx.author.mention, member.mention))
+
+                    else:
+                        await msg.edit(content = "{} didn't want to marry you. <:sadplant:828679930450673714>".format(member.mention))
+
+            else:
+                await ctx.send("You are already married to {}! <:plantlove:829795421369925681>".format(member.mention))
+
+    @commands.command(
+        name = "testdivorce",
+
+        brief = "Divorce another user.",
+        description = "Divorce someone!",
+    )
+    async def divorce(self, ctx):
+
+        for member in ctx.message.mentions:
+
+            if (ctx.author.id == member.id):
+                await ctx.send("You can't divorce yourself!")
+                continue
+
+            relationship = self.executeSQL("""
+                SELECT marriage_id FROM marriages
+                WHERE user_a_id = ? AND user_b_id = ?
+            """, (ctx.author.id, member.id))
+
+            if (len(relationship)):
+
+                self.executeSQL("""
+                    DELETE FROM marriages 
+                    WHERE user_a_id = ? AND user_b_id = ?
+                """, (ctx.author.id, member.id))
+
+                self.executeSQL("""
+                    DELETE FROM marriages 
+                    WHERE user_a_id = ? AND user_b_id = ?
+                """, (member.id, ctx.author.id))
+
+                await ctx.send("{} and {} are no longer married. <:sadplant:828679930450673714>".format(ctx.author.mention, member.mention))
+
+            else:
+                await ctx.send("You aren't married to {}. <:sadplant:828679930450673714>".format(member.mention))
 
 def setup(bot):
     bot.add_cog(Profile(bot))
