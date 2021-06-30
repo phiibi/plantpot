@@ -1163,6 +1163,8 @@ class Profile(commands.Cog):
         await image.delete()
         image = image.content
 
+        temp = None
+        
         if (await leaderboard.Leaderboard.checkimage(self, ctx.author.id, ctx.guild.id, image)):
             with open(f'cogs/randomImages.json', 'r') as file:
                 d = json.loads(file.read())
