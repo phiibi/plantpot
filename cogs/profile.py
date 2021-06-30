@@ -1164,7 +1164,7 @@ class Profile(commands.Cog):
         image = image.content
 
         temp = None
-        
+
         if (await leaderboard.Leaderboard.checkimage(self, ctx.author.id, ctx.guild.id, image)):
             with open(f'cogs/randomImages.json', 'r') as file:
                 d = json.loads(file.read())
@@ -1199,7 +1199,7 @@ class Profile(commands.Cog):
 
             image = temp["image"]["url"]
 
-        if (image == "hoot hoot"):
+        elif (image == "hoot hoot"):
             image = "https://i.imgur.com/QSEH0xT.jpg"
 
         else:
