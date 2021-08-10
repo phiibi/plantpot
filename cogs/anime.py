@@ -345,7 +345,7 @@ async def getshow(id):
         r = await retry(getshowcharacters(id))
         if not r:
             print('timed out')
-    except response.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError as e:
         raise SystemExit(e)
     except requests.exceptions.RequestException as e:
         raise SystemExit(e)
