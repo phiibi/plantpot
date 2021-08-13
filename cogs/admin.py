@@ -8,6 +8,7 @@ from discord.ext import commands, tasks
 from aiosqlite import connect
 from cogs import checkers, leaderboard
 from cogs.inventory import Inventory
+from cogs.badges import Badge
 
 class Admin(commands.Cog):
     version = '0.1'
@@ -187,6 +188,19 @@ class Admin(commands.Cog):
             json.dump(d, f)
         await ctx.send('anime done')
 
+    @commands.command(name='givebadges', hidden=True)
+    @checkers.is_plant_owner()
+    async def givebadges(self, ctx, event, *, name):
+        top10 = await self.executesql('SELECT lb.user_id FROM leaderboards lb INNER JOIN events USING (event_id) WHERE e.name = ? AND lb.server_id = ? ORDER BY lb.score LIMIT 10', (event, ctx.guild.id))
+
+        for userid in top10:
+            user = self.bot.get_user(userid)
+            if user is None:
+                await ctx.send(f'Could not find user id {userid}')
+            else:
+                await Badge.give(self, ctx, user, name)
+
+        return await ctx.send('Badges distributed')
 
 def setup(bot):
     bot.add_cog(Admin(bot))
