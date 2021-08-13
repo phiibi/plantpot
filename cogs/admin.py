@@ -198,7 +198,7 @@ class Admin(commands.Cog):
             if user is None:
                 await ctx.send(f'Could not find user id {userid}')
             else:
-                await Badge.give(self, ctx, user, name)
+                await Badge.give(ctx, user, name)
 
         return await ctx.send('Badges distributed')
 
