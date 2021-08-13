@@ -194,7 +194,7 @@ class Admin(commands.Cog):
         top10 = await self.executesql('SELECT lb.user_id FROM leaderboards lb INNER JOIN events e USING (event_id) WHERE e.name = ? AND lb.server_id = ? ORDER BY lb.score LIMIT 10', (event, ctx.guild.id))
 
         for userid in top10:
-            user = self.bot.get_user(userid)
+            user = await self.bot.fetch_user(userid)
             if user is None:
                 await ctx.send(f'Could not find user id {userid}')
             else:
