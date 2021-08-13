@@ -107,7 +107,7 @@ class Badge(commands.Cog):
 
     @badge.command(name='give', hidden=True)
     @checkers.is_plant_owner()
-    async def give(self, ctx, user: discord.Member, *, name):
+    async def admingive(self, ctx, user: discord.Member, *, name):
         with open('cogs/badges.json', 'r') as file:
             d = json.loads(file.read())
         if not await self.checkuser(user.id, d):
@@ -122,6 +122,23 @@ class Badge(commands.Cog):
 
         with open('cogs/badges.json', 'w') as file:
             json.dump(d, file)
+
+    async def give(self, ctx, user: discord.Member, name):
+        with open('cogs/badges.json', 'r') as file:
+            d = json.loads(file.read())
+        if not await self.checkuser(user.id, d):
+            await self.adduser(user.id, d)
+        if await self.checkbadge(user.id, name, d):
+            return await ctx.send(f'{user.display_name} already has that badge')
+        temp = d['badges'].get(name)
+        for u in d['users']:
+            if u['userid'] == user.id:
+                u['badges'].append({name: temp})
+                await ctx.send(f'{user.display_name} has just received {name} {temp}')
+
+        with open('cogs/badges.json', 'w') as file:
+            json.dump(d, file)
+
 
     async def checkuser(self, uid, d):
         for user in d['users']:
