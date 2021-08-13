@@ -191,7 +191,7 @@ class Admin(commands.Cog):
     @commands.command(name='givebadges', hidden=True)
     @checkers.is_plant_owner()
     async def givebadges(self, ctx, event, *, name):
-        top10 = await self.executesql('SELECT lb.user_id FROM leaderboards lb INNER JOIN events USING (event_id) WHERE e.name = ? AND lb.server_id = ? ORDER BY lb.score LIMIT 10', (event, ctx.guild.id))
+        top10 = await self.executesql('SELECT lb.user_id FROM leaderboards lb INNER JOIN events e USING (event_id) WHERE e.name = ? AND lb.server_id = ? ORDER BY lb.score LIMIT 10', (event, ctx.guild.id))
 
         for userid in top10:
             user = self.bot.get_user(userid)
