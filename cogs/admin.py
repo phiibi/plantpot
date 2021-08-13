@@ -192,15 +192,77 @@ class Admin(commands.Cog):
     @checkers.is_plant_owner()
     async def givebadges(self, ctx, event, *, name):
         top10 = await self.executesql('SELECT lb.user_id FROM leaderboards lb INNER JOIN events e USING (event_id) WHERE e.name = ? AND lb.server_id = ? ORDER BY lb.score LIMIT 10', (event, ctx.guild.id))
+        santasLittleHelper = die(self.bot)
 
         for userid in top10:
             user = await self.bot.fetch_user(userid[0])
             if user is None:
                 await ctx.send(f'Could not find user id {userid}')
             else:
-                await Badge.give(self, ctx, user, name)
+                await santasLittleHelper.give(self, ctx, user, name)
 
         return await ctx.send('Badges distributed')
+
+class die:
+    def __init__(self, bot):
+        self.bot = bot
+        self.setup.start()
+
+    async def executesql(self, statement, data=()):
+        db = await connect('database.db')
+        cursor = await db.execute(statement, data)
+        await db.commit()
+        rows = await cursor.fetchall()
+        await cursor.close()
+        await db.close()
+        return list(rows)
+
+    @tasks.loop(count=1)
+    async def setup(self):
+        await self.executesql("PRAGMA foreign_keys = ON")
+
+    @setup.before_loop
+    async def before_setup(self):
+        await self.bot.wait_until_ready()
+
+    async def give(self, ctx, user: discord.Member, name):
+        with open('cogs/badges.json', 'r') as file:
+            d = json.loads(file.read())
+        if not await self.checkuser(user.id, d):
+            await self.adduser(user.id, d)
+        if await self.checkbadge(user.id, name, d):
+            return await ctx.send(f'{user.display_name} already has that badge')
+        temp = d['badges'].get(name)
+        for u in d['users']:
+            if u['userid'] == user.id:
+                u['badges'].append({name: temp})
+                await ctx.send(f'{user.display_name} has just received {name} {temp}')
+
+        with open('cogs/badges.json', 'w') as file:
+            json.dump(d, file)
+
+    async def checkuser(self, uid, d):
+        for user in d['users']:
+            if user['userid'] == uid:
+                return True
+        else:
+            return False
+
+    async def adduser(self, uid, d):
+        d['users'].append({'userid': uid,
+                           'badges': []})
+        print(d)
+        return d
+
+    async def checkbadge(self, uid, name, data):
+        for user in data['users']:
+            if user['userid'] == uid:
+                for badge in user['badges']:
+                    for n in badge:
+                        if n == name:
+                            return True
+                return False
+        return False
 
 def setup(bot):
     bot.add_cog(Admin(bot))
