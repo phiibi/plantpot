@@ -199,12 +199,12 @@ class Admin(commands.Cog):
             if user is None:
                 await ctx.send(f'Could not find user id {userid}')
             else:
-                await santasLittleHelper.give(self, ctx, user, name)
+                await santasLittleHelper.give(ctx, user, name)
 
         return await ctx.send('Badges distributed')
 
 class die:
-    def __init__(self, bot):
+    def __init__(self, bot):    
         self.bot = bot
         self.setup.start()
 
