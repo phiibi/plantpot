@@ -105,7 +105,7 @@ class Badge(commands.Cog):
             with open('cogs/badges.json', 'w') as file:
                 json.dump(d, file)
 
-    @badge.command(name='give', hidden=True)
+    @badge.command(name='admingive', hidden=True)
     @checkers.is_plant_owner()
     async def admingive(self, ctx, user: discord.Member, *, name):
         with open('cogs/badges.json', 'r') as file:
