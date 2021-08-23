@@ -101,7 +101,7 @@ class AutoModerator(commands.Cog):
     @automod.command(name='welcome', aliases=['wm', 'message'])
     async def welcomemessage(self, ctx, m=None):
         def check(r, u):
-            return u == ctx.author and r.message == m
+            return u == ctx.author and r.message == m and r.emoji in self.EMOJIS
 
         messageinfo = await self.executesql('SELECT id, channel_id, message FROM welcome_messages WHERE server_id = ?', (ctx.guild.id,))
 
@@ -116,9 +116,46 @@ class AutoModerator(commands.Cog):
                             value=f'Welcome messages posting in {self.bot.get_channel(messageinfo[0][1]).mention}',
                             inline=False)
 
-    async def updatemessage(self, ctx, m):
+    async def getwelcomemessage(self, ctx, m):
         def check(msg):
             return msg.author == ctx.author and msg.channel == m.channel
 
         embed = discord.Embed(title='Welcome Message',
-                              description='Please send the welcome message you would like me to send.\nWait 60s, or reply `exit` to exit')
+                              description='Please send the welcome message you would like me to send.\nWait 60s, or reply `exit` to exit.',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+
+        await m.edit(embed=embed)
+
+        try:
+            m = await self.bot.wait_for('message', check=check, timeout=60)
+            await m.delete()
+        except asyncio.TimeoutError:
+            return
+
+        if m.content.lower() == 'exit':
+            return
+        else:
+            return m.content
+
+
+    async def getmessagechannel(self, ctx, m):
+        def check(msg):
+            return msg.author == ctx.author and msg.channel == m.channel
+
+        embed = discord.Embed(title='Welcome Message',
+                              description='Please mention the channel you would like me to send my welcome message in.\nWait 60s, or reply `exit` to exit.',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+
+        await m.edit(embed=embed)
+
+        while True:
+            try:
+                m = await self.bot.wait_for('message', check=check, timeout=60)
+                await m.delete()
+            except asyncio.TimeoutError:
+                return
+
+            if m.content.lower() == 'exit':
+                return
+            elif len(m.channel_mentions):
+                return m.content()
