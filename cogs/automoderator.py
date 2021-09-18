@@ -11,7 +11,8 @@ class AutoModerator(commands.Cog):
     EMOJIS = {
         "A":              "🇦",
         "B":              "🇧",
-        "eject":          "⏏️",
+        "asterisk":       "*️⃣",
+        "eject":          "⏏️"
     }
 
     def __init__(self, bot):
@@ -36,9 +37,8 @@ class AutoModerator(commands.Cog):
             CREATE TABLE IF NOT EXISTS welcome_role (
                 wr_id INTEGER PRIMARY KEY,
                 server_id INTEGER NOT NULL,
-                role_id INTEGER NOT NULL,
-            )
-        """)
+                role_id INTEGER NOT NULL
+            )""")
 
 
     @setup.before_loop
@@ -60,7 +60,7 @@ class AutoModerator(commands.Cog):
     @commands.group(name='automod', hidden=True, help='use .badge help for more help!')
     async def automod(self, ctx):
         if ctx.invoked_subcommand is None:
-            pass
+            ...
 
     async def automodmenu(self, ctx):
         def check(r, u):
@@ -104,8 +104,9 @@ class AutoModerator(commands.Cog):
             return u == ctx.author and r.message == m and r.emoji in self.EMOJIS
 
         messageinfo = await self.executesql('SELECT id, channel_id, message FROM welcome_messages WHERE server_id = ?', (ctx.guild.id,))
+        frommenu = m
 
-        if messageinfo[0]:
+        if messageinfo:
             if not isinstance(m, discord.Message):
                 embed = discord.Embed(title='Auto Moderation Menu',
                                       description='Loading...',
@@ -114,21 +115,39 @@ class AutoModerator(commands.Cog):
                 for e in self.EMOJIS.values():
                     await m.add_reaction(e)
 
-            embed = discord.Embed(title='Auto Moderation Menu',
-                                  description='React to edit welcome\nReact 🇦 to change message\nReact with 🇧 to change the channel\nReact :asterisk: to delete\nWait 60s, or react :eject: to go back',
-                                  colour=ctx.guild.get_member(self.bot.user.id).colour)
-            embed.add_field(name='Message',
-                            value=messageinfo[0][2],
-                            inline=False)
-            embed.add_field(name='Channel',
-                            value=f'Welcome messages posting in {self.bot.get_channel(messageinfo[0][1]).mention}',
-                            inline=False)
+            while True:
+                embed = discord.Embed(title='Auto Moderation Menu',
+                                      description='React to edit welcome\nReact 🇦 to change message\nReact 🇧 to change the channel\nReact :asterisk: to delete\nWait 60s, or react :eject: to go back',
+                                      colour=ctx.guild.get_member(self.bot.user.id).colour)
+                embed.add_field(name='Message',
+                                value=messageinfo[0][2],
+                                inline=False)
+                embed.add_field(name='Channel',
+                                value=f'Welcome messages posting in {self.bot.get_channel(messageinfo[0][1]).mention}',
+                                inline=False)
 
-            #TODO finish implementing menu + add deleting message if m is None
-            try:
-                r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
-            except asyncio.TimeoutError:
-                return
+                await m.edit(embed=embed)
+                #TODO finish implementing menu + add deleting message if m is None
+                try:
+                    r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
+                except asyncio.TimeoutError:
+                    if not frommenu:
+                        await m.delete()
+                    return
+
+                if str(r.emoji) == self.EMOJIS['A']:
+                    welcome = await self.getwelcomemessage(ctx, m)
+                    await self.executesql('UPDATE welcome_messages SET message = ? WHERE server_id = ?', (welcome, ctx.guild.id))
+                elif str(r.emoji) == self.EMOJIS['B']:
+                    channel = await self.getmessagechannel(ctx, m)
+                    await self.executesql('UPDATE welcome_messages SET channel_id = ? WHERE server_id = ?', (channel, ctx.guild.id))
+                elif r.emoji == self.EMOJIS['asterisk']:
+                    if await self.deletemessage(ctx, m):
+                        await self.executesql('DELETE FROM welcome_messages WHERE id = ?', (messageinfo[0][0],))
+                        await ctx.send('Welcome message deleted')
+                        if not frommenu:
+                            await m.delete()
+                        return
         else:
             if not isinstance(m, discord.Message):
                 embed = discord.Embed(title='Auto Moderation Menu',
@@ -141,6 +160,9 @@ class AutoModerator(commands.Cog):
 
             await self.executesql('INSERT INTO welcome_messages (server_id, channel_id, message) VALUES (?, ?, ?)', (ctx.guild.id, channel, welcome))
 
+            if not frommenu:
+                await ctx.send('Welcome message set')
+                await m.delete()
             return
 
     async def getwelcomemessage(self, ctx, m):
@@ -148,7 +170,7 @@ class AutoModerator(commands.Cog):
             return msg.author == ctx.author and msg.channel == m.channel
 
         embed = discord.Embed(title='Welcome Message',
-                              description='Please send the welcome message you would like me to send.\nWait 60s, or reply `exit` to exit.',
+                              description='Please send the welcome message you would like me to send.\nIf you wish for the message to mention the user, please use an @ where you would like the mention\nIf you wish to use an @ and *not* mention the user, please escape it using \\\nWait 60s, or reply `exit` to exit.',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
 
         await m.edit(embed=embed)
@@ -163,7 +185,6 @@ class AutoModerator(commands.Cog):
             return
         else:
             return m.content
-
 
     async def getmessagechannel(self, ctx, m):
         def check(msg):
@@ -207,3 +228,14 @@ class AutoModerator(commands.Cog):
                 return False
             elif m.content.lower() in ['y', 'yes']:
                 return True
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        guildmessage = await self.executesql('SELECT channel_id, message FROM welcome_messages WHERE server_id = ?', (member.guild.id,))
+
+        if guildmessage:
+            channel = await self.bot.fetch_guild(member.guild.id).get_channel(guildmessage[0][0])
+            await channel.send(guildmessage[0][0])
+
+def setup(bot):
+    bot.add_cog(AutoModerator(bot))
