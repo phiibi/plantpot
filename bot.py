@@ -101,13 +101,14 @@ async def on_message(message):
     if 'pog' in mcl():
         outputstr = ''
         if 'aggressive pog' in mcl():
-            if 'not aggressive pog':
-                outputstr += '**not **'
-            await message.channel.send(outputstr + '**pog**')
+            if 'not aggressive pog' in mcl():
+                outputstr += '**not pog**'
+            else:
+                outputstr += '**pog**'
+            await message.channel.send(outputstr)
         elif 'poggers' in mcl():
             if 'not poggers':
                 outputstr += 'not '
-            await message.channel.send(outputstr + 'poggers')
             await message.channel.send(outputstr + 'poggers')
         elif search('\s*(pog)(ging|[^\w]|$)', mcl()):
             if search('\s*(not )(pog)(ging|[^\w]|$)', mcl()):
