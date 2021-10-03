@@ -99,12 +99,20 @@ async def on_message(message):
         await message.channel.send(random.choice(replies))
 
     if 'pog' in mcl():
-        if 'aggressive' in mcl():
-            await message.channel.send('**pog**')
+        outputstr = ''
+        if 'aggressive pog' in mcl():
+            if 'not aggressive pog':
+                outputstr += '**not **'
+            await message.channel.send(outputstr + '**pog**')
         elif 'poggers' in mcl():
-            await message.channel.send('poggers')
+                if 'not poggers':
+                    outputstr += 'not '
+                await message.channel.send(outputstr + 'poggers')
+            await message.channel.send(outputstr + 'poggers')
         elif search('\s*(pog)(ging|[^\w]|$)', mcl()):
-            await message.channel.send('pog')
+            if search('\s*(not )(pog)(ging|[^\w]|$)', mcl()):
+                outputstr += 'not '
+            await message.channel.send(outputstr + 'pog')
 
     if mcl() == 'good bot':
         await message.channel.send('good user')
