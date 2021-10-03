@@ -74,10 +74,8 @@ class AutoModerator(commands.Cog):
         for e in self.EMOJIS.values():
             await m.add_reaction(e)
 
-
-
         while True:
-            embed.description = "*Please react to choose an auto moderation tool*\n🇦 Welcome message \n🇧 Auto role assignment\nWait 60s, or react :eject: to quit"
+            embed.description = "**Please react to choose an auto moderation tool**\n🇦 Welcome message \n🇧 Auto role assignment\nWait 60s, or react :eject: to quit"
             await m.edit(embed=embed)
 
             try:
@@ -127,7 +125,7 @@ class AutoModerator(commands.Cog):
                                 inline=False)
 
                 await m.edit(embed=embed)
-                #TODO finish implementing menu + add deleting message if m is None
+
                 try:
                     r, u = await self.bot.wait_for('reaction_add', check=check, timeout=60)
                 except asyncio.TimeoutError:
@@ -145,7 +143,8 @@ class AutoModerator(commands.Cog):
                     if await self.deletemessage(ctx, m):
                         await self.executesql('DELETE FROM welcome_messages WHERE id = ?', (messageinfo[0][0],))
                         await ctx.send('Welcome message deleted')
-                        if not frommenu:
+
+                        if frommenu is not None:
                             await m.delete()
                         return
         else:
@@ -233,9 +232,9 @@ class AutoModerator(commands.Cog):
     async def on_member_join(self, member):
         guildmessage = await self.executesql('SELECT channel_id, message FROM welcome_messages WHERE server_id = ?', (member.guild.id,))
 
-        if guildmessage:
-            channel = await self.bot.fetch_guild(member.guild.id).get_channel(guildmessage[0][0])
-            await channel.send(guildmessage[0][0])
+        if guildmessage[0]:
+            channel = await self.bot.fetch_channel(guildmessage[0][0])
+            await channel[0].send(guildmessage[0][1])
 
 def setup(bot):
     bot.add_cog(AutoModerator(bot))
