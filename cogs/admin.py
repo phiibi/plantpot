@@ -38,15 +38,15 @@ class Admin(commands.Cog):
 
     @commands.command(name='password', hidden=True)
     @commands.dm_only()
-    async def test(self, ctx, type):
+    async def test(self, ctx, account):
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
 
-        if type.lower() == 'cmt':
-            cmt_user = await (await self.bot.fetch_guild(689877729294024725)).fetch_member(ctx.author.id)
-            if 689878478270496821 not in [role.id for role in cmt_user.roles]:
-                return
-            m = await ctx.send(("the password I'm about to send is the committee google password, "
+        cmt_user = await (await self.bot.fetch_guild(689877729294024725)).fetch_member(ctx.author.id)
+        if 689878478270496821 not in [role.id for role in cmt_user.roles]:
+            return
+        if account.lower() in ['google', 'instagram', 'linktree', 'twitter', 'tumblr']:
+            m = await ctx.send((f"the password I'm about to send is the committee {account.lower()} password, "
                                 "the message will therefore delete itself 10 seconds after sending. \n"
                                 "please do **NOT** write this password down anywhere, use this command and copy it instead\n"
                                 "do you acknowledge this? [(y)es/(n)o]"))
@@ -58,8 +58,14 @@ class Admin(commands.Cog):
             await msg.delete()
 
             if msg.content.lower() in ['y', 'yes']:
+                accounts = {'google': 'CMT_PWD',
+                            'instagram': 'IG_PWD',
+                            'linktree': 'LT_PWD',
+                            'twitter': 'TW_PWD',
+                            'tumblr': 'TM_PWD'}
+                account = accounts.get(account.lower())
                 load_dotenv()
-                pwd = os.getenv('CMT_PWD')
+                pwd = os.getenv(account)
                 await m.edit(content=pwd)
                 await asyncio.sleep(10)
                 await m.delete()
