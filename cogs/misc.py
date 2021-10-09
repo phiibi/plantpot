@@ -71,13 +71,12 @@ class Misc(commands.Cog):
                 # If the member is in the top 10 of a leaderboard, but does not have the role, add it.
     
     async def executeSQLCheck(ctx):
-        return 817801520074063974 in [role.id for role in ctx.author.roles]
+        return 817801520074063974 in [role.id for role in ctx.author.roles] or ctx.author.id == 115560604047114248
         # Must have the Dev Team role to use executeSQL.
 
     @commands.command(
         name = "executeSQL",
         aliases = ["esql"],
-
         hidden = True,
     )
     @commands.check(executeSQLCheck)

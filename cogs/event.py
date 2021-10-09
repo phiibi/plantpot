@@ -46,7 +46,7 @@ class Event(commands.Cog):
 
         self.setup.start()
 
-        self.defaultevent = 1
+        self.defaultevent = 2
 
     @tasks.loop(count=1)
     async def setup(self):
@@ -113,7 +113,7 @@ class Event(commands.Cog):
         return list(rows)
 
     async def eventWizardCheck(ctx):
-        return 825241813505802270 in [role.id for role in ctx.author.roles]
+        return (825241813505802270 in [role.id for role in ctx.author.roles]) or ctx.author.id == 115560604047114248
         #return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles]
 
     async def rarityWizardCheck(ctx):
@@ -1061,6 +1061,15 @@ class Event(commands.Cog):
                 await m.add_reaction(eventinfo[0][1])
 
                 await Event.executesql(self, 'REPLACE INTO active_posts (active_id, event_id, image_id, message_id) VALUES (?, ?, ?, ?)', (activeid, activeinfo[0][0], image[0], m.id))
+                if image[3] in [2, 7]:
+                    dmusers = await Event.executesql(self, 'SELECT user_id, start, duration FROM rewards WHERE reward = 5 AND server_id = ?', (activeinfo[0][1],))
+                    for user in dmusers:
+                        if time() < (user[1] + user[2]):
+                            u = await self.bot.fetch_user(user[0])
+                            if image[3] == 2:
+                                await u.send(f"I've just posted a legendary in {self.bot.get_guild(activeinfo[0][1]).name}!")
+                            elif image[3] == 7:
+                                await u.send(f"I've just posted a mythic in {self.bot.get_guild(activeinfo[0][1]).name}!")
                 return
 
     async def getimage(self, eventid):
