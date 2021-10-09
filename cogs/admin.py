@@ -8,9 +8,10 @@ from discord.ext import commands, tasks
 from aiosqlite import connect
 from cogs import checkers, leaderboard
 from cogs.inventory import Inventory
-from cogs.badges import Badge
+from dotenv import load_dotenv
 
 class Admin(commands.Cog):
+
     version = '0.1'
     def __init__(self, bot):
         self.bot = bot
@@ -33,6 +34,17 @@ class Admin(commands.Cog):
         await cursor.close()
         await db.close()
         return list(rows)
+
+    @commands.command(name='password', hidden=True)
+    @commands.dm_only()
+    async def test(self, ctx, type):
+        if type.lower() == 'cmt':
+            cmt_user = await (await self.bot.fetch_guild(689877729294024725)).fetch_member(ctx.author.id)
+            if 689878478270496821 not in [role.id for role in cmt_user.roles]:
+                return
+            load_dotenv()
+            pwd = os.getenv('CMT_PWD')
+            await ctx.send(pwd)
 
     @commands.command(name='load', hidden=True)
     @checkers.is_plant_owner()
