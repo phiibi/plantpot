@@ -51,7 +51,7 @@ class Admin(commands.Cog):
                                 "please do **NOT** write this password down anywhere, use this command and copy it instead\n"
                                 "do you acknowledge this? [(y)es/(n)o]"))
             try:
-                msg = await self.bot.wait_for('message', check=check, timeout=15)
+                msg = await self.bot.wait_for('message', check=check, timeout=45)
             except asyncio.TimeoutError:
                 await m.delete()
                 return
