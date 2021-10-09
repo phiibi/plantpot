@@ -38,14 +38,14 @@ class Admin(commands.Cog):
 
     @commands.command(name='password', hidden=True)
     @commands.dm_only()
-    async def test(self, ctx, account):
+    async def password(self, ctx, account):
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
 
         cmt_user = await (await self.bot.fetch_guild(689877729294024725)).fetch_member(ctx.author.id)
         if 689878478270496821 not in [role.id for role in cmt_user.roles]:
             return
-        if account.lower() in ['google', 'instagram', 'linktree', 'twitter', 'tumblr']:
+        if account.lower() in ['google', 'instagram', 'linktree', 'twitter', 'tumblr', 'carrd']:
             m = await ctx.send((f"the password I'm about to send is the committee {account.lower()} password, "
                                 "the message will therefore delete itself 10 seconds after sending. \n"
                                 "please do **NOT** write this password down anywhere, use this command and copy it instead\n"
@@ -61,7 +61,8 @@ class Admin(commands.Cog):
                             'instagram': 'IG_PWD',
                             'linktree': 'LT_PWD',
                             'twitter': 'TW_PWD',
-                            'tumblr': 'TM_PWD'}
+                            'tumblr': 'TM_PWD',
+                            'carrd': 'CD_PWD'}
                 account = accounts.get(account.lower())
                 load_dotenv()
                 pwd = os.getenv(account)
