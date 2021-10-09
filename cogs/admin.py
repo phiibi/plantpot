@@ -3,6 +3,7 @@
 import discord
 import os
 import json
+import asyncio
 
 from discord.ext import commands, tasks
 from aiosqlite import connect
@@ -38,13 +39,35 @@ class Admin(commands.Cog):
     @commands.command(name='password', hidden=True)
     @commands.dm_only()
     async def test(self, ctx, type):
+        def check(msg):
+            return msg.author == ctx.author and msg.channel == ctx.channel
+
         if type.lower() == 'cmt':
             cmt_user = await (await self.bot.fetch_guild(689877729294024725)).fetch_member(ctx.author.id)
             if 689878478270496821 not in [role.id for role in cmt_user.roles]:
                 return
-            load_dotenv()
-            pwd = os.getenv('CMT_PWD')
-            await ctx.send(pwd)
+            m = await ctx.send(("the password I'm about to send is the committee google password, "
+                                "the message will therefore delete itself 10 seconds after sending. \n"
+                                "please do **NOT** write this password down anywhere, use this command and copy it instead\n"
+                                "do you acknowledge this? [(y)es/(n)o]"))
+            try:
+                msg = await self.bot.wait_for('message', check=check, timeout=15)
+            except asyncio.TimeoutError:
+                await m.delete()
+                return
+            await msg.delete()
+
+            if msg.content.lower() in ['y', 'yes']:
+                load_dotenv()
+                pwd = os.getenv('CMT_PWD')
+                await m.edit(content=pwd)
+                await asyncio.sleep(10)
+                await m.delete()
+                return
+            else:
+                await m.delete()
+                return
+
 
     @commands.command(name='load', hidden=True)
     @checkers.is_plant_owner()
