@@ -55,7 +55,6 @@ class Admin(commands.Cog):
             except asyncio.TimeoutError:
                 await m.delete()
                 return
-            await msg.delete()
 
             if msg.content.lower() in ['y', 'yes']:
                 accounts = {'google': 'CMT_PWD',
