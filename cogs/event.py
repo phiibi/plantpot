@@ -113,7 +113,7 @@ class Event(commands.Cog):
         return list(rows)
 
     async def eventWizardCheck(ctx):
-        return 825241813505802270 in [role.id for role in ctx.author.roles]
+        return (825241813505802270 in [role.id for role in ctx.author.roles]) or ctx.author.id == 115560604047114248
         #return ctx.author.permissions_in(ctx.channel).manage_guild or 825241813505802270 in [role.id for role in ctx.author.roles]
 
     async def rarityWizardCheck(ctx):
