@@ -127,7 +127,7 @@ class Halloween(commands.Cog):
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         embed.add_field(name='Available Sweets',
                         value=sweetstring)
-        m = await ctx.send(embed)
+        m = await ctx.send(embed=embed)
 
         while True:
             try:
