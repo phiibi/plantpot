@@ -83,18 +83,18 @@ class EventChecker:
             points = imageinfo[0][1]
 
         cd = await self.executesql('SELECT last_pickup FROM cooldowns WHERE (active_id = ? AND user_id = ?)', (activeinfo[0][0], payload.user_id))
-        cdvalue = await self.executesql('SELECT cooldown FROM events WHERE event_id = ?', (activeinfo[0][1]))
-        cdvalue = cdvalue[0][0]
 
         if activeinfo[0][1] == 2:
             checkreward = await self.executesql('SELECT reward, start, duration FROM rewards WHERE user_id = ? AND server_id = ?', (payload.user_id, payload.guild_id, 1, 2))
             rewards = self.makerewardslist(checkreward)
-            if 1 in rewards:
-                cdvalue *= 2
             if 4 in rewards:
                 points *= 2
 
         if len(cd):
+            cdvalue = 150
+            if activeinfo[0][1]:
+                if 1 in rewards:
+                    cdvalue *= 2
             remaining = cdvalue - (time.time() - cd[0][0])
             if remaining > 0:
                 await self.executesql('UPDATE active_posts SET message_id = ? WHERE active_id = ?', (msg_id[0][0], activeinfo[0][0]))

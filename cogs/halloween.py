@@ -12,6 +12,7 @@ from cogs.leaderboard import Leaderboard
 from discord.ext import commands, tasks
 from operator import itemgetter
 
+
 class Halloween(commands.Cog):
     version = '1.0'
 
@@ -30,11 +31,6 @@ class Halloween(commands.Cog):
         "right_arrow":    "➡️",
         "eject":          "⏏️",
     }
-
-    MENU_EMOJIS = {
-        "0":              "0️⃣",
-        "1":              "1️⃣",
-        "2":              "2️⃣"}
 
     TRICKS = {
         1: 0.5,
@@ -93,19 +89,21 @@ class Halloween(commands.Cog):
         await db.close()
         return list(rows)
 
-    @commands.command(name='trickortreat', help='create and open a Halloween basket')
+    @commands.command(name='trickortreat', help='Create and open a Halloween basket')
     async def trickortreat(self, ctx):
-        if not await self.checkitems(ctx):
+        sweets = await self.checkitems(ctx)
+        if not sweets:
             return
-        ...
+        if await self.getsweets(ctx, sweets[0]):
+            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweets[1][1], 1)
 
     async def checkitems(self, ctx):
-        usersweets = await self.executesql("SELECT i.image_id, i.text, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND i.text LIKE '%sweet')", (ctx.author.id, ctx.guild.id))
+        usersweets = await self.executesql("SELECT i.image_id, i.text, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Sweet')", (ctx.author.id, ctx.guild.id))
         if len(usersweets) < 7:
             # TODO add text which tells them which sweets their missing
             await ctx.send(f"Uh oh, you don't have enough sweets! Please collect {7 - len(usersweets)} more before trying to trick or treat")
             return False
-        userbaskets = await self.executesql("SELECT i.image_id, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND i.text LIKE '%basket')", (ctx.author.id, ctx.guild.id))
+        userbaskets = await self.executesql("SELECT i.image_id, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Basket')", (ctx.author.id, ctx.guild.id))
         if not len(userbaskets):
             await ctx.send("Uh oh, you don't have a basket to carry all those sweets in! Please collect a basket before trying to trick or treat!")
             return False
@@ -151,7 +149,7 @@ class Halloween(commands.Cog):
                 else:
                     await self.executetrick(ctx, reward, numsweets)
                 await m.delete()
-                return
+                return True
             except ValueError:
                 await ctx.send("Uh oh, I couldn't understand that, please enter a number for me!")
 
