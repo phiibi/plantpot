@@ -163,7 +163,7 @@ class Halloween(commands.Cog):
             await self.addreward(ctx, 2)
         elif reward == 3:
             points = numsweets * 20
-            userpoints = await self.executesql('SELECT score FROM leaderboards WHERE server_id = ? AND user_id = ? AND event_id = ?', (ctx.guild.id, ctx.user.id, 2))
+            userpoints = await self.executesql('SELECT score FROM leaderboards WHERE server_id = ? AND user_id = ? AND event_id = ?', (ctx.guild.id, ctx.author.id, 2))
             if points > userpoints[0][0]:
                 points = userpoints[0][0]
             await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 2, -points)
@@ -173,7 +173,7 @@ class Halloween(commands.Cog):
             await self.addreward(ctx, 3)
         elif reward == 5:
             points = numsweets * 40
-            userpoints = await self.executesql('SELECT score FROM leaderboards WHERE server_id = ? AND user_id = ? AND event_id = ?', (ctx.guild.id, ctx.user.id, 2))
+            userpoints = await self.executesql('SELECT score FROM leaderboards WHERE server_id = ? AND user_id = ? AND event_id = ?', (ctx.guild.id, ctx.author.id, 2))
             if points > userpoints[0][0]:
                 points = userpoints[0][0]
             await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 2, -points)
