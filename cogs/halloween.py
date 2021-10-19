@@ -111,8 +111,8 @@ class Halloween(commands.Cog):
 
     # Gets given a user input, how many sweets to put into basket
     async def getsweets(self, ctx, sweets):
-        def check(r, u):
-            return u == ctx.author and r.message == m
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel
 
         sweetstring = ''
         totalsweets = 0
