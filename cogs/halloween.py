@@ -95,7 +95,7 @@ class Halloween(commands.Cog):
         if not sweets:
             return
         if await self.getsweets(ctx, sweets[0]):
-            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweets[1][1], 1)
+            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweets[1], 1)
 
     async def checkitems(self, ctx):
         usersweets = await self.executesql("SELECT i.image_id, i.text, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Sweet')", (ctx.author.id, ctx.guild.id))
@@ -163,6 +163,9 @@ class Halloween(commands.Cog):
             await self.addreward(ctx, 2)
         elif reward == 3:
             points = numsweets * 20
+            userpoints = await self.executesql('SELECT score FROM leaderboards WHERE server_id = ? AND user_id = ? AND event_id = ?', (ctx.guild.id, ctx.user.id, 2))
+            if points > userpoints[0][0]:
+                points = userpoints[0][0]
             await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 2, -points)
             rewardstr += f"I'm taking 20 points for every sweet in your basket, that's {points} points!"
         elif reward == 4:
@@ -170,6 +173,9 @@ class Halloween(commands.Cog):
             await self.addreward(ctx, 3)
         elif reward == 5:
             points = numsweets * 40
+            userpoints = await self.executesql('SELECT score FROM leaderboards WHERE server_id = ? AND user_id = ? AND event_id = ?', (ctx.guild.id, ctx.user.id, 2))
+            if points > userpoints[0][0]:
+                points = userpoints[0][0]
             await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 2, -points)
             rewardstr += f"I'm taking 40 points for every sweet in your basket, that's {points} points!"
 
@@ -232,7 +238,7 @@ class Halloween(commands.Cog):
             reward = self.TRICKS.items()
         for kv in reward:
             odds -= kv[1]
-            if odds > 0:
+            if odds < 0:
                 return kv[0]
 
     # Calculates whether to trick or treat
