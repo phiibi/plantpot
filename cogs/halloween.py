@@ -74,7 +74,7 @@ class Halloween(commands.Cog):
                     server_id INTEGER NOT NULL,
                     reward INTEGER NOT NULL,
                     start FLOAT NOT NULL,
-                    duration FLOAT NOT NULL,)""")
+                    duration FLOAT NOT NULL)""")
 
     @setup.before_loop
     async def before_setup(self):
