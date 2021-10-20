@@ -92,7 +92,7 @@ class EventChecker:
 
         if len(cd):
             cdvalue = 150
-            if activeinfo[0][1]:
+            if activeinfo[0][1] == 2:
                 if 1 in rewards:
                     cdvalue *= 2
             remaining = cdvalue - (time.time() - cd[0][0])
