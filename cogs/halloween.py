@@ -141,15 +141,16 @@ class Halloween(commands.Cog):
                 numsweets = int(msg.content)
                 if numsweets > totalsweets:
                     await ctx.send(f"Uh oh, you don't have that many sweets, you only have {totalsweets}. Please enter a lower number.")
-                await self.balancesweets(ctx, sweets, numsweets)
-                treat = self.calctrickortreat(numsweets)
-                reward = self.calcreward(treat)
-                if treat:
-                    await self.executetreat(ctx, reward, numsweets)
                 else:
-                    await self.executetrick(ctx, reward, numsweets)
-                await m.delete()
-                return True
+                    await self.balancesweets(ctx, sweets, numsweets)
+                    treat = self.calctrickortreat(numsweets)
+                    reward = self.calcreward(treat)
+                    if treat:
+                        await self.executetreat(ctx, reward, numsweets)
+                    else:
+                        await self.executetrick(ctx, reward, numsweets)
+                    await m.delete()
+                    return True
             except ValueError:
                 await ctx.send("Uh oh, I couldn't understand that, please enter a number for me!")
 
@@ -248,14 +249,18 @@ class Halloween(commands.Cog):
 
     # Returns a list of sweets to be removed
     async def balancesweets(self, ctx, sweets, count):
+        newsweets = []
+        for sweet in sweets:
+            newsweets.append([sweet[0], sweet[2]])
         removals = {}
         for i in range(count):
-            sweets.sort(key=itemgetter(2))
+            newsweets.sort(key=itemgetter(1), reverse=True)
             topsweet = removals.get(sweets[0][0])
             if topsweet:
-                removals.update({sweets[0][0]: topsweet + 1})
+                removals.update({newsweets[0][0]: topsweet + 1})
             else:
-                removals.update({sweets[0][0]: 1})
+                removals.update({newsweets[0][0]: 1})
+            newsweets[0][1] -= 1
         for sweet in removals.items():
             await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweet[0], sweet[1])
 
