@@ -95,7 +95,7 @@ class Halloween(commands.Cog):
         if not sweets:
             return
         if await self.getsweets(ctx, sweets[0]):
-            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweets[1], 1)
+            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweets[1][1][0], 1)
 
     async def checkitems(self, ctx):
         usersweets = await self.executesql("SELECT i.image_id, i.text, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Sweet')", (ctx.author.id, ctx.guild.id))
