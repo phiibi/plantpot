@@ -1061,14 +1061,14 @@ class Event(commands.Cog):
                 await m.add_reaction(eventinfo[0][1])
 
                 await Event.executesql(self, 'REPLACE INTO active_posts (active_id, event_id, image_id, message_id) VALUES (?, ?, ?, ?)', (activeid, activeinfo[0][0], image[0], m.id))
-                if image[0][3] in [2, 7]:
+                if image[3] in [2, 7]:
                     dmusers = await Event.executesql(self, 'SELECT user_id, start, duration FROM rewards WHERE reward = 5 AND server_id = ?', (activeinfo[0][0],))
                     for user in dmusers:
                         if time() < (user[1] + user[2]):
                             u = await self.bot.fetch_user(user[0])
-                            if image[0][3] == 2:
+                            if image[3] == 2:
                                 await u.send(f"I've just posted a legendary in {self.bot.get_guild(activeinfo[0][1]).name}!")
-                            elif image[0][3] == 7:
+                            elif image[3] == 7:
                                 await u.send(f"I've just posted a mythic in {self.bot.get_guild(activeinfo[0][1]).name}!")
                 return
 

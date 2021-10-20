@@ -258,7 +258,7 @@ class Halloween(commands.Cog):
             sweet[1] -= 1
         for i in range(count - 7):
             newsweets.sort(key=itemgetter(1), reverse=True)
-            topsweet = removals.get(sweets[0][0])
+            topsweet = removals.get(newsweets[0][0])
             if topsweet:
                 removals.update({newsweets[0][0]: topsweet + 1})
             else:
