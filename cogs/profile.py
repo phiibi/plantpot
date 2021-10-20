@@ -1,7 +1,7 @@
 #profile.py
 
 import json
-
+import time
 import discord
 import asyncio
 
@@ -133,6 +133,9 @@ class Profile(commands.Cog):
             u = at
         p = Profile.addprofile(self, u.id)
 
+        if await self.makeprankedprofile(ctx, u):
+            return
+        
         embed = discord.Embed()
         embed.set_author(name='{0}\'s profile'.format(u.display_name), icon_url=u.avatar_url_as())
         embed.set_thumbnail(url=u.avatar_url_as())
@@ -166,6 +169,30 @@ class Profile(commands.Cog):
             embed.set_image(url=p['image']['url'])
         embed.set_footer(text='Powered by chlorophyll')
         return await ctx.send(embed=embed)
+
+    async def checkpranked(self, ctx, user):
+        userreward = await self.executesql('SELECT start, duration FROM rewards WHERE reward = 3 AND user_id = ?', (user.id,))
+        if len(user):
+            if time.time() < userreward[0][0] + userreward[0][1]:
+                await self.makeprankedprofile(ctx, user)
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    async def makeprankedprofile(self, ctx, user):
+        embed = discord.Embed()
+        embed.set_author(name=f'{user.display_name}\'s profile', icon_url=user.avatar_url_as())
+        embed.set_thumbnail(url=user.avatar_url_as())
+        embed.set_image(url='https://i.imgur.com/8FqWQra.png')
+        embed.add_field(name='\U0001F4AC Bio', value="I got pranked by plant lol")
+        embed.add_field(name='\U0001F4AD Pronouns', value="Plant/Plants")
+        embed.add_field(name='\U0001F496 Sexuality', value="All for plant")
+        embed.add_field(name='\U0001F3C6 Total Points', value='None lol')
+        embed.add_field(name='\U0001F4A0 Rep', value="Also none lol")
+
+        await ctx.send(embed=embed)
 
     @commands.command(name='marry', help='lets you marry another user')
     async def marry(self, ctx, user: discord.Member):
