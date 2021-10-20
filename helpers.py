@@ -85,7 +85,7 @@ class EventChecker:
         cd = await self.executesql('SELECT last_pickup FROM cooldowns WHERE (active_id = ? AND user_id = ?)', (activeinfo[0][0], payload.user_id))
 
         if activeinfo[0][1] == 2:
-            checkreward = await self.executesql('SELECT reward, start, duration FROM rewards WHERE user_id = ? AND server_id = ?', (payload.user_id, payload.guild_id, 1, 2))
+            checkreward = await self.executesql('SELECT reward, start, duration FROM rewards WHERE user_id = ? AND server_id = ?', (payload.user_id, payload.guild_id))
             rewards = self.makerewardslist(checkreward)
             if 4 in rewards:
                 points *= 2
