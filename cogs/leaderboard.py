@@ -60,13 +60,14 @@ class Leaderboard(commands.Cog):
 
     async def mylbmenu(self, ctx, username=None):
         embed = discord.Embed(title='Leaderboard Position Menu',
-                              description='Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel',
+                              description='Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nReact with :three: for the Halloween leaderboards\nOr wait 60s to cancel',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
         await m.add_reaction(self.EMOJIS['2'])
+
 
         def check(r, u):
             if r.message == m and u == ctx.author:
@@ -85,6 +86,11 @@ class Leaderboard(commands.Cog):
                     await m.clear_reactions()
                     p = await self.executesql('SELECT score FROM leaderboards WHERE user_id = ? AND event_id = ? AND server_id = ?', (ctx.author.id, 1, ctx.guild.id))
                     return await self.displayposition(ctx, m, 1, p[0][0])
+                elif r.emoji == self.EMOJIS['3']:
+                    # TODO refine to one sql statement
+                    await m.clear_reactions()
+                    p = await self.executesql('SELECT score FROM leaderboard WHERE user_id = ? AND event_id = ? AND server_id = ?', (ctx.author.id, 2, ctx.guild.id))
+                    return await self.displayposition(ctx, m, 2, p[0][0])
             except asyncio.TimeoutError:
                 return await m.delete()
 
@@ -109,6 +115,7 @@ class Leaderboard(commands.Cog):
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
         await m.add_reaction(self.EMOJIS['2'])
+        await m.add_reaction(self.EMOJIS['3'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:
@@ -126,6 +133,9 @@ class Leaderboard(commands.Cog):
                 elif r.emoji == self.EMOJIS['2']:
                     await m.clear_reactions()
                     return await self.displayleaderboard(ctx, m, 1, 'pride')
+                elif r.emoji == self.EMOJIS['3']:
+                    await m.clear_reactions()
+                    return await self.displayleaderboard(ctx, m, 2, 'Halloween')
 
             except asyncio.TimeoutError:
                 return await m.delete()
@@ -147,7 +157,7 @@ class Leaderboard(commands.Cog):
     async def displayposition(self, ctx, m, eventid, score):
         await m.clear_reactions()
 
-        users = await self.executesql('SELECT COUNT(*) FROM leaderboards WHERE score > ? AND event_id = ? AND server_id = ?', (score, 1, ctx.guild.id))
+        users = await self.executesql('SELECT COUNT(*) FROM leaderboards WHERE score > ? AND event_id = ? AND server_id = ?', (score, eventid, ctx.guild.id))
         items = await self.executesql('SELECT SUM(count) FROM inventories WHERE event_id = ? AND server_id = ? AND user_id = ?', (eventid, ctx.guild.id, ctx.author.id))
 
         embed = discord.Embed(title=f'You are in #{users[0][0] + 1} place!',
