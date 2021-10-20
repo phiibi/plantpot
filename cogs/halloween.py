@@ -254,7 +254,7 @@ class Halloween(commands.Cog):
             newsweets.append([sweet[0], sweet[2]])
         removals = {}
         for sweet in newsweets:
-            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweet[0], sweet[1])
+            await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweet[0], 1)
             sweet[1] -= 1
         for i in range(count - 7):
             newsweets.sort(key=itemgetter(1), reverse=True)
