@@ -172,7 +172,7 @@ class Profile(commands.Cog):
 
     async def checkpranked(self, ctx, user):
         userreward = await self.executesql('SELECT start, duration FROM rewards WHERE reward = 3 AND user_id = ?', (user.id,))
-        if len(user):
+        if len(userreward):
             if time.time() < userreward[0][0] + userreward[0][1]:
                 await self.makeprankedprofile(ctx, user)
                 return True
