@@ -67,7 +67,8 @@ class Leaderboard(commands.Cog):
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
         await m.add_reaction(self.EMOJIS['2'])
-
+        if ctx.guild.id == 837398483228164146:
+            await m.add_reaction(self.EMOJIS['3'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:
@@ -115,7 +116,8 @@ class Leaderboard(commands.Cog):
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
         await m.add_reaction(self.EMOJIS['2'])
-        await m.add_reaction(self.EMOJIS['3'])
+        if ctx.guild.id == 837398483228164146:
+            await m.add_reaction(self.EMOJIS['3'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:

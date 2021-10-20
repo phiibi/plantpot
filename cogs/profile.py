@@ -133,9 +133,9 @@ class Profile(commands.Cog):
             u = at
         p = Profile.addprofile(self, u.id)
 
-        if await self.makeprankedprofile(ctx, u):
+        if await self.checkpranked(ctx, u):
             return
-        
+
         embed = discord.Embed()
         embed.set_author(name='{0}\'s profile'.format(u.display_name), icon_url=u.avatar_url_as())
         embed.set_thumbnail(url=u.avatar_url_as())
@@ -186,9 +186,9 @@ class Profile(commands.Cog):
         embed.set_author(name=f'{user.display_name}\'s profile', icon_url=user.avatar_url_as())
         embed.set_thumbnail(url=user.avatar_url_as())
         embed.set_image(url='https://i.imgur.com/8FqWQra.png')
-        embed.add_field(name='\U0001F4AC Bio', value="I got pranked by plant lol")
-        embed.add_field(name='\U0001F4AD Pronouns', value="Plant/Plants")
-        embed.add_field(name='\U0001F496 Sexuality', value="All for plant")
+        embed.add_field(name='\U0001F4AC Bio', value="I got pranked by plant lol", inline=False)
+        embed.add_field(name='\U0001F4AD Pronouns', value="Plant/Plants", inline=False)
+        embed.add_field(name='\U0001F496 Sexuality', value="All for plant", inline=False)
         embed.add_field(name='\U0001F3C6 Total Points', value='None lol')
         embed.add_field(name='\U0001F4A0 Rep', value="Also none lol")
 
