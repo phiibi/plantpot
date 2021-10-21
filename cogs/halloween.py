@@ -100,8 +100,17 @@ class Halloween(commands.Cog):
     async def checkitems(self, ctx):
         usersweets = await self.executesql("SELECT i.image_id, i.text, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Sweet')", (ctx.author.id, ctx.guild.id))
         if len(usersweets) < 7:
-            # TODO add text which tells them which sweets their missing
-            await ctx.send(f"Uh oh, you don't have enough sweets! Please collect {7 - len(usersweets)} more before trying to trick or treat")
+            sweetids = {378: 'red sweet',
+                        379: 'purple sweet',
+                        380: 'pink sweet',
+                        381: 'green sweet',
+                        382: 'cyan sweet',
+                        383: 'blue sweet',
+                        384: 'yellow sweet'}
+            for sweet in usersweets:
+                sweetids.pop(sweet[0])
+            leftsweets = ', '.join(sweet for sweet in sweetids.values())
+            await ctx.send(f"Uh oh, you don't have enough sweets! Please collect {7 - len(usersweets)} more before trying to trick or treat\nYou need: {leftsweets}")
             return False
         userbaskets = await self.executesql("SELECT i.image_id, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Basket')", (ctx.author.id, ctx.guild.id))
         if not len(userbaskets):
