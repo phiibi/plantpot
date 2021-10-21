@@ -153,7 +153,7 @@ class Halloween(commands.Cog):
                 else:
                     await self.balancesweets(ctx, sweets, numsweets)
                     treat = self.calctrickortreat(numsweets)
-                    reward = self.calcreward(treat)
+                    reward = self.calcreward(treat, numsweets)
                     if treat:
                         await self.executetreat(ctx, reward, numsweets)
                     else:
@@ -214,7 +214,7 @@ class Halloween(commands.Cog):
         elif reward == 6:
             await Leaderboard.addpoint(self, ctx.author.id, ctx.guild.id, "me!!", 0)
             await Leaderboard.addpoints(self, ctx.author.id, ctx.guild.id, 2, 250)
-            rewardstr += f"I'll give you myself and 250 points!"
+            rewardstr += f"I'll give you myself and 250 points! Please check your spring inventory for me!!"
         elif reward == 7:
             legendaries = await self.executesql("SELECT image_id, text FROM images WHERE event_id = ? AND rarity_id = ?", (2, 2))
             l = random.choice(legendaries)
@@ -240,10 +240,10 @@ class Halloween(commands.Cog):
             await self.executesql('INSERT INTO rewards (user_id, server_id, reward, start, duration) VALUES (?, ?, ?, ?, ?)',
                                   (ctx.author.id, ctx.guild.id, reward, time.time(), duration))
     # Calculates a reward
-    def calcreward(self, treat):
+    def calcreward(self, treat, numsweets):
         odds = random.random()
         if treat:
-            reward = self.TREATS.items()
+            reward = self.processtreats(numsweets).items()
         else:
             reward = self.TRICKS.items()
         for kv in reward:
@@ -251,6 +251,19 @@ class Halloween(commands.Cog):
             if odds < 0:
                 return kv[0]
 
+    def processtreats(self, numsweets):
+        multiplier = (2 / (1 + 5.8 * math.exp(-0.25 * numsweets)))
+        dist = (0.25 / multiplier) * 3
+        return {
+            1: 0.25 / multiplier,
+            2: 0.25 / multiplier,
+            3: 0.25 / multiplier,
+            4: 0.1 + (dist / 5),
+            5: 0.07 + (dist / 5),
+            6: 0.05 + (dist / 5),
+            7: 0.02 + (dist / 5),
+            8: 0.01 + (dist / 5)
+        }
     # Calculates whether to trick or treat
     def calctrickortreat(self, sweets):
         multiplier = 2 / (1 + 5.8 * math.exp(-0.25 * sweets))
