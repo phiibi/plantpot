@@ -63,19 +63,15 @@ class Inventory(commands.Cog):
             return await self.inventorymainmenu(ctx)
 
     async def inventorymainmenu(self, ctx):
-        desc = 'Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nOr wait 60s to cancel'
-        if ctx.guild.id == 837398483228164146:
-            desc = 'Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nReact with :three: for your Halloween inventory\nOr wait 60s to cancel'
         embed = discord.Embed(title='Inventory Menu',
-                              description=desc,
+                              description='Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nReact with :three: for your Halloween inventory\nOr wait 60s to cancel',
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
         await m.add_reaction(self.EMOJIS['2'])
-        if ctx.guild.id == 837398483228164146:
-            await m.add_reaction(self.EMOJIS['3'])
+        await m.add_reaction(self.EMOJIS['3'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:
@@ -94,6 +90,7 @@ class Inventory(commands.Cog):
                     await m.clear_reactions()
                     return await self.pridesortmenu(ctx, m, 1)
                 elif r.emoji == self.EMOJIS['3']:
+                    await m.clear_reactions()
                     return await self.pridesortmenu(ctx, m, 2)
             except asyncio.TimeoutError:
                 return await m.delete()
