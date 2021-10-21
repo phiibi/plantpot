@@ -72,6 +72,9 @@ class EventChecker:
         activeinfo = await self.executesql('SELECT active_id, event_id, image_id FROM active_posts WHERE message_id = ?', (payload.message_id,))
         if not len(activeinfo):
             return
+        emoji = await self.executesql('SELECT emoji FROM events WHERE event_id = ?', (activeinfo[0][1],))
+        if str(payload.emoji) != emoji[0][0]:
+            return
 
         msg_id = await self.executesql('SELECT message_id FROM active_posts WHERE active_id = ?', (activeinfo[0][0],))
         await self.executesql('UPDATE active_posts SET message_id = ? WHERE active_id = ?', (0, activeinfo[0][0]))

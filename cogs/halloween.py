@@ -90,27 +90,35 @@ class Halloween(commands.Cog):
         return list(rows)
 
     @commands.command(name='trickortreat', help='Create and open a Halloween basket')
-    async def trickortreat(self, ctx):
+    async def trickortreat(self, ctx, mod=None):
+        if mod == 'sweets':
+            return await self.displaysweets(ctx)
         sweets = await self.checkitems(ctx)
         if not sweets:
             return
         if await self.getsweets(ctx, sweets[0]):
             await Inventory.removeitem(self, ctx.author.id, ctx.guild.id, sweets[1][0][0], 1)
 
+    async def displaysweets(self, ctx):
+        usersweets = await self.executesql("SELECT i.image_id, i.text, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Sweet')", (ctx.author.id, ctx.guild.id))
+        sweetstring = ''
+        totalsweets = 0
+        for sweet in usersweets:
+            sweetstring += f"**{sweet[1]}**: {sweet[2]}\n"
+            totalsweets += sweet[2]
+
+        sweetstring += f'**Total sweets**: {totalsweets}'
+
+        embed = discord.Embed(title='Trick or Treat Sweets',
+                              colour=ctx.guild.get_member(self.bot.user.id).colour)
+        embed.add_field(name='Available Sweets', value=sweetstring)
+
+        await ctx.send(embed=embed)
+
     async def checkitems(self, ctx):
         usersweets = await self.executesql("SELECT i.image_id, i.text, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Sweet')", (ctx.author.id, ctx.guild.id))
         if len(usersweets) < 7:
-            sweetids = {378: 'red sweet',
-                        379: 'purple sweet',
-                        380: 'pink sweet',
-                        381: 'green sweet',
-                        382: 'cyan sweet',
-                        383: 'blue sweet',
-                        384: 'yellow sweet'}
-            for sweet in usersweets:
-                sweetids.pop(sweet[0])
-            leftsweets = ', '.join(sweet for sweet in sweetids.values())
-            await ctx.send(f"Uh oh, you don't have enough sweets! Please collect {7 - len(usersweets)} more before trying to trick or treat\nYou need: {leftsweets}")
+            await ctx.send(f"Uh oh, you don't have enough sweets! Please collect {7 - len(usersweets)} more before trying to trick or treat\nUse `.trickortreat sweets` to see how many sweets you have!")
             return False
         userbaskets = await self.executesql("SELECT i.image_id, inv.count FROM inventories inv INNER JOIN images i USING (image_id) WHERE (inv.user_id = ? AND inv.server_id = ? AND inv.count > 0 AND i.text LIKE '%Basket')", (ctx.author.id, ctx.guild.id))
         if not len(userbaskets):
