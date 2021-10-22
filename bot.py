@@ -75,7 +75,8 @@ async def on_message(message):
         if 'milf' in mcl():
             r = random.random()
             if r > 0.9 or message.author.id == 579785620612972581:
-                await message.channel.send('i want big mummy milkers')
+                if not (message.guild.id == 689877729294024725 and message.channel.id != 837047212928139308):
+                    await message.channel.send('i want big mummy milkers')
 
     if 'how are you plant' in mcl():
         await message.channel.send(random.choice(replies))
@@ -107,7 +108,7 @@ async def on_message(message):
                 outputstr += '**pog**'
             await message.channel.send(outputstr)
         elif 'poggers' in mcl():
-            if 'not poggers':
+            if 'not poggers' in mcl():
                 outputstr += 'not '
             await message.channel.send(outputstr + 'poggers')
         elif search('\s*(pog)(ging|[^\w]|$)', mcl()):
@@ -165,4 +166,5 @@ bot.load_extension('cogs.premium')
 bot.load_extension('cogs.misc')
 bot.load_extension('cogs.reminder')
 bot.load_extension('cogs.rolemanager')
+bot.load_extension('cogs.halloween')
 bot.run(TOKEN)
