@@ -14,7 +14,8 @@ class Leaderboard(commands.Cog):
     EMOJIS = {
         "0":              "0️⃣",
         "1":              "1️⃣",
-        "2":              "2️⃣"}
+        "2":              "2️⃣",
+        "3":              "3️⃣"}
     def __init__(self, bot):
         self.bot = bot
 
