@@ -60,13 +60,12 @@ class Leaderboard(commands.Cog):
         return await self.mylbmenu(ctx, username)
 
     async def mylbmenu(self, ctx, username=None):
-        if ctx.guild.id == 813532137050341407:
-            desc = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nReact with :three: for the Halloween leaderboards\nOr wait 60s to cancel'
-        else:
-            desc = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel'
         embed = discord.Embed(title='Leaderboard Position Menu',
-                              description=desc,
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
+        if ctx.guild.id == 813532137050341407:
+            embed.description = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nReact with :three: for the Halloween leaderboards\nOr wait 60s to cancel'
+        else:
+            embed.description = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel'
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
@@ -113,13 +112,12 @@ class Leaderboard(commands.Cog):
         return await self.lbmenu(ctx)
 
     async def lbmenu(self, ctx):
-        if ctx.guild.id == 813532137050341407:
-            desc = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nReact with :three: for the Halloween leaderboards\nOr wait 60s to cancel'
-        else:
-            desc = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel'
         embed = discord.Embed(title='Leaderboard Menu',
-                              description=desc,
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
+        if ctx.guild.id == 813532137050341407:
+            embed.description = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nReact with :three: for the Halloween leaderboards\nOr wait 60s to cancel'
+        else:
+            embed.description = 'Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel'
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
