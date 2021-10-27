@@ -63,13 +63,12 @@ class Inventory(commands.Cog):
             return await self.inventorymainmenu(ctx)
 
     async def inventorymainmenu(self, ctx):
-        if ctx.guild.id == 813532137050341407:
-            desc = 'Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nReact with :three: for your Halloween inventory\nOr wait 60s to cancel',
-        else:
-            desc = 'Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nOr wait 60s to cancel',
         embed = discord.Embed(title='Inventory Menu',
-                              description=desc,
                               colour=ctx.guild.get_member(self.bot.user.id).colour)
+        if ctx.guild.id == 813532137050341407:
+            embed.description = 'Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nReact with :three: for your Halloween inventory\nOr wait 60s to cancel',
+        else:
+            embed.description = 'Please react with a number based on which inventory you would like to see\nReact with :zero: for your regular inventory\nReact with :one: for your anime inventory\nReact with :two: for your pride inventory\nOr wait 60s to cancel',
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
