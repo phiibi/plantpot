@@ -60,21 +60,15 @@ class Leaderboard(commands.Cog):
         return await self.mylbmenu(ctx, username)
 
     async def mylbmenu(self, ctx, username=None):
-        if ctx.guild.id == 813532137050341407:
-            embed = discord.Embed(title='Leaderboard Position Menu',
+        embed = discord.Embed(title='Leaderboard Position Menu',
                                   description='Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nReact with :three: for the Halloween leaderboards\nOr wait 60s to cancel',
-                                  colour=ctx.guild.get_member(self.bot.user.id).colour)
-        else:
-            embed = discord.Embed(title='Leaderboard Position Menu',
-                                  description='Please react with a number based on which leaderboard you would like to see your position on\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel',
                                   colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
         await m.add_reaction(self.EMOJIS['2'])
-        if ctx.guild.id == 813532137050341407:
-            await m.add_reaction(self.EMOJIS['3'])
+        await m.add_reaction(self.EMOJIS['3'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:
@@ -114,21 +108,15 @@ class Leaderboard(commands.Cog):
         return await self.lbmenu(ctx)
 
     async def lbmenu(self, ctx):
-        if ctx.guild.id == 813532137050341407:
-            embed = discord.Embed(title='Leaderboard Menu',
+        embed = discord.Embed(title='Leaderboard Menu',
                                   description='Please react with a number based on which leaderboard you would like to see\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nReact with :three: for the Halloween leaderboards\nOr wait 60s to cancel',
-                                  colour=ctx.guild.get_member(self.bot.user.id).colour)
-        else:
-            embed = discord.Embed(title='Leaderboard Menu',
-                                  description='Please react with a number based on which leaderboard you would like to see\nReact with :zero: for the regular leaderboards\nReact with :one: for the anime leaderboards\nReact with :two: for the pride leaderboards\nOr wait 60s to cancel',
                                   colour=ctx.guild.get_member(self.bot.user.id).colour)
         m = await ctx.send(embed=embed)
 
         await m.add_reaction(self.EMOJIS["0"])
         await m.add_reaction(self.EMOJIS["1"])
         await m.add_reaction(self.EMOJIS['2'])
-        if ctx.guild.id == 813532137050341407:
-            await m.add_reaction(self.EMOJIS['3'])
+        await m.add_reaction(self.EMOJIS['3'])
 
         def check(r, u):
             if r.message == m and u == ctx.author:
