@@ -4,6 +4,7 @@ import discord
 import os
 import json
 import asyncio
+import pickle
 
 from discord.ext import commands, tasks
 from aiosqlite import connect
@@ -253,6 +254,7 @@ class Admin(commands.Cog):
             logstr += f'{message.author.id} {message.author.display_name} Sent at: {str(message.created_at)}\n{message.content}\n\n'
         with open(f'{channelid}log.txt', 'w+') as f:
             f.write(logstr)
+        pickle.dump(channel, open(f'{channelid}', 'wb'))
         await ctx.send('Channel logged')
 
 
