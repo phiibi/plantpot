@@ -1062,7 +1062,7 @@ class Event(commands.Cog):
 
                 await Event.executesql(self, 'REPLACE INTO active_posts (active_id, event_id, image_id, message_id) VALUES (?, ?, ?, ?)', (activeid, activeinfo[0][0], image[0], m.id))
                 if image[3] in [2, 7]:
-                    dmusers = await Event.executesql(self, 'SELECT user_id, start, duration FROM rewards WHERE reward = 5 AND server_id = ?', (activeinfo[0][0],))
+                    dmusers = await Event.executesql(self, 'SELECT user_id, start, duration FROM rewards WHERE reward = 5 AND server_id = ?', (activeinfo[0][1],))
                     for user in dmusers:
                         if time() < (user[1] + user[2]):
                             u = await self.bot.fetch_user(user[0])

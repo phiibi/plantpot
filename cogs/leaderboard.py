@@ -90,7 +90,7 @@ class Leaderboard(commands.Cog):
                 elif r.emoji == self.EMOJIS['3']:
                     # TODO refine to one sql statement
                     await m.clear_reactions()
-                    p = await self.executesql('SELECT score FROM leaderboard WHERE user_id = ? AND event_id = ? AND server_id = ?', (ctx.author.id, 2, ctx.guild.id))
+                    p = await self.executesql('SELECT score FROM leaderboards WHERE user_id = ? AND event_id = ? AND server_id = ?', (ctx.author.id, 2, ctx.guild.id))
                     return await self.displayposition(ctx, m, 2, p[0][0])
             except asyncio.TimeoutError:
                 return await m.delete()
