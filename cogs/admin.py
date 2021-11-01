@@ -244,6 +244,18 @@ class Admin(commands.Cog):
 
         return await ctx.send('Badges distributed')
 
+    @commands.command(name='logchannel', hidden=True)
+    @commands.is_owner()
+    async def logchannel(self, ctx, channelid, limit=None):
+        channel = await self.bot.fetch_channel(channelid)
+        logstr = ''
+        async for message in channel.history(limit=limit):
+            logstr += f'{message.author.id} {message.author.display_name} Sent at: {str(message.created_at)}\n{message.content}\n\n'
+        with open(f'{channelid}log.txt', 'w+') as f:
+            f.write(logstr)
+        await ctx.send('Channel logged')
+
+
 class die:
     def __init__(self, bot):
         self.bot = bot
