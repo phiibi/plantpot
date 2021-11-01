@@ -4,7 +4,7 @@ import discord
 import os
 import json
 import asyncio
-import pickle
+import dill as pickle
 
 from discord.ext import commands, tasks
 from aiosqlite import connect
