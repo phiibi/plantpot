@@ -1,4 +1,5 @@
-#Halloween.py
+# dressup.py
+# unimplemented code for Halloween 2021, mostly will be reused for Halloween 2022
 
 import asyncio
 import discord

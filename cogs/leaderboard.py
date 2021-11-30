@@ -1,4 +1,6 @@
-#leaderboard.py
+# leaderboard.py
+# some terrifying fusion of old and new
+# old to be replaced with new once events are transferred to new database
 
 import json
 import operator

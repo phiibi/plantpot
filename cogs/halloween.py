@@ -1,4 +1,5 @@
-#Halloween.py
+# Halloween.py
+# Halloween 2021 code
 
 import asyncio
 import discord

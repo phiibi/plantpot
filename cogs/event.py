@@ -1,5 +1,5 @@
-#event.py
-#REBUILD EVENTS
+# event.py
+# REBUILD OF EVENTS: 1.0 YOU CAN (NOT) REFACTOR
 
 import os
 import asyncio

@@ -2,6 +2,7 @@
 # ------  Misc Plant Bot Commands  -----
 # ---------------  v1.4  ---------------
 
+# some additions by Not Matt
 
 import discord
 import time
@@ -29,17 +30,15 @@ class Misc(commands.Cog):
 
         self.sendreminders.start()
 
-        self.lockdiscussion.start()
-
         self.executeSQL("PRAGMA foreign_keys = ON")
         
-    def executeSQL(self, statement, data = ()):
+    def executeSQL(self, statement, data=()):
 
         self.cursor.execute(statement, data)
         self.conn.commit()
         return self.cursor.fetchall()
 
-    @tasks.loop(seconds = 60)
+    @tasks.loop(seconds=60)
     async def updateLeaderboardRoles(self):
 
         with open(f'cogs/leaderboards/lb813532137050341407.json', 'r') as file:
@@ -75,9 +74,9 @@ class Misc(commands.Cog):
         # Must have the Dev Team role to use executeSQL.
 
     @commands.command(
-        name = "executeSQL",
-        aliases = ["esql"],
-        hidden = True,
+        name="executeSQL",
+        aliases=["esql"],
+        hidden=True,
     )
     @commands.check(executeSQLCheck)
     async def eSQL(self, ctx, *execute):
@@ -90,24 +89,24 @@ class Misc(commands.Cog):
                 await ctx.send(data)
 
     @commands.command(
-        name = "cogVersions",
-        aliases = ["cv"],
+        name="cogVersions",
+        aliases=["cv"],
 
-        hidden = True,
+        hidden=True,
     )
     async def cogVersions(self, ctx):
 
         embed = discord.Embed(
-            title = "Cog Versions",
-            colour = ctx.guild.get_member(self.bot.user.id).colour,
-            timestamp = datetime.now(),
+            title="Cog Versions",
+            colour=ctx.guild.get_member(self.bot.user.id).colour,
+            timestamp=datetime.now(),
         )
         for name, cog in self.bot.cogs.items():
             try:
-                embed.add_field(name = name, value = "v" + cog.version)
+                embed.add_field(name=name, value="v" + cog.version)
             except AttributeError:
-                embed.add_field(name = name, value = "Unspecified")
-        await ctx.send(embed = embed)
+                embed.add_field(name=name, value="Unspecified")
+        await ctx.send(embed=embed)
 
     @tasks.loop(minutes=1)
     async def sendreminders(self):
@@ -126,35 +125,10 @@ class Misc(commands.Cog):
             channel = self.bot.get_channel(reminder[0])
             await channel.send(reminder[1])
 
-    @tasks.loop(seconds=60)
-    async def lockdiscussion(self):
-        t = time.gmtime(time.time())
-        if self.bot.is_ready():
-            if not (t[3] == 8 or t[3] == 22):
-                pass
-
-            channel = self.bot.get_channel(834839193724649492)
-            role = channel.guild.get_role(750099685191974992)
-
-            perms = channel.overwrites_for(role)
-            m = perms.send_messages
-            perms.read_messages = True
-
-            if t[3] == 8 and not m:
-                perms.send_messages = True
-                await channel.set_permissions(role, overwrite=perms)
-                await channel.edit(name='discussion topic open')
-            elif t[3] == 22 and m:
-                perms.send_messages = False
-                await channel.set_permissions(role, overwrite=perms)
-                await channel.edit(name='discussion topic closed')
-
     def cog_unload(self):
         self.updateLeaderboardRoles.stop()
 
         self.sendreminders.stop()
-
-        self.lockdiscussion.stop()
 
 
 def setup(bot):

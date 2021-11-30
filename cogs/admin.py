@@ -1,11 +1,11 @@
-#admin.py
+# admin.py
+# contains various administrator commands
 
 import discord
 import os
 import json
 import asyncio
 import time
-import dill as pickle
 
 from discord.ext import commands, tasks
 from aiosqlite import connect
@@ -38,47 +38,9 @@ class Admin(commands.Cog):
         await db.close()
         return list(rows)
 
-    @commands.command(name='password', hidden=True)
-    @commands.dm_only()
-    async def password(self, ctx, account):
-        def check(msg):
-            return msg.author == ctx.author and msg.channel == ctx.channel
-
-        cmt_user = await (await self.bot.fetch_guild(689877729294024725)).fetch_member(ctx.author.id)
-        if 689878478270496821 not in [role.id for role in cmt_user.roles]:
-            return
-        if account.lower() in ['google', 'instagram', 'linktree', 'twitter', 'tumblr', 'carrd']:
-            m = await ctx.send((f"the password I'm about to send is the committee {account.lower()} password, "
-                                "the message will therefore delete itself 10 seconds after sending. \n"
-                                "please do **NOT** write this password down anywhere, use this command and copy it instead\n"
-                                "do you acknowledge this? [(y)es/(n)o]"))
-            try:
-                msg = await self.bot.wait_for('message', check=check, timeout=45)
-            except asyncio.TimeoutError:
-                await m.delete()
-                return
-
-            if msg.content.lower() in ['y', 'yes']:
-                accounts = {'google': 'CMT_PWD',
-                            'instagram': 'IG_PWD',
-                            'linktree': 'LT_PWD',
-                            'twitter': 'TW_PWD',
-                            'tumblr': 'TM_PWD',
-                            'carrd': 'CD_PWD'}
-                account = accounts.get(account.lower())
-                load_dotenv()
-                pwd = os.getenv(account)
-                await m.edit(content=pwd)
-                await asyncio.sleep(10)
-                await m.delete()
-                return
-            else:
-                await m.delete()
-                return
-
 
     @commands.command(name='load', hidden=True)
-    @checkers.is_plant_owner()
+    @commands.is_owner()
     async def load(self, ctx, *, module: str):
         """Loads a module."""
         try:
@@ -101,7 +63,7 @@ class Admin(commands.Cog):
             await self.bot.say('\N{OK HAND SIGN}')
 
     @commands.command(name='reload', hidden=True)
-    @checkers.is_plant_owner()
+    @commands.is_owner()
     async def _reload(self, ctx, *, module: str):
         try:
             self.bot.unload_extension(f'cogs.{module}')
@@ -112,7 +74,7 @@ class Admin(commands.Cog):
             await ctx.send(f'{module} reloaded')
 
     @commands.command(name="refresh", hidden=True)
-    @checkers.is_plant_owner()
+    @checkers.is_owner()
     async def refresh(self, ctx):
         tempstr =''
         for f in os.listdir('./cogs/'):
@@ -141,7 +103,7 @@ class Admin(commands.Cog):
         await leaderboard.AnimeLeaderboard.addpoint(self, user.id, ctx.guild.id, url, name, points)
         await ctx.send('*teleports behind you* nothing personal kid')
 
-    @commands.command(name='tp', hiddemn=True)
+    @commands.command(name='tp', hidden=True)
     @checkers.is_plant_owner()
     async def tp(self, ctx, user:discord.Member, quantity:int, *, name):
         if name.lower() in ['batch']:
@@ -177,12 +139,6 @@ class Admin(commands.Cog):
         else:
             await ctx.send(f"Couldn't find {name} in {user.mention}'s inventory")
 
-    @commands.command(name='stop', hidden=True)
-    @checkers.is_plant_owner()
-    async def delete(self, ctx, msgid):
-        msg = await ctx.channel.fetch_message(msgid)
-        await msg.delete()
-
     @commands.command(name='gift', hidden=True)
     @checkers.is_plant_owner()
     async def gifting(self, ctx, user: discord.Member, *, name):
@@ -213,38 +169,6 @@ class Admin(commands.Cog):
             return await ctx.send('user was not on the blacklist')
         with open(f'cogs/userblacklist.json', 'w') as file:
             json.dump(d, file)
-
-    @commands.command(name='fixerupper', hidden=True)
-    @commands.is_owner()
-    async def fixinv(self, ctx):
-        with open('cogs/leaderboards/a817563329747877909.json', 'r') as f:
-            d = json.loads(f.read())
-        for user in d['users']:
-            temp = []
-            for i in range(len(user['image_name'])):
-                temp.append({"name": user['image_name'][i],
-                             "url": user['image_url'][i]})
-            user.pop("image_name")
-            user.pop("image_url")
-            user.update({"images": temp})
-        with open('cogs/leaderboards/a817563329747877909.json', 'w') as f:
-            json.dump(d, f)
-        await ctx.send('anime done')
-
-    @commands.command(name='givebadges', hidden=True)
-    @checkers.is_plant_owner()
-    async def givebadges(self, ctx, event, *, name):
-        top10 = await self.executesql('SELECT lb.user_id FROM leaderboards lb INNER JOIN events e USING (event_id) WHERE e.name = ? AND lb.server_id = ? ORDER BY lb.score DESC LIMIT 10', (event, ctx.guild.id))
-        santasLittleHelper = die(self.bot)
-
-        for userid in top10:
-            user = await self.bot.fetch_user(userid[0])
-            if user is None:
-                await ctx.send(f'Could not find user id {userid}')
-            else:
-                await santasLittleHelper.give(ctx, user, name)
-
-        return await ctx.send('Badges distributed')
 
     @commands.command(name='logchannel', hidden=True)
     @commands.is_owner()

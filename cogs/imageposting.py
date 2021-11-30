@@ -1,4 +1,6 @@
-#imageposting.py
+# imageposting.py
+# cog with all image posting capabilities
+# BASICALLY ANCIENT THIS CODE WAS WRITTEN BEFORE COBOL WAS USED TO PROP UP THE WORLD'S FINANCES
 
 import discord
 import random
@@ -10,7 +12,6 @@ from cogs import leaderboard, serversettings, profile, checkers, flowers
 
 from discord.ext import commands
 
-#cog with all image posting capabilities
 class Imageposting(commands.Cog):
     version = '0.1'
     def __init__(self, bot):

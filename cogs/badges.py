@@ -1,5 +1,7 @@
-#badges.py
-
+# badges.py
+# contains badges and inventory code for them
+# VERY OLD, TO BE REDONE
+# LIKE PLEASE DON'T LOOK AT THIS LMAO
 import discord
 import json
 import time
@@ -8,8 +10,10 @@ from discord.ext import commands
 from cogs import leaderboard, checkers
 from math import ceil
 
+
 class Badge(commands.Cog):
     version = '0.1'
+
     def __init__(self, bot):
         self.bot = bot
 

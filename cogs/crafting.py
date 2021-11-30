@@ -1,4 +1,5 @@
-#crafting.py
+# crafting.py
+# code used for Pride 2021 event for crafting flags
 
 import asyncio
 import discord
@@ -7,6 +8,7 @@ from discord.ext import commands, tasks
 from aiosqlite import connect
 from cogs.inventory import Inventory
 from cogs.leaderboard import Leaderboard
+
 
 class Crafting(commands.Cog):
     version = '1.0'

@@ -1,4 +1,5 @@
-#interactive.py
+# interactive.py
+# cog for fun things
 
 import discord
 import random
@@ -7,7 +8,7 @@ import json
 from discord.ext import commands
 from cogs import leaderboard
 
-#cog for fun things
+
 class Interactive(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

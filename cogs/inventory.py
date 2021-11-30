@@ -1,4 +1,6 @@
-#inventory.py
+# inventory.py
+# some terrifying fusion of old and new
+# old to be replaced with new once events are transferred to new database
 
 import json
 import discord
@@ -804,12 +806,6 @@ class Inventory(commands.Cog):
                 return False
         else:
             return False
-
-    @commands.command(name='addreact', hidden=True)
-    @checkers.is_plant_owner()
-    async def addreaction(self, ctx, channelid, messageid, emoji):
-        m = await (await self.bot.fetch_channel(channelid)).fetch_message(messageid)
-        await m.add_reaction(emoji)
 
     @give.error
     async def giveerror(self, ctx, error):

@@ -1,3 +1,8 @@
+# rolemanager.py
+# in loving memory of Egg's code (2021-2021)
+
+# perfect and can use absolutely no changes
+
 import discord
 from discord.ext import commands, tasks
 from aiosqlite import connect

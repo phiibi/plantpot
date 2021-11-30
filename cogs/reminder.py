@@ -1,3 +1,7 @@
+# reminders.py
+# sends daily reminders
+# needs overhauling to have single use and variable frequency
+
 import discord
 import asyncio
 

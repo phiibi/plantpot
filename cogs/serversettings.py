@@ -1,4 +1,6 @@
-#serversettings
+# serversettings
+# terrible terrible legacy code for initialising old events
+# can burn in a fire for all I care really
 
 import json
 import discord

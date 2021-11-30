@@ -1,4 +1,6 @@
-#flowers.py
+# flowers.py
+# spring 2021 code
+# VERY OLD, TO BE REPLACED WITH EVENTS.PY
 
 import os
 import json
@@ -10,8 +12,10 @@ import discord
 from cogs import imageposting, leaderboard, profile, checkers
 from discord.ext import commands
 
+
 class Flower(commands.Cog):
     version = '0.1'
+
     def __init__(self, bot):
         self.bot = bot
         self.emoji = '\U0001F338'

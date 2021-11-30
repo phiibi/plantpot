@@ -1,4 +1,5 @@
-#profile.py
+# profile.py
+# we don't talk about this file
 
 import json
 import time
