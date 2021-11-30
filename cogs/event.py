@@ -98,6 +98,13 @@ class Event(commands.Cog):
                 CONSTRAINT fk_active FOREIGN KEY (active_id) REFERENCES active_events(active_id)
                 CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES events(event_id),
                 CONSTRAINT fk_image FOREIGN KEY (image_id) REFERENCES images(image_id) ON DELETE CASCADE)""")
+        await self.restore_posts()
+
+    async def restore_posts(self):
+        queued = await self.executesql("""SELECT ae.active_id FROM active_events ae INNER JOIN active_posts ap USING (active_id)
+                                          WHERE ap.message_id = ?""", (0))
+        for event in queued:
+            await self.eventpost(event)
 
     @setup.before_loop
     async def before_setup(self):
