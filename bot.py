@@ -71,12 +71,11 @@ async def on_message(message):
                    'i won\'t forget about this...']
         await message.channel.send(random.choice(replies))
 
-    if message.author.id in [579785620612972581, 121045701856722944, 122043379604389890]:
-        if 'milf' in mcl():
-            r = random.random()
-            if r > 0.9 or message.author.id == 579785620612972581:
-                if not (message.guild.id == 689877729294024725 and message.channel.id != 837047212928139308):
-                    await message.channel.send('i want big mummy milkers')
+    if 'milf' in mcl():
+        r = random.random()
+        if r > 0.9:
+            if not (message.guild.id == 689877729294024725 and message.channel.id != 837047212928139308):
+                await message.channel.send('i want big mummy milkers')
 
     if 'how are you plant' in mcl():
         await message.channel.send(random.choice(replies))
